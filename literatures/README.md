@@ -78,6 +78,9 @@
 - Chain-of-verification reduces hallucination in large language models
     * [https://arxiv.org/pdf/2309.11495](https://arxiv.org/pdf/2309.11495)
 
+- React: synergizing reasoning and acting in language models
+    * [https://openreview.net/pdf?id=WE_vluYUL-X](https://openreview.net/pdf?id=WE_vluYUL-X)
+
 ---
 ### (might) Out-of-context studies
 - Language Agent Tree Search Unifies Reasoning Acting and Planning in Language Models

@@ -1,0 +1,72 @@
+Traceback (most recent call last):
+  File "/home/dju/rag-rerank/src/finetune_hf.py", line 344, in <module>
+    main()
+  File "/home/dju/rag-rerank/src/finetune_hf.py", line 211, in main
+    accelerator.init_trackers("open_instruct", experiment_config)
+  File "/home/dju/miniconda3/envs/exa-dm_env/lib/python3.10/site-packages/accelerate/accelerator.py", line 663, in _inner
+    return PartialState().on_main_process(function)(*args, **kwargs)
+  File "/home/dju/miniconda3/envs/exa-dm_env/lib/python3.10/site-packages/accelerate/accelerator.py", line 2442, in init_trackers
+    tracker.store_init_configuration(config)
+  File "/home/dju/miniconda3/envs/exa-dm_env/lib/python3.10/site-packages/accelerate/tracking.py", line 81, in execute_on_main_process
+    return function(self, *args, **kwargs)
+  File "/home/dju/miniconda3/envs/exa-dm_env/lib/python3.10/site-packages/accelerate/tracking.py", line 320, in store_init_configuration
+    wandb.config.update(values, allow_val_change=True)
+  File "/home/dju/miniconda3/envs/exa-dm_env/lib/python3.10/site-packages/wandb/sdk/wandb_config.py", line 186, in update
+    self._callback(data=sanitized)
+  File "/home/dju/miniconda3/envs/exa-dm_env/lib/python3.10/site-packages/wandb/sdk/wandb_run.py", line 371, in wrapper_fn
+    return func(self, *args, **kwargs)
+  File "/home/dju/miniconda3/envs/exa-dm_env/lib/python3.10/site-packages/wandb/sdk/wandb_run.py", line 1345, in _config_callback
+    self._backend.interface.publish_config(key=key, val=val, data=data)
+  File "/home/dju/miniconda3/envs/exa-dm_env/lib/python3.10/site-packages/wandb/sdk/interface/interface.py", line 167, in publish_config
+    cfg = self._make_config(data=data, key=key, val=val)
+  File "/home/dju/miniconda3/envs/exa-dm_env/lib/python3.10/site-packages/wandb/sdk/interface/interface.py", line 122, in _make_config
+    update.value_json = json_dumps_safer(json_friendly(v)[0])
+  File "/home/dju/miniconda3/envs/exa-dm_env/lib/python3.10/site-packages/wandb/util.py", line 831, in json_dumps_safer
+    return dumps(obj, cls=WandBJSONEncoder, **kwargs)
+  File "/home/dju/miniconda3/envs/exa-dm_env/lib/python3.10/json/__init__.py", line 238, in dumps
+    **kw).encode(obj)
+  File "/home/dju/miniconda3/envs/exa-dm_env/lib/python3.10/json/encoder.py", line 199, in encode
+    chunks = self.iterencode(o, _one_shot=True)
+  File "/home/dju/miniconda3/envs/exa-dm_env/lib/python3.10/json/encoder.py", line 257, in iterencode
+    return _iterencode(o, 0)
+  File "/home/dju/miniconda3/envs/exa-dm_env/lib/python3.10/site-packages/wandb/util.py", line 782, in default
+    return json.JSONEncoder.default(self, obj)
+  File "/home/dju/miniconda3/envs/exa-dm_env/lib/python3.10/json/encoder.py", line 179, in default
+    raise TypeError(f'Object of type {o.__class__.__name__} '
+TypeError: Object of type HfDeepSpeedConfig is not JSON serializable
+[rank0]: Traceback (most recent call last):
+[rank0]:   File "/home/dju/rag-rerank/src/finetune_hf.py", line 344, in <module>
+[rank0]:     main()
+[rank0]:   File "/home/dju/rag-rerank/src/finetune_hf.py", line 211, in main
+[rank0]:     accelerator.init_trackers("open_instruct", experiment_config)
+[rank0]:   File "/home/dju/miniconda3/envs/exa-dm_env/lib/python3.10/site-packages/accelerate/accelerator.py", line 663, in _inner
+[rank0]:     return PartialState().on_main_process(function)(*args, **kwargs)
+[rank0]:   File "/home/dju/miniconda3/envs/exa-dm_env/lib/python3.10/site-packages/accelerate/accelerator.py", line 2442, in init_trackers
+[rank0]:     tracker.store_init_configuration(config)
+[rank0]:   File "/home/dju/miniconda3/envs/exa-dm_env/lib/python3.10/site-packages/accelerate/tracking.py", line 81, in execute_on_main_process
+[rank0]:     return function(self, *args, **kwargs)
+[rank0]:   File "/home/dju/miniconda3/envs/exa-dm_env/lib/python3.10/site-packages/accelerate/tracking.py", line 320, in store_init_configuration
+[rank0]:     wandb.config.update(values, allow_val_change=True)
+[rank0]:   File "/home/dju/miniconda3/envs/exa-dm_env/lib/python3.10/site-packages/wandb/sdk/wandb_config.py", line 186, in update
+[rank0]:     self._callback(data=sanitized)
+[rank0]:   File "/home/dju/miniconda3/envs/exa-dm_env/lib/python3.10/site-packages/wandb/sdk/wandb_run.py", line 371, in wrapper_fn
+[rank0]:     return func(self, *args, **kwargs)
+[rank0]:   File "/home/dju/miniconda3/envs/exa-dm_env/lib/python3.10/site-packages/wandb/sdk/wandb_run.py", line 1345, in _config_callback
+[rank0]:     self._backend.interface.publish_config(key=key, val=val, data=data)
+[rank0]:   File "/home/dju/miniconda3/envs/exa-dm_env/lib/python3.10/site-packages/wandb/sdk/interface/interface.py", line 167, in publish_config
+[rank0]:     cfg = self._make_config(data=data, key=key, val=val)
+[rank0]:   File "/home/dju/miniconda3/envs/exa-dm_env/lib/python3.10/site-packages/wandb/sdk/interface/interface.py", line 122, in _make_config
+[rank0]:     update.value_json = json_dumps_safer(json_friendly(v)[0])
+[rank0]:   File "/home/dju/miniconda3/envs/exa-dm_env/lib/python3.10/site-packages/wandb/util.py", line 831, in json_dumps_safer
+[rank0]:     return dumps(obj, cls=WandBJSONEncoder, **kwargs)
+[rank0]:   File "/home/dju/miniconda3/envs/exa-dm_env/lib/python3.10/json/__init__.py", line 238, in dumps
+[rank0]:     **kw).encode(obj)
+[rank0]:   File "/home/dju/miniconda3/envs/exa-dm_env/lib/python3.10/json/encoder.py", line 199, in encode
+[rank0]:     chunks = self.iterencode(o, _one_shot=True)
+[rank0]:   File "/home/dju/miniconda3/envs/exa-dm_env/lib/python3.10/json/encoder.py", line 257, in iterencode
+[rank0]:     return _iterencode(o, 0)
+[rank0]:   File "/home/dju/miniconda3/envs/exa-dm_env/lib/python3.10/site-packages/wandb/util.py", line 782, in default
+[rank0]:     return json.JSONEncoder.default(self, obj)
+[rank0]:   File "/home/dju/miniconda3/envs/exa-dm_env/lib/python3.10/json/encoder.py", line 179, in default
+[rank0]:     raise TypeError(f'Object of type {o.__class__.__name__} '
+[rank0]: TypeError: Object of type HfDeepSpeedConfig is not JSON serializable

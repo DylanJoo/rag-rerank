@@ -1,0 +1,67 @@
+05/16/2024 10:57:19 - INFO - __main__ - ***** Running training *****
+05/16/2024 10:57:19 - INFO - __main__ -   Num examples = 100
+05/16/2024 10:57:19 - INFO - __main__ -   Num Epochs = 5
+05/16/2024 10:57:19 - INFO - __main__ -   Instantaneous batch size per device = 1
+05/16/2024 10:57:19 - INFO - __main__ -   Total train batch size (w. parallel, distributed & accumulation) = 4
+05/16/2024 10:57:19 - INFO - __main__ -   Gradient Accumulation steps = 2
+05/16/2024 10:57:19 - INFO - __main__ -   Total optimization steps = 125.0
+  0%|          | 0/125 [00:00<?, ?it/s]Traceback (most recent call last):
+  File "/home/dju/rag-rerank/src/finetune_hf.py", line 347, in <module>
+    main()
+  File "/home/dju/rag-rerank/src/finetune_hf.py", line 275, in main
+    accelerator.backward(loss)
+  File "/home/dju/miniconda3/envs/exa-dm_env/lib/python3.10/site-packages/accelerate/accelerator.py", line 1995, in backward
+    self.deepspeed_engine_wrapped.backward(loss, **kwargs)
+  File "/home/dju/miniconda3/envs/exa-dm_env/lib/python3.10/site-packages/accelerate/utils/deepspeed.py", line 175, in backward
+    self.engine.step()
+  File "/home/dju/miniconda3/envs/exa-dm_env/lib/python3.10/site-packages/deepspeed/runtime/engine.py", line 2169, in step
+    self._take_model_step(lr_kwargs)
+  File "/home/dju/miniconda3/envs/exa-dm_env/lib/python3.10/site-packages/deepspeed/runtime/engine.py", line 2075, in _take_model_step
+    self.optimizer.step()
+  File "/home/dju/miniconda3/envs/exa-dm_env/lib/python3.10/site-packages/deepspeed/utils/nvtx.py", line 15, in wrapped_fn
+    ret_val = func(*args, **kwargs)
+  File "/home/dju/miniconda3/envs/exa-dm_env/lib/python3.10/site-packages/deepspeed/runtime/zero/stage3.py", line 2050, in step
+    self._optimizer_step(sub_group_id)
+  File "/home/dju/miniconda3/envs/exa-dm_env/lib/python3.10/site-packages/deepspeed/runtime/zero/stage3.py", line 947, in _optimizer_step
+    self.optimizer.step()
+  File "/home/dju/miniconda3/envs/exa-dm_env/lib/python3.10/site-packages/torch/optim/lr_scheduler.py", line 75, in wrapper
+    return wrapped(*args, **kwargs)
+  File "/home/dju/miniconda3/envs/exa-dm_env/lib/python3.10/site-packages/torch/optim/optimizer.py", line 391, in wrapper
+    out = func(*args, **kwargs)
+  File "/home/dju/miniconda3/envs/exa-dm_env/lib/python3.10/site-packages/torch/optim/optimizer.py", line 76, in _use_grad
+    ret = func(self, *args, **kwargs)
+  File "/home/dju/miniconda3/envs/exa-dm_env/lib/python3.10/site-packages/torch/optim/adamw.py", line 177, in step
+    has_complex = self._init_group(
+  File "/home/dju/miniconda3/envs/exa-dm_env/lib/python3.10/site-packages/torch/optim/adamw.py", line 128, in _init_group
+    state["exp_avg_sq"] = torch.zeros_like(
+torch.cuda.OutOfMemoryError: CUDA out of memory. Tried to allocate 2.05 GiB. GPU
+[rank0]: Traceback (most recent call last):
+[rank0]:   File "/home/dju/rag-rerank/src/finetune_hf.py", line 347, in <module>
+[rank0]:     main()
+[rank0]:   File "/home/dju/rag-rerank/src/finetune_hf.py", line 275, in main
+[rank0]:     accelerator.backward(loss)
+[rank0]:   File "/home/dju/miniconda3/envs/exa-dm_env/lib/python3.10/site-packages/accelerate/accelerator.py", line 1995, in backward
+[rank0]:     self.deepspeed_engine_wrapped.backward(loss, **kwargs)
+[rank0]:   File "/home/dju/miniconda3/envs/exa-dm_env/lib/python3.10/site-packages/accelerate/utils/deepspeed.py", line 175, in backward
+[rank0]:     self.engine.step()
+[rank0]:   File "/home/dju/miniconda3/envs/exa-dm_env/lib/python3.10/site-packages/deepspeed/runtime/engine.py", line 2169, in step
+[rank0]:     self._take_model_step(lr_kwargs)
+[rank0]:   File "/home/dju/miniconda3/envs/exa-dm_env/lib/python3.10/site-packages/deepspeed/runtime/engine.py", line 2075, in _take_model_step
+[rank0]:     self.optimizer.step()
+[rank0]:   File "/home/dju/miniconda3/envs/exa-dm_env/lib/python3.10/site-packages/deepspeed/utils/nvtx.py", line 15, in wrapped_fn
+[rank0]:     ret_val = func(*args, **kwargs)
+[rank0]:   File "/home/dju/miniconda3/envs/exa-dm_env/lib/python3.10/site-packages/deepspeed/runtime/zero/stage3.py", line 2050, in step
+[rank0]:     self._optimizer_step(sub_group_id)
+[rank0]:   File "/home/dju/miniconda3/envs/exa-dm_env/lib/python3.10/site-packages/deepspeed/runtime/zero/stage3.py", line 947, in _optimizer_step
+[rank0]:     self.optimizer.step()
+[rank0]:   File "/home/dju/miniconda3/envs/exa-dm_env/lib/python3.10/site-packages/torch/optim/lr_scheduler.py", line 75, in wrapper
+[rank0]:     return wrapped(*args, **kwargs)
+[rank0]:   File "/home/dju/miniconda3/envs/exa-dm_env/lib/python3.10/site-packages/torch/optim/optimizer.py", line 391, in wrapper
+[rank0]:     out = func(*args, **kwargs)
+[rank0]:   File "/home/dju/miniconda3/envs/exa-dm_env/lib/python3.10/site-packages/torch/optim/optimizer.py", line 76, in _use_grad
+[rank0]:     ret = func(self, *args, **kwargs)
+[rank0]:   File "/home/dju/miniconda3/envs/exa-dm_env/lib/python3.10/site-packages/torch/optim/adamw.py", line 177, in step
+[rank0]:     has_complex = self._init_group(
+[rank0]:   File "/home/dju/miniconda3/envs/exa-dm_env/lib/python3.10/site-packages/torch/optim/adamw.py", line 128, in _init_group
+[rank0]:     state["exp_avg_sq"] = torch.zeros_like(
+[rank0]: torch.cuda.OutOfMemoryError: CUDA out of memory. Tried to allocate 2.05 GiB. GPU
