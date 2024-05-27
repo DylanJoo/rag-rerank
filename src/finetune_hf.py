@@ -98,7 +98,8 @@ def main():
             model_opt.model_name_or_path,
             from_tf=bool('.ckpt' in model_opt.model_name_or_path),
             config=config,
-            low_cpu_mem_usage=train_opt.low_cpu_mem_usage
+            low_cpu_mem_usage=train_opt.low_cpu_mem_usage,
+            attn_implementation="flash_attention_2",
     )
     if train_opt.gradient_checkpointing:
         model.gradient_checkpointing_enable()
