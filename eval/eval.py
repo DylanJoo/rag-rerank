@@ -27,6 +27,7 @@ from utils import normalize_answer, get_max_memory, remove_citations
 
 QA_MODEL="gaotianyu1350/roberta-large-squad"
 AUTOAIS_MODEL="google/t5_xxl_true_nli_mixture"
+OFFLOAD_HF="/ivi/ilps/personal/dju/temp/offload_hf/"
 
 global autoais_model, autoais_tokenizer
 autoais_model, autoais_tokenizer = None, None
@@ -283,7 +284,13 @@ def compute_claims(data):
     global autoais_model, autoais_tokenizer
     if autoais_model is None:
         logger.info("Loading AutoAIS model...")
-        autoais_model = AutoModelForSeq2SeqLM.from_pretrained(AUTOAIS_MODEL, torch_dtype=torch.bfloat16, max_memory=get_max_memory(), device_map="auto")
+        autoais_model = AutoModelForSeq2SeqLM.from_pretrained(
+            AUTOAIS_MODEL, 
+            torch_dtype=torch.bfloat16, 
+            max_memory=get_max_memory(), 
+            device_map="auto",
+            offload_folder=OFFLOAD_HF,
+        )
         autoais_tokenizer = AutoTokenizer.from_pretrained(AUTOAIS_MODEL, use_fast=False)
 
     logger.info("Computing claims...")
@@ -316,8 +323,13 @@ def compute_autoais(data,
     global autoais_model, autoais_tokenizer
     if autoais_model is None:
         logger.info("Loading AutoAIS model...")
-        # autoais_model = AutoModelForSeq2SeqLM.from_pretrained(AUTOAIS_MODEL, torch_dtype=torch.bfloat16, max_memory=get_max_memory(), device_map="auto")
-        autoais_model = AutoModelForSeq2SeqLM.from_pretrained(AUTOAIS_MODEL, torch_dtype=torch.bfloat16, max_memory=get_max_memory(), device_map="auto", offload_folder='/ivi/ilps/personal/dju/temp')
+        autoais_model = AutoModelForSeq2SeqLM.from_pretrained(
+            AUTOAIS_MODEL, 
+            torch_dtype=torch.bfloat16, 
+            max_memory=get_max_memory(), 
+            device_map="auto",
+            offload_folder=OFFLOAD_HF,
+        )
         autoais_tokenizer = AutoTokenizer.from_pretrained(AUTOAIS_MODEL, use_fast=False)
 
     logger.info(f"Running AutoAIS...")
