@@ -15,6 +15,6 @@ conda activate selfrag
 cd ~/rag-rerank
 
 # Start the experiment.
-for file in result/eli5*.json;do
+for file in result/eli5-Meta-Llama-3-8B-Instruct-*;do
     python3 eval/eval.py --f ${file} --citations --claims_nli
 done

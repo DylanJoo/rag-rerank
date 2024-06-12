@@ -13,13 +13,14 @@ def irrelevant_removal(items, ndoc=None, key='full'):
         ### 1: text include irrelevant
         ### 2: relevance score less than threshold
         if "irrelevant" in item[key] or "Irrelevant" in item[key]:
-            continue
+            item[key] = item['text']
+            to_return.append(item) # since ALCE additionally check the relevance when generating summary. 
         if ("relevance" in item) and (item["relevance"] < 0.0):
             continue
         else:
             to_return.append(item)
 
-    logger.warn(f"Removed {len(items) - len(to_return)} documents.")
+    logger.warn(f"Document removal: ({len(items)}) --> ({len(to_return)}).")
     return to_return
 
 # def get_alce_shorter_text(docs, ndoc, key):

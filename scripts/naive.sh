@@ -16,10 +16,12 @@ cd ~/rag-rerank
 
 # python3 naive.py --config configs/eli5.llama3-8b-chat.yaml --quick_test 1 --shot 0 --ndoc_in_demo 0 --ndoc 5 --used_field text
 # Start the experiment.
-python3 naive.py --config configs/eli5.llama3-8b-chat.yaml --quick_test 30 --shot 0 --ndoc_in_demo 0 --ndoc 5 --used_field text
+# python3 naive.py --config configs/eli5.llama3-8b-chat.yaml --quick_test 30 --shot 0 --ndoc_in_demo 0 --ndoc 5 --used_field text
 python3 naive.py --config configs/eli5.llama3-8b-chat.yaml --quick_test 30 --shot 0 --ndoc_in_demo 0 --ndoc 5 --used_field summary
-python3 naive.py --config configs/eli5.llama3-8b-chat.yaml --quick_test 30 --shot 1 --ndoc_in_demo 5 --ndoc 5 --used_field text
+python3 naive.py --config configs/eli5.llama3-8b-chat.yaml --quick_test 30 --shot 0 --ndoc_in_demo 0 --ndoc 5 --used_field extraction
+# python3 naive.py --config configs/eli5.llama3-8b-chat.yaml --quick_test 30 --shot 1 --ndoc_in_demo 5 --ndoc 5 --used_field text
 python3 naive.py --config configs/eli5.llama3-8b-chat.yaml --quick_test 30 --shot 1 --ndoc_in_demo 5 --ndoc 5 --used_field summary
+python3 naive.py --config configs/eli5.llama3-8b-chat.yaml --quick_test 30 --shot 1 --ndoc_in_demo 5 --ndoc 5 --used_field extraction
 
 # python3 naive.py --config configs/eli5.llama3-8b-chat.yaml --quick_test 30 --shot 0 --ndoc_in_demo 0 --ndoc 10 --used_field text
 # python3 naive.py --config configs/eli5.llama3-8b-chat.yaml --quick_test 30 --shot 0 --ndoc_in_demo 0 --ndoc 10 --used_field summary

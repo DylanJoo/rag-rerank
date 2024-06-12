@@ -24,7 +24,8 @@ def main():
     parser.add_argument("--quick_test", type=int, default=None, help="Quickly test a few examples")
 
     # ICL setting
-    parser.add_argument("--ndoc", type=int, help="Number of documents")
+    parser.add_argument("--ndoc", type=int, help="Number of documents, the exact number will go in decoder.")
+    parser.add_argument("--ndoc_pool", type=None, help="Number of documents pool. None will be the same as ndoc")
     parser.add_argument("--shot", type=int, help="Number of ICL demonstrations")
     parser.add_argument("--ndoc_in_demo", type=int, default=None, help="When using --fewer_doc_in_demo, use this to designate how many docs in demo")
     parser.add_argument("--seed", type=int, default=42, help="Seed for the random number generator")
@@ -64,9 +65,7 @@ def main():
         print(f"{k}: {args.__dict__[k]}")
 
     if "turbo" in args.model:
-        # ChatGPT has a longer max length
         args.max_length = 4096
-
     if "16k" in args.model:
         args.max_length = 16384
     elif "32k" in args.model:
@@ -80,6 +79,10 @@ def main():
     elif "llama-3" in args.model.lower() or "llama3" in args.model.lower():
         args.max_length = 8192
     logger.info(f"Set the model max length to {args.max_length} (if not correct, check the code)")
+
+    if args.ndoc_pool is None:
+        args.ndoc_pool = args.ndoc
+    logger.info(f"Set the model max number of documents to {args.ndoc}/{args.ndoc_pool}")
         
     # Load the model or setup the API
     llm = LLM(args)
@@ -130,7 +133,7 @@ def main():
         ### (1) irrelevant removal
         eval_item["docs"] = irrelevant_removal(
             eval_item["docs"], 
-            args.ndoc,
+            args.ndoc_pool,
             args.used_field
         )
 
@@ -150,7 +153,7 @@ def main():
         prompt = prompt.replace("{DEMO}", demo_prompt)
         eval_data[idx]['prompt'] = prompt
 
-    logger.info("Done.")
+    logger.info("Done prompt preparation.")
 
     for idx, item in enumerate(tqdm(eval_data)):
         prompt = item['prompt']
