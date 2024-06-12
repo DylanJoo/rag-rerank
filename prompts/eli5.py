@@ -2,7 +2,7 @@
 
 # instruction_prompt_alce = "Instruction: Write an accurate, engaging, and concise answer for the given question using only the provided search results (some of which might be irrelevant) and cite them properly. Use an unbiased and journalistic tone. Always cite for any factual claim. When citing several search results, use [1][2][3]. Cite at least one document and at most three documents in each sentence. If multiple documents support the sentence, only cite a minimum sufficient subset of the documents."
 
-instruction_prompt = "Instruction: Write an accurate, engaging, and concise report for the given question using only the provided document references (some of which might be irrelevant). Always cite at least one document for every sentences in the report. Use the citation format of square brackets to indicate the cited documents (e.g., [1] for the first reference). If multiple documents support the sentence, only cite a minimum sufficient subset of the documents. Only generate the answer without the other texts like list of references or other questions."
+instruction_prompt = "Instruction: Write an accurate, engaging, and concise answer for the given question using only the provided documents as references (some of which might be irrelevant). Always cite at least one document for every sentences in the answer. Use the citation format of square brackets to indicate the cited documents (e.g., [1] for the first reference). If multiple documents support the sentence, only cite a minimum sufficient subset of the documents. Only generate the answer, excluding any disclaimers, notes or list of references at the end of the answer."
 
 demo_sep = "\n\n\n"
 doc_prompt_template = "Document [{ID}]: (Title: {T}) {P}\n"

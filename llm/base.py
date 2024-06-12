@@ -26,7 +26,6 @@ class LLM:
         self.prompt_exceed_max_length = 0
         self.fewer_than_50 = 0
 
-
     def generate(self, prompt, max_tokens, stop=None):
         args = self.args
         if max_tokens <= 0:
