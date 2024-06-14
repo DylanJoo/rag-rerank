@@ -1,4 +1,5 @@
 import os
+import torch
 import json
 import argparse
 from tqdm import tqdm
@@ -17,6 +18,7 @@ def main():
 
     # load model
     model, tokenizer = load_model(args.model_name_or_path, model_class=args.model_class)
+    model.eval()
 
     # load writer and evaluation data 
     eval_data = json.load(open(args.eval_file))
@@ -36,8 +38,9 @@ def main():
                 args.template.replace("{T}", doc['title']).replace("{P}", doc['text']).replace("{Q}", request) \
                         for doc in batch_docs
             )
-            tokenized_input = tokenizer(input, padding=True, return_tensors='pt').to(model.device)
+            tokenized_input = tokenizer(input, padding=True, truncation=True, max_length=512, return_tensors='pt').to(model.device)
             outputs = model.generate(**tokenized_input, max_new_tokens=100)
+
             outputs = tokenizer.batch_decode(outputs, skip_special_tokens=True)
             summaries.extend(outputs)
 
@@ -50,4 +53,5 @@ def main():
     json.dump(eval_data, open(f"data/add_summary/{args.output_file}", "w"), indent=4)
 
 if __name__ == '__main__':
-    main()
+    with torch.no_grad():
+        main()

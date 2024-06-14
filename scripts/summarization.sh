@@ -1,6 +1,6 @@
 #!/bin/sh
 # The following lines instruct Slurm to allocate one GPU.
-#SBATCH --job-name=summarization
+#SBATCH --job-name=summ
 #SBATCH --partition gpu
 #SBATCH --gres=gpu:tesla_p40:1
 #SBATCH --mem=16G
@@ -23,7 +23,7 @@ python3 recomp/summarize.py \
     --model_class seq2seq \
     --eval_file data/alce/eli5_eval_bm25_top100.json \
     --template '{T} {P}' \
-    --batch_size 64 \
+    --batch_size 32 \
     --output_key summary_bart-large-cnn \
     --output_file eli5_eval_bm25_top100.json
 

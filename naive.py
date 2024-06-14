@@ -46,6 +46,7 @@ def main():
 
     # Use summarization/extraction of the documents
     parser.add_argument("--used_field", type=str, default="full", help="Use compressed text data. Option: `full`, `summary`, `extraction`")
+    parser.add_argument("--used_field_in_demo", type=str, default=None, help="Use compressed text data. Option: `full`, `summary`, `extraction`")
 
     # Interactive
     # parser.add_argument("--interactive", type=bool, default=False, help="Whether to run in interactive mode")
@@ -107,7 +108,7 @@ def main():
         doc_prompt = apply_docs_prompt(
             doc_items=train_item["docs"], 
             ndoc=args.ndoc_in_demo,
-            field='summary'
+            field=(args.used_field_in_demo or args.used_field)
         )
         demo_prompt += apply_demo_prompt(
             Q=train_item["question"],

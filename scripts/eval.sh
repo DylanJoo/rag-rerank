@@ -7,7 +7,7 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --time=10:00:00
-#SBATCH --output=debug/%x.%j.out
+#SBATCH --output=logs/%x.%j.out
 
 # Set-up the environment.
 source ${HOME}/.bashrc
