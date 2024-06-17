@@ -27,7 +27,7 @@ from utils import normalize_answer, get_max_memory, remove_citations
 
 QA_MODEL="gaotianyu1350/roberta-large-squad"
 AUTOAIS_MODEL="google/t5_xxl_true_nli_mixture"
-OFFLOAD_HF="/ivi/ilps/personal/dju/temp/offload_hf/"
+OFFLOAD_HF="/ivi/ilps/personal/dju/temp/offload_causual/"
 
 global autoais_model, autoais_tokenizer
 autoais_model, autoais_tokenizer = None, None
@@ -286,7 +286,7 @@ def compute_claims(data):
         logger.info("Loading AutoAIS model...")
         autoais_model = AutoModelForSeq2SeqLM.from_pretrained(
             AUTOAIS_MODEL, 
-            torch_dtype=torch.bfloat16, 
+            torch_dtype=torch.float16, 
             max_memory=get_max_memory(), 
             device_map="auto",
             offload_folder=OFFLOAD_HF,

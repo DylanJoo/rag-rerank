@@ -2,7 +2,7 @@
 # The following lines instruct Slurm to allocate one GPU.
 #SBATCH --job-name=eval
 #SBATCH --partition gpu
-#SBATCH --gres=gpu:2
+#SBATCH --gres=gpu:nvidia_titan_v:2
 #SBATCH --mem=32G
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
