@@ -11,10 +11,15 @@ def irrelevant_removal(items, ndoc=None, key='full'):
     for item in items[:ndoc]:
         ## criteria of inclusion 
         ### 1: text include irrelevant
-        ### 2: relevance score less than threshold
+        #### [BUG] some of the provided eval data have no summary field.....
+        if key not in item.keys():
+            item[key] = (item.get('extraction', None) or item.get('text'))
+            logger.warn(f"NO `{key}`, use `extraction` or `text` instead") 
+
         if "irrelevant" in item[key] or "Irrelevant" in item[key]:
             item[key] = item['text']
             to_return.append(item) # since ALCE additionally check the relevance when generating summary. 
+        ### 2: relevance score less than threshold
         if ("relevance" in item) and (item["relevance"] < 0.0):
             continue
         else:
