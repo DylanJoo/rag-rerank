@@ -2,7 +2,7 @@
 # The following lines instruct Slurm to allocate one GPU.
 #SBATCH --job-name=eval
 #SBATCH --partition gpu
-#SBATCH --gres=gpu:nvidia_titan_v:2
+#SBATCH --gres=gpu:nvidia_titan_v:4
 #SBATCH --mem=32G
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
@@ -15,6 +15,7 @@ conda activate selfrag
 cd ~/rag-rerank
 
 # Start the experiment.
-for file in result/eli5-Meta-Llama-3-8B-Instruct-*;do
+# Instruct-oracle
+for file in result/eli5-Meta-Llama-3-8B-Instruct-oriacle*json;do
     python3 eval/eval.py --f ${file} --citations --claims_nli
 done
