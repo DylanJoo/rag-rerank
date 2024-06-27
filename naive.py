@@ -48,15 +48,6 @@ def main():
     parser.add_argument("--used_field", type=str, default="full", help="Use compressed text data. Option: `full`, `summary`, `extraction`")
     parser.add_argument("--used_field_in_demo", type=str, default=None, help="Use compressed text data. Option: `full`, `summary`, `extraction`")
 
-    # Interactive
-    # parser.add_argument("--interactive", type=bool, default=False, help="Whether to run in interactive mode")
-    # parser.add_argument("--interactive_query", type=str, default=None, help="The query to use in interactive mode, either `doc_id` (corresponding to interact in paper) or `search` (corresponding to inlinesearch in paper).")
-    # parser.add_argument("--retriever", type=str, default=None, help="When using interactive search mode, which retriever to use. Options: `tfidf`, `gtr-t5-large`")
-    # parser.add_argument("--retriever_device", type=str, default="cuda", help="Where to put the dense retriever if using. Options: `cuda`, `cpu`")
-    # parser.add_argument("--max_turn", type=int, default=10, help="Max number of all actions")
-    # parser.add_argument("--max_doc_show", type=int, default=3, help="Max number of documents to show at one time.")
-    # parser.add_argument("--force_cite_show", type=bool, default=False, help="Force citing the documents that are shown to the model")
-
     # Load config
     args = parser.parse_args()
     config = yaml.safe_load(open(args.config)) if args.config is not None else {}
@@ -191,10 +182,6 @@ def main():
 
     if args.quick_test is not None:
         name += f"-quick_test{args.quick_test}"
-    # if args.num_samples > 1:
-    #     name += f"-sample{args.num_samples}"
-    # if args.force_cite_show:
-    #     name += f"-forceciteshow"
 
     eval_data = {"args": args.__dict__, "data": eval_data}
 

@@ -18,7 +18,13 @@ def get_max_memory():
     return max_memory
 
 
-def load_model(model_name_or_path, dtype=torch.float16, load_mode=None, reserve_memory=10):
+def load_model(
+    model_name_or_path, 
+    dtype=torch.float16, 
+    load_mode=None, 
+    reserve_memory=10, 
+    flash_attention_2=False
+):
     # Load a huggingface model and tokenizer
     # dtype: torch.float16 or torch.bfloat16
     # load_mode: whether to use int8/int4 quantization
@@ -29,13 +35,22 @@ def load_model(model_name_or_path, dtype=torch.float16, load_mode=None, reserve_
     logger.info(f"Loading {model_name_or_path} in {dtype}...")
     logger.warn(f"Use LLM.{load_mode}")
     start_time = time.time()
+
+    if flash_attention_2:
+        model_kwargs = {
+            'torch_dtype': torch.bfloat16,
+            'attn_implementation': "flash_attention_2"
+        }
+    else:
+        model_kwargs = {'torch_dtype': dtype}
+
     model = AutoModelForCausalLM.from_pretrained(
         model_name_or_path,
         device_map='auto',
-        torch_dtype=dtype,
         max_memory=get_max_memory(),
         load_in_8bit=(load_mode == '8bit'),
         load_in_4bit=(load_mode == '4bit'),
+        **model_kwargs
     )
         # attn_implementation="sdpa",
     logger.info("Finish loading in %.2f sec." % (time.time() - start_time))
