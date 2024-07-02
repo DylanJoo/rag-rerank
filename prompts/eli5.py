@@ -4,10 +4,25 @@
 
 instruction_prompt = "Instruction: Write an accurate, engaging, and concise answer for the given question using only the provided documents as references (some of which might be irrelevant). Always cite at least one document for every sentences in the answer. Use the citation format of square brackets to indicate the cited documents (e.g., [1] for the first reference). If multiple documents support the sentence, only cite a minimum sufficient subset of the documents. Only generate the answer, excluding any disclaimers, notes or list of references at the end of the answer."
 
-demo_sep = "\n\n\n"
+demo_sep = "\n\n" # the results so far used three seps.
 doc_prompt_template = "Document [{ID}]: (Title: {T}) {P}\n"
-demo_prompt_template = "{INST}\n\nQuestion: {Q}\n\n{D}\nAnswer: {A}"
-inst_prompt_template = "{INST}\n\n{DEMO}Question: {Q}\n\n{D}\nAnswer: {A}"
+demo_prompt_template = "{INST}\n\n\nQuestion: {Q}\n\n{D}\nAnswer: {A}"
+inst_prompt_template = "{INST}\n\n\n{DEMO}Question: {Q}\n\n{D}\nAnswer: {A}"
+
+# Instruction: {INST} \n\n\n
+# Question: {Q} \n
+# {Document [0]: {D0}\n
+# Document [1]: {D1}\n
+# ... 
+# Document [k]: {Dk}\n\n
+# Answer: {A} \n\n
+# ( if using demo, it would be the one above.)
+# Question: {Q}           
+# {Document [0]: {D0}
+# Document [1]: {D1}
+# ... 
+# Document [k]: {Dk}
+# Answer: {A}
 
 def apply_docs_prompt(doc_items, ndoc=None, field='text'):
     p = ""

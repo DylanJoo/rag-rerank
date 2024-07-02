@@ -16,6 +16,9 @@ from prompts.mds import *
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", type=str, default=None, help="Path to the config file")
+    parser.add_argument("--shard", type=int, default=0, help="the n-th shard")
+    parser.add_argument("--shard_size", type=int, default=200, help="size of one shard")
+    parser.add_argument("--generation", type=str, default='claims', choices=['claims', 'question'])
 
     # Evaluation file is a json file that contains a list of item, each of which contains
     parser.add_argument("--multi_news_file", type=str, help="Path to multi-news")
@@ -31,9 +34,9 @@ def main():
 
     # Model and name
     parser.add_argument("--dataset_name", type=str, help="Name of the dataset (for saving)")
-    parser.add_argument("--tag", type=str, help="Tag of run (for saving)")
+    parser.add_argument("--tag", type=str, help="Tag of run (for saving)") # use shard here
     parser.add_argument("--model", type=str, help="Model to use")
-    parser.add_argument("--load_mode", type=str, default='nothing', help="Model to use")
+    parser.add_argument("--load_mode", type=str, default='no', help="Model to use")
 
     # Decoding
     parser.add_argument("--temperature", type=float, default=0.5, help="Temperature for decoding")
@@ -141,23 +144,31 @@ def main():
     for idx, eval_item in enumerate(tqdm(eval_dataset)):
 
         ## preprocess for claim generation of sumamry
-        prompt = apply_inst_prompt_claim_gen(
-            Q="",
-            D=eval_item['summary'],
-            instruction=instruction_prompt,
-            add_prefix=True
-        )
+        if args.generation == 'claims':
+            prompt = apply_inst_prompt_claim_gen(
+                Q="",
+                D=eval_item['summary'],
+                instruction=instruction_prompt_c,
+                add_prefix=True
+            )
+        if args.generation == 'question':
+            prompt = apply_inst_prompt_question_gen(
+                Q="",
+                D=eval_item['summary'],
+                instruction=instruction_prompt_q,
+                add_prefix=True
+            )
         prompt = prompt.replace("{DEMO}", demo_prompt)
         eval_data.append({'prompt': prompt})
         eval_documents[idx] = {'prompts': []}
 
         ## preprocess for claim generation of doc
-        document_list = eval_item['document'].split('|||||')
+        document_list = eval_item['document'].split('|||||') if args.generation == 'claims' else []
         for doc_idx, doc_text in enumerate(document_list):
             prompt = apply_inst_prompt_claim_gen(
                 Q="",
                 D=doc_text,
-                instruction=instruction_prompt,
+                instruction=instruction_prompt_c,
                 add_prefix=True
             )
             prompt = prompt.replace("{DEMO}", demo_prompt)
@@ -165,6 +176,12 @@ def main():
     logger.info("Done prompt preparation.")
 
     # Start generation
+    start = args.shard * args.shard_size
+    end = start + args.shard_size
+    if start >= len(eval_data):
+        exit(0) # finished
+
+    eval_data = eval_data[start:end]
     for idx, item in enumerate(tqdm(eval_data)):
         # summary claims
         prompt = item['prompt']
@@ -189,7 +206,7 @@ def main():
         logger.info(f"Number of documents {num_docs}") 
 
         ### if we dont have a good-ish summary's claim. we move on to the next
-        if len(output_array[-1].split('[')) < 2: # about a size of a claim
+        if (len(output_array[-1].split('[')) < 2) and (args.generation == 'claims'): # about a size of a claim
             item['output'] = []
             logger.info("Bypass this claims of documents', since the summary's is not successful")
         else:
@@ -210,16 +227,17 @@ def main():
     model_name = args.model
     if "/" in model_name:
         model_name = model_name.split("/")[-1]
-    name = f"{args.dataset_name}-{model_name}-{args.tag}-{args.shot}shotx{args.ndoc_in_demo}-top{args.ndoc}-full-{args.seed}"
+    name = f"{args.dataset_name}-{model_name}-{args.shard}-{args.tag}-0shotx{args.ndoc_in_demo}-{args.seed}"
+    # name = f"{args.dataset_name}-{model_name}-{args.shard}-{args.tag}-0shot-{args.seed}"
 
     if args.quick_test is not None:
         name += f"-quick_test{args.quick_test}"
 
     eval_data = {"args": args.__dict__, "data": eval_data}
 
-    # if not os.path.exists("result"):
-    #     os.makedirs("result")
-    json.dump(eval_data, open("debugs/" + name + ".json", "w"), indent=4)
+    if not os.path.exists("data/mds"):
+        os.makedirs("data/mds")
+    json.dump(eval_data, open("data/mds/" + name + ".json", "w"), indent=4)
 
 if __name__ == "__main__":
     main()
