@@ -159,11 +159,17 @@ def main():
                 add_prefix=True
             )
         prompt = prompt.replace("{DEMO}", demo_prompt)
-        eval_data.append({'prompt': prompt})
-        eval_documents[idx] = {'prompts': []}
+
+        eval_data.append({
+            'example_id': f"mds-{args.generation}_{args.shard}-{idx}", 
+            'prompt': prompt,
+            'full_text': eval_item['summary']
+        })
+
+        document_list = eval_item['document'].split('|||||') if args.generation == 'claims' else []
+        eval_documents[idx] = {'prompts': [], 'full_texts': document_list}
 
         ## preprocess for claim generation of doc
-        document_list = eval_item['document'].split('|||||') if args.generation == 'claims' else []
         for doc_idx, doc_text in enumerate(document_list):
             prompt = apply_inst_prompt_claim_gen(
                 Q="",
@@ -187,13 +193,13 @@ def main():
         prompt = item['prompt']
         prompt_len = len(llm.tokenizer.tokenize(prompt))
         num_docs = len(eval_documents[idx]['prompts'])
+        full_text = item.pop('full_text')
 
         if idx == 0:
             print(prompt)
 
         ## only log the metadata of sumamry. The other claims of documetns are not.
         output_array = [llm.generate(prompt, min(args.max_new_tokens, args.max_length-prompt_len))]
-        item['prompt'] = prompt
         item['prompt_len'] = prompt_len
         item['number_of_documents'] = num_docs
         
@@ -218,6 +224,7 @@ def main():
                 if output_array[-1].endswith("End."):
                     output_array[-1] = output_array[-1][:-len("End.")]
 
+            item['full_text'] = [full_text] + eval_documents[idx]['full_texts']
             item['output'] = output_array if len(output_array) > 1 else output_array[0]
         
     # logger.info(f"#Cases when prompts exceed max length: {llm.prompt_exceed_max_length}")

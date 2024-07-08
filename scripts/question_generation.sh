@@ -22,7 +22,7 @@ for shard_i in $(seq 0 24);do
         --shard $shard_i --shard_size 200 \
         --config configs/mds-decontextualize.llama3-8b-chat.yaml \
         --tag question-gen --generation question \
-        --quick_test 5000 --shot 0 --ndoc_in_demo 0 --ndoc 0 
+        --max_new_tokens 64 --quick_test 5000 --shot 0 --ndoc_in_demo 0 --ndoc 0 
 done
 
 ## one-shot ICL

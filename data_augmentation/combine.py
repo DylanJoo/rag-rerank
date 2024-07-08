@@ -2,6 +2,7 @@ import os
 import re
 import argparse
 import json
+from tqdm import tqdm
 from glob import glob
 
 def remove_citations(sent):
@@ -9,7 +10,7 @@ def remove_citations(sent):
     return re.sub(r"\[\d+", "", re.sub(r" \[\d+", "", sent)).replace(" |", "").replace("]", "")
 
 def load_claims(path):
-    data = json.load(open(path))
+    data = json.load(open(path, 'r'))
 
     nuggets = []
     claims = []
@@ -37,7 +38,7 @@ def load_claims(path):
     return nuggets, claims
 
 def load_question(path):
-    data = json.load(open(path))
+    data = json.load(open(path, 'r'))
 
     questions = []
     for i, item in enumerate(data['data']):
@@ -56,13 +57,11 @@ if __name__ == "__main__":
     parser.add_argument("-input", "--input_dir", type=str, default=None)
     parser.add_argument("-output", "--output_dir", type=str, default=None)
     args = parser.parse_args()
-    main(args)
-
     os.makedirs(args.output_dir, exist_ok=True) 
 
     # questions
     questions_all = []
-    files_questions = os.path.joins(args.input_dir, "*question*")
+    files_questions = glob(os.path.join(args.input_dir, "*question*"))
     for file in tqdm(files_questions):
         question = load_question(file) # one per example
         questions_all += question
@@ -74,8 +73,16 @@ if __name__ == "__main__":
     # claims and nuggets
     claims_all = []
     nuggets_all = []
-    files_claims = os.path.joins(args.input_dir, "*claims*")
+    files_claims = glob(os.path.join(args.input_dir, "*claims*"))
     for file in tqdm(files_claims):
         nuggets, claims = load_claims(file)
         nuggets_all += nuggets
         claims_all += claims
+
+    with open(os.path.join(args.output_dir, "claims.jsonl"), 'w') as f:
+        for claim in claims_all:
+            f.write(json.dumps(claim) +'\n')
+
+    with open(os.path.join(args.output_dir, "nuggets.jsonl"), 'w') as f:
+        for nugget in nuggets_all:
+            f.write(json.dumps(nugget) +'\n')
