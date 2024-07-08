@@ -41,7 +41,7 @@ def main():
     # Decoding
     parser.add_argument("--temperature", type=float, default=0.5, help="Temperature for decoding")
     parser.add_argument("--top_p", type=float, default=1.0, help="Nucleus sampling top-p")
-    parser.add_argument("--max_new_tokens", type=int, default=300, help="Max number of new tokens to generate in one step")
+    parser.add_argument("--max_new_tokens", type=int, default=64, help="Max number of new tokens to generate in one step")
     parser.add_argument("--max_length", type=int, default=2048, help="Max length the model can take. Should set properly wrt the model to avoid position overflow.")
     parser.add_argument("--num_samples", type=int, default=1, help="Sample multiple answers.")
 
