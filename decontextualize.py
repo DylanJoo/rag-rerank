@@ -96,7 +96,7 @@ def main():
     def normalize(string):
         string = string.strip()
         pattern = re.compile(r"\s+")
-        string = re.sub(pattern, '', string).strip()
+        string = re.sub(pattern, ' ', string).strip()
         pattern = re.compile(r"\n")
         string = re.sub(pattern, '', string).strip()
         pattern = re.compile("</s>")
@@ -162,11 +162,15 @@ def main():
 
         eval_data.append({
             'example_id': f"mds-{args.generation}_{args.shard}-{idx}", 
+            'mds-source': eval_item['mds-source'],
             'prompt': prompt,
             'full_text': eval_item['summary']
         })
 
-        document_list = eval_item['document'].split('|||||') if args.generation == 'claims' else []
+        if args.generation == 'claims':
+            document_list = eval_item['document'].split('|||||')
+        else:
+            document_list = []
         eval_documents[idx] = {'prompts': [], 'full_texts': document_list}
 
         ## preprocess for claim generation of doc
