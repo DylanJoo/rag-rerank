@@ -8,11 +8,15 @@ def main(args):
     output_dict = {}
     writer = open('scores_all.csv', 'w')
 
-    for file in glob(f'{args.score_dir}/{args.c}.json.score'):
-        score_dict = json.load(open(file))
+    keys = ['file'] + KEYS
+    writer.write(", ".join(keys)+'\n')
+
+    for file in glob(f'{args.score_dir}/*{args.control}*.json.score'):
+        score_dict = json.load(open(file, 'r'))
         scores = [score_dict[k] for k in KEYS]
+        scores = ["%.2f" % s for s in scores]
         scores = ", ".join(scores)
-        writer.write(f"{file}, {key}, {scores}\n")
+        writer.write(f"{file}, {scores}\n")
 
     writer.close()
 

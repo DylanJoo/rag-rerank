@@ -98,7 +98,7 @@ def main():
         pattern = re.compile(r"\s+")
         string = re.sub(pattern, ' ', string).strip()
         pattern = re.compile(r"\n")
-        string = re.sub(pattern, '', string).strip()
+        string = re.sub(pattern, ' ', string).strip()
         pattern = re.compile("</s>")
         string = re.sub(pattern, '|||||', string).strip() # align seperation 
         return string
@@ -231,15 +231,12 @@ def main():
             item['full_text'] = [full_text] + eval_documents[idx]['full_texts']
             item['output'] = output_array if len(output_array) > 1 else output_array[0]
         
-    # logger.info(f"#Cases when prompts exceed max length: {llm.prompt_exceed_max_length}")
-    # logger.info(f"#Cases when max new tokens < 50: {llm.fewer_than_50}")
 
     # Save the result
     model_name = args.model
     if "/" in model_name:
         model_name = model_name.split("/")[-1]
     name = f"{args.dataset_name}-{model_name}-{args.shard}-{args.tag}-0shotx{args.ndoc_in_demo}-{args.seed}"
-    # name = f"{args.dataset_name}-{model_name}-{args.shard}-{args.tag}-0shot-{args.seed}"
 
     if args.quick_test is not None:
         name += f"-quick_test{args.quick_test}"
