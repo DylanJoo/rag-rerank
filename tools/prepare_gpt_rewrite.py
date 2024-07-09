@@ -8,6 +8,7 @@ Generate a search query for the given user request. The user's background is als
 def prepare(args):
 
     writer = open(args.output_csv, 'w') 
+    writer.write("request_id, prompt\n")
 
     eval_data = []
     with open(args.input_jsonl, 'r') as file:
