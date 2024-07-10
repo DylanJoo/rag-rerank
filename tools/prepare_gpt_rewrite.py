@@ -3,12 +3,14 @@ import argparse
 import json
 
 template = """
-Generate a search query for the given user request. The user's background is also provided (some information might help customize a more engaging search query). The query will serve as keywords and pass through a news passage searching engine. The query should be comprehensive and clearly indicate the information needs.\n\n### User request: {REQUEST}\n\n### User background: {BACKGROUND}\n\n### Query:""".strip()
+Formulate a search query for the given user request. The user's background is also provided (some information might help customize a more engaging search query). The query will serve as keywords and pass through a news passage searching engine. The query should be comprehensive and clearly indicate the information needs. Please ensure that the query is formulated in 100 words or fewer.\n\n### User request: {REQUEST}\n\n### User background: {BACKGROUND}\n\n### Query:""".strip()
+
+template = template.replace('\n', '\\n')
 
 def prepare(args):
 
     writer = open(args.output_csv, 'w') 
-    writer.write("request_id, prompt\n")
+    writer.write("request_id\tcolection_ids\tprompt\n")
 
     eval_data = []
     with open(args.input_jsonl, 'r') as file:
@@ -22,10 +24,16 @@ def prepare(args):
             # limit = item['limit']
 
     for i, eval_item in enumerate(eval_data):
-        id = str(i)
+        id = eval_item['request_id']
         prompt = template.replace("{REQUEST}", eval_item['problem_statement'])
         prompt = prompt.replace("{BACKGROUND}", eval_item['background'])
-        writer.write(f"{id}, {prompt}\n")
+        lang = eval_item['collection_ids']
+
+        if len(lang) > 1:
+            print('more than one collection ids')
+            exit(0)
+
+        writer.write(f"{id}\t{lang[0]}\t{prompt}\n")
 
     writer.close()
 
