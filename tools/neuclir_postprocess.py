@@ -48,9 +48,9 @@ class ReportGenOutput:
         }
 
     ## the functions for post-cite
-    def get_snippets(self, max_word_length=512):
+    def get_snippets(self, max_word_length=100):
         """ return a list of snippets as query """
-        sentences = self.texts
+        sentences = copy(self.texts)
         snippets = [""]
 
         while len(snippets[-1].split()) < max_word_length:
@@ -63,10 +63,13 @@ class ReportGenOutput:
             else:
                 snippets.append(sentence)
 
+            if len(sentences) == 0:
+                break
+
         return snippets
 
     def set_references(self, docids):
-        self.references = {str(i+1): docid for docid in enumerate(docids)}
+        self.references = {str(i+1): docid for i, docid in enumerate(docids)}
 
     def set_citations(self, idx_text, docids=None, referenceids=None):
         if docids is None:

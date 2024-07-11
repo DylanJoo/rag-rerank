@@ -4,7 +4,12 @@ import unicodedata
 import requests
 import json
 import argparse
+import torch
+import numpy as np
+from tqdm import tqdm
+
 from neuclir_postprocess import *
+from plaidx_search import get_plaid_response
 
 def normalize_texts(texts):
     texts = unicodedata.normalize('NFKC', texts)
@@ -15,116 +20,148 @@ def normalize_texts(texts):
     texts = re.sub(pattern, ' ', texts).strip()
     return texts
 
-def get_plaid_response(
-    request_id,
-    query,
-    topk=100, 
-    lang='zho', 
-    writer=None
+def batch_iterator(iterable, size=1, return_index=False):
+    l = len(iterable)
+    for ndx in range(0, l, size):
+        if return_index:
+            yield (ndx, min(ndx + size, l))
+        else:
+            yield iterable[ndx:min(ndx + size, l)]
+
+def init_verifier():
+    from transformers import AutoTokenizer, AutoModelForSequenceClassification
+    device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
+    model_name = "MoritzLaurer/mDeBERTa-v3-base-xnli-multilingual-nli-2mil7"
+    tokenizer = AutoTokenizer.from_pretrained(model_name)
+    model = AutoModelForSequenceClassification.from_pretrained(model_name).to(device)
+    return tokenizer, model
+
+def verify_statement(
+    model, 
+    tokenizer, 
+    statement, 
+    evidences, 
+    batch_size=64, 
+    max_length=512
 ):
-    url=f"""
-        https://trec-neuclir-search.umiacs.umd.edu/query?query={query}&key=allInTheGroove33&content=true&limit={topk}&lang={lang}
-    """
-    response = requests.get(url.strip())
-    response = json.loads(response.content)
+    scores = []
+    for batch_premise in batch_iterator(evidences, batch_size):
+        batch_hypothesis = [statement] * len(batch_premise)
+        print(batch_hypothesis[0], "-->", batch_premise[0])
+        input = tokenizer(
+            batch_premise, batch_hypothesis, 
+            truncation="only_first", # keep the second one intact
+            padding=True,
+            max_length=max_length,
+            return_tensors="pt"
+        ).to(model.device)
 
-    # query_ = response['query']
-    system = response['system']
-    results = response['results']
+        with torch.no_grad():
+            predictions = model(**input).logits.softmax(-1)
+            label_names = ["entailment", "neutral", "contradiction"]
+            entail_scores = predictions[:, 0].tolist()
+            scores += entail_scores
 
-    hits = {'doc_ids': [], 'contents': [], 'scores': []}
-
-    for i, result in enumerate(results):
-        rank = i+1 
-
-        doc_id = result['doc_id']
-        normalized_content = normalize_texts(result['content'])
-
-        hits['doc_ids'].append(doc_id)
-        hits['contents'].append(normalized_content)
-
-        if writer is not None:
-            writer.write(f"{request_id}\t{lang_id[:2]}\t{rank}\t{doc_id}\t{normalized_content}\n")
-            # json.dumps(hits, fout, ensure_ascii=False)
-
-    return hits
-
-def predict_fact_scores(text, evidences):
-    pass
+    return scores
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Print output")
-    parser.add_argument("-data", "--data_jsonl", type=str, default=None)
-    parser.add_argument("-report", "--report_json", type=str, default=None)
-    parser.add_argument("-k", "--top_k", type=int, default=100)
-    parser.add_argument("-out", "--output_jsonl", type=str, default=None)
-    parser.add_argument("-run_id", "--run_id", type=str, default=None)
-    # post retrieval setup
-    parser.add_argument("--max_word_length", type=int, default=50)
+    parser.add_argument("--report_json", type=str, default=None)
+    parser.add_argument("--run_id", type=str, default=None)
+    parser.add_argument("--submission_jsonl", type=str, default=None)
+    parser.add_argument("--quick_test", action='store_true', default=False)
+    # verification 
+    parser.add_argument("--batch_size", type=int, default=64)
+    parser.add_argument("--max_length", type=int, default=512)
     parser.add_argument("--top_k", type=int, default=10)
+    parser.add_argument("--max_word_length", type=int, default=50)
+    parser.add_argument("--fact_threshold", type=float, default=0.7)
     args = parser.parse_args()
 
     # prepare query
-    data_items = json.load(open(args.report_json))
+    data_items = json.load(open(args.report_json, 'r'))
+    if args.quick_test:
+        data_items = data_items[:2]
 
     outputs = []
-    for item in tqdm(data_items):
+    for item in tqdm(data_items, total=len(data_items)):
         # meta data
         request_id = item['requestid']
         collection_ids = item['collectionids']
-        lang_id = collection_ids.split('/')[:2]
+        lang_id = collection_ids.replace('neuclir/1/', '')
         raw_report = item['report']
 
         # initialize an output placeholder
         output = ReportGenOutput(
             request_id=request_id,
             run_id=args.run_id,
-            collection_ids=[item['collection_ids']],
+            collection_ids=[collection_ids],
             raw_report=raw_report,
             cited_report=None
         )
 
-        # extract snippets as query for post-hoc search
+        # two-step verification
+        ## extract snippets (multiple sentences) to search as provenance candidates
+        start = time.time()
         snippets = output.get_snippets(max_word_length=args.max_word_length)
         for i, snippet in enumerate(snippets):
             hits = get_plaid_response(
                 request_id=request_id,
                 query=snippet,
-                request_id,
-                query,
                 topk=args.top_k,
                 lang=lang_id,
                 writer=None
             )
-
-            ## append only the new document and its contents
+            ### append new documents
             if i == 0:
-                hits_all = copy(hits)
+                hits_pool = copy(hits)
             else:
-                for doc_id, content in enumerate(
-                    zip(hits['doc_ids'], hits['contents'])
-                ):
-                    if doc_id not in hits_all['doc_ids']:
-                        hits_all['doc_ids'] += [docid]
-                        hits_all['contents'] += [content]
+                for doc_id, content in zip(hits['doc_ids'], hits['contents']):
+                    if doc_id not in hits_pool['doc_ids']:
+                        hits_pool['doc_ids'] += [doc_id]
+                        hits_pool['contents'] += [content]
 
-        output.set_references(hits_all['doc_ids'])
+        output.set_references(hits_pool['doc_ids'])  # reference index start with 1
+        end = time.time()
+        print(f"Search ({i}) snippets using ({len(output.texts)}) sentences, ({len(hits_pool['doc_ids'])}) provenance candidates collected")
+        print(f"Searching time elapsed: {(end-start):.2f}s")
 
-        # rerank the references as citations
+        ## rerank/verify candidates as citations
+        tokenizer, model = init_verifier()
         for idx_text, text in enumerate(output.texts):
-            scores = predict_fact_scores(text, hits_all['contents'])
-            # at most 2 citations
-            reference_idx = [i for i in scores.argsort()[::-1][:2] \
+            scores = verify_statement(
+                model=model, tokenizer=tokenizer,
+                statement=text, 
+                evidences=hits_pool['contents'],
+                batch_size=args.batch_size, 
+                max_length=args.max_length
+            )
+            reference_ids = [str(i+1) for i in np.argsort(scores)[::-1][:2] \
                     if scores[i] >= args.fact_threshold ]
+            output.set_citations(idx_text, referenceids=reference_ids)
 
-            output.set_citations(idx_text, referenceid=reference_idx)
-            
+            if lang_id != 'fas':
+                reference_indices = [i for i in np.argsort(scores)[::-1][:2] \
+                        if scores[i] >= args.fact_threshold ]
 
-        # append the output of a topic)
-        outputs.append()
+                print('[sentence in report] -->', text)
+                if len(reference_indices) > 0:
+                    idx = reference_indices[0]
+                    print(f'[provenance document (entail: {scores[idx]:.2f}) -->', \
+                            hits_pool['contents'][idx][:100])
+                else:
+                    print('[provenance document] -->', 'NO qualified results')
+                print('---')
 
+        end_v = time.time()
+        print(f"Verification time elapsed: {(end_v-end):.2f}s")
+
+        # append the output of a topic
+        outputs.append(output)
 
     # prepare writer
     writer = open(args.submission_jsonl, 'w')
+    for output in outputs:
+        writer.write( json.dumps(output.finalize(), indent=4) + '\n')
     writer.close()
 

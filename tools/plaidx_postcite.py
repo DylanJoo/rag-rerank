@@ -48,7 +48,8 @@ if __name__ == "__main__":
             cited_report=None
         )
 
-        # extract snippets as query for post-hoc search
+        # one-shot verification
+        # use statement (one-sentence) to search as provenances
         start = time.time()
         for idx_text, text in enumerate(output.texts):
             hits = get_plaid_response(
@@ -71,7 +72,7 @@ if __name__ == "__main__":
         end = time.time()
         print(f"Search ({len(output.texts)}) sentences in the report - ({lang_id}) e.g. {output.texts[0][:30]}... | Time elapsed: {(end-start):.2f}s")
 
-        # append the output of a topic)
+        # append the output of a topic
         outputs.append(output)
 
     # prepare writer
