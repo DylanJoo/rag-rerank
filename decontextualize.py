@@ -139,7 +139,7 @@ def main():
 
     # Generate the input prompt part
     eval_data = []
-    eval_documents = {}
+    eval_documents = []
     logger.info("Generating prompts...") 
     for idx, eval_item in enumerate(tqdm(eval_dataset)):
 
@@ -171,7 +171,8 @@ def main():
             document_list = eval_item['document'].split('|||||')
         else:
             document_list = []
-        eval_documents[idx] = {'prompts': [], 'full_texts': document_list}
+
+        eval_documents.append({'prompts': [], 'full_texts': document_list})
 
         ## preprocess for claim generation of doc
         for doc_idx, doc_text in enumerate(document_list):
@@ -182,7 +183,7 @@ def main():
                 add_prefix=True
             )
             prompt = prompt.replace("{DEMO}", demo_prompt)
-            eval_documents[idx]['prompts'].append(prompt)
+            eval_documents[-1]['prompts'].append(prompt)
     logger.info("Done prompt preparation.")
 
     # Start generation
@@ -192,6 +193,7 @@ def main():
         exit(0) # finished
 
     eval_data = eval_data[start:end]
+    eval_documents = eval_documents[start:end]
     for idx, item in enumerate(tqdm(eval_data)):
         # summary claims
         prompt = item['prompt']

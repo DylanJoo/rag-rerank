@@ -2,7 +2,7 @@
 # The following lines instruct Slurm to allocate one GPU.
 #SBATCH --job-name=eval
 #SBATCH --partition gpu
-#SBATCH --gres=gpu:nvidia_titan_v:3
+#SBATCH --gres=gpu:nvidia_rtx_a6000:1
 #SBATCH --mem=32G
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
@@ -16,6 +16,6 @@ cd ~/rag-rerank
 
 # Start the experiment.
 # Instruct-oracle
-for file in result/*naive*json;do
+for file in result/*oracle*json;do
     python3 eval/eval.py --f ${file} --citations --claims_nli
 done

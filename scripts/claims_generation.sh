@@ -18,7 +18,8 @@ cd ~/rag-rerank
 
 ## zero-shot
 # for shard_i in $(seq 0 10);do
-for shard_i in $(seq 0 24);do
+for shard_i in $(seq 11 24);do
+# for shard_i in $(seq 0 24);do
     python3 decontextualize.py \
         --shard $shard_i --shard_size 200 \
         --config configs/mds-decontextualize.llama3-8b-chat.yaml \
