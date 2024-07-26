@@ -5,6 +5,7 @@ logger.setLevel(logging.INFO)
 
 import os
 import yaml
+import torch
 import argparse
 import json
 import numpy as np
@@ -18,7 +19,7 @@ def main():
     parser.add_argument("--config", type=str, default=None, help="Path to the config file")
     parser.add_argument("--shard", type=int, default=0, help="the n-th shard")
     parser.add_argument("--shard_size", type=int, default=200, help="size of one shard")
-    parser.add_argument("--generation", type=str, default='claims', choices=['claims', 'question'])
+    parser.add_argument("--generation", type=str, default='claims', choices=['claims', 'question', 'topic'])
 
     # Evaluation file is a json file that contains a list of item, each of which contains
     parser.add_argument("--multi_news_file", type=str, help="Path to multi-news")
@@ -46,7 +47,7 @@ def main():
     parser.add_argument("--num_samples", type=int, default=1, help="Sample multiple answers.")
 
     # Use summarization/extraction of the documents
-    # parser.add_argument("--used_field", type=str, default="full", help="Use compressed text data. Option: `full`, `summary`, `extraction`")
+    parser.add_argument("--ampere_gpu", default=False, action='store_true')
     # parser.add_argument("--used_field_in_demo", type=str, default=None, help="Use compressed text data. Option: `full`, `summary`, `extraction`")
 
     # Load config
@@ -54,9 +55,6 @@ def main():
     config = yaml.safe_load(open(args.config)) if args.config is not None else {}
     parser.set_defaults(**config)
     args = parser.parse_args()
-    for k in args.__dict__:
-        print(f"{k}: {args.__dict__[k]}")
-
     if "turbo" in args.model:
         args.max_length = 4096
     if "16k" in args.model:
@@ -71,6 +69,9 @@ def main():
         args.max_length = 4096
     elif "llama-3" in args.model.lower() or "llama3" in args.model.lower():
         args.max_length = 8192
+    for k in args.__dict__:
+        print(f"{k}: {args.__dict__[k]}")
+
     logger.info(f"Set the model max length to {args.max_length} (if not correct, check the code)")
 
     if args.ndoc_pool is None:
@@ -90,6 +91,8 @@ def main():
     from datasets import load_from_disk, concatenate_datasets
     multi_news = load_from_disk(args.multi_news_file)['train'] # hf data
     wcep_10 = load_from_disk(args.wcep_10_file)['train'] # torch files are from original raw file
+
+    ## super long document: multi_news 16430
 
     ## preproces documents here
     import re
@@ -137,6 +140,8 @@ def main():
     else:
         demo_prompt = ""
 
+    from data_augmentation.utils import normalize_texts
+
     # Generate the input prompt part
     eval_data = []
     eval_documents = []
@@ -144,25 +149,27 @@ def main():
     for idx, eval_item in enumerate(tqdm(eval_dataset)):
 
         ## preprocess for claim generation of sumamry
+        summary_text = normalize_texts(eval_item['summary'])
         if args.generation == 'claims':
             prompt = apply_inst_prompt_claim_gen(
                 Q="",
-                D=eval_item['summary'],
+                D=summary_text,
                 instruction=instruction_prompt_c,
                 add_prefix=True
             )
-        if args.generation == 'question':
+        if (args.generation == 'topic') or (args.generation == 'question'):
             prompt = apply_inst_prompt_question_gen(
                 Q="",
-                D=eval_item['summary'],
+                D=summary_text,
                 instruction=instruction_prompt_q,
-                add_prefix=True
+                prefix="<query>"
             )
         prompt = prompt.replace("{DEMO}", demo_prompt)
 
         eval_data.append({
-            'example_id': f"mds-{args.generation}_{args.shard}-{idx}", 
+            'example_id': f"mds-claim_{args.shard}-{idx}", 
             'mds-source': eval_item['mds-source'],
+            'mds-source_idx': int(eval_ids[idx]),
             'prompt': prompt,
             'full_text': eval_item['summary']
         })
@@ -176,6 +183,7 @@ def main():
 
         ## preprocess for claim generation of doc
         for doc_idx, doc_text in enumerate(document_list):
+            doc_text = normalize_texts(doc_text)
             prompt = apply_inst_prompt_claim_gen(
                 Q="",
                 D=doc_text,
@@ -201,9 +209,6 @@ def main():
         num_docs = len(eval_documents[idx]['prompts'])
         full_text = item.pop('full_text')
 
-        if idx == 0:
-            print(prompt)
-
         ## only log the metadata of sumamry. The other claims of documetns are not.
         output_array = [llm.generate(prompt, min(args.max_new_tokens, args.max_length-prompt_len))]
         item['prompt_len'] = prompt_len
@@ -213,7 +218,8 @@ def main():
         if output_array[-1].endswith("End."):
             output_array[-1] = output_array[-1][:-len("End.")]
 
-        logger.info(f"Prompt text (length={prompt_len}): {prompt}")
+        logger.info(f"Example: {item['mds-source']} -- {eval_ids[start+idx]}")
+        logger.info(f"prompt text (length={prompt_len}): {prompt}")
         logger.info(f"Final model output (summary's): {output_array[-1]}") 
         logger.info(f"Number of documents {num_docs}") 
 
@@ -225,7 +231,8 @@ def main():
             # document claims
             for prompt in eval_documents[idx]['prompts']:
                 output_array.append(llm.generate(prompt, min(args.max_new_tokens, args.max_length-prompt_len)))
-                
+                # logger.info(f"prompt text (length={prompt_len}): {prompt}")
+
                 output_array[-1] = output_array[-1].replace("<|im_end|>", "").rstrip()
                 if output_array[-1].endswith("End."):
                     output_array[-1] = output_array[-1][:-len("End.")]

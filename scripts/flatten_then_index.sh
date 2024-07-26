@@ -10,14 +10,14 @@
 
 # Set-up the environment.
 source ${HOME}/.bashrc
-conda activate pyserini
+conda activate rag
 
 cd ~/rag-rerank
 
 # flatten generated doc-claims
-# python3 data_augmentation/flatten.py \
-#     --input_dir data/mds  \
-#     --output_dir data/mds/doc_claims
+python3 data_augmentation/flatten.py \
+    --input_dir data/mds  \
+    --output_dir data/mds/doc_claims
 
 # indexing
 python -m pyserini.index.lucene \

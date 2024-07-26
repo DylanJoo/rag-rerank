@@ -22,7 +22,11 @@ class LLM:
     def __init__(self, args):
         self.args = args
 
-        self.model, self.tokenizer = load_model(args.model, load_mode=args.load_mode)
+        self.model, self.tokenizer = load_model(
+            args.model, 
+            load_mode=args.load_mode, 
+            flash_attention_2=args.ampere_gpu
+        )
         self.prompt_exceed_max_length = 0
         self.fewer_than_50 = 0
 
@@ -40,7 +44,7 @@ class LLM:
         stop = [] if stop is None else stop
         # ['h', 'ellow', 'or', 'l', 'ĊĊ']
         # ['h', 'ellow', 'or', 'l', 'ĊĊĊ']
-        stop = list(set(stop + ["<|eot_id|>", "ĊĊĊ", "ĊĊ", "<0x0A>"])) # In Llama \n is <0x0A>; In OPT \n is Ċ
+        stop = list(set(stop + ["<|eot_id|>", "ĊĊĊ", "ĊĊ", "<0x0A>", "```"])) # In Llama \n is <0x0A>; In OPT \n is Ċ
         stop_token_ids = [self.tokenizer.eos_token_id] + [self.tokenizer.convert_tokens_to_ids(token) for token in stop]
         stop_token_ids = list(set([token_id for token_id in stop_token_ids if token_id is not None]))
         logger.warning("Terminration token ids: " + ', '.join( [str(id) for id in stop_token_ids] ))
@@ -56,6 +60,8 @@ class LLM:
         )
         generation = self.tokenizer.decode(outputs[0][inputs['input_ids'].size(1):], skip_special_tokens=True)
         generation = self.postprocess(generation)
+        del inputs, outputs
+        torch.cuda.empty_cache()
         return generation
 
     def postprocess(self, x):

@@ -18,6 +18,7 @@ if __name__ == "__main__":
     nuggets_all = []
     files_claims = glob(os.path.join(args.input_dir, "*claims*.json"))
     for file in tqdm(files_claims):
+        # print("loading:", file)
         nuggets, claims = load_nuggets_and_claims(file)
         nuggets_all += nuggets
         claims_all += claims
@@ -38,9 +39,14 @@ if __name__ == "__main__":
     #             "content": claim['full_text']
     #         })+'\n')
     # [NOTE] so far we dont need to flatten nuggets
+    # os.makedirs(os.path.join(args.output_dir, 'nuggets'), exist_ok=True)
     with open(os.path.join(args.output_dir, "nuggets.jsonl"), 'w') as f:
         for nugget in nuggets_all:
-            f.write(json.dumps(nugget) +'\n')
+            f.write(json.dumps({
+                "id": nugget['example_id'],
+                "full_contents": nugget['full_text'],
+                "claim_contents": nugget['contents']
+            }) +'\n')
 
     # questions
     # [NOTE] so far we dont need to flatten question
