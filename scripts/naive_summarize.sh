@@ -18,7 +18,7 @@ cd ~/rag-rerank
 
 bart=facebook/bart-large-cnn
 template='{T} {P}'
-python3 recomp/summarize.py \
+python3 ctxcompt/summarize.py \
     --model_name_or_path ${bart} \
     --model_class seq2seq \
     --eval_file data/alce/eli5_eval_bm25_top100.json \

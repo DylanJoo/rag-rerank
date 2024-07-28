@@ -10,6 +10,12 @@ def remove_citations(sent):
     sent = sent.strip()
     return re.sub(r"\[\d+", "", re.sub(r" \[\d+", "", sent)).replace(" |", "").replace("]", "")
 
+def replace_citations(sent):
+    sent = re.sub(r"\[\d+\]", "\n", sent)
+    pattern = re.compile(r"\n+")
+    sent = re.sub(pattern, '\n', sent)
+    return sent
+
 def normalize_texts(texts, size=10000):
     texts = remove_citations(texts)
     texts = texts.strip()
@@ -27,7 +33,7 @@ def maybe_truncation(text, size=10000):
     else:
         return text
 
-def load_nuggets_and_claims(path):
+def load_nuggets_and_claims(path, n=10):
     data = json.load(open(path, 'r'))
 
     nuggets = []
@@ -36,7 +42,7 @@ def load_nuggets_and_claims(path):
         example_id = item["example_id"]
         if len(item['output']) == 0:
             continue
-        outputs = item['output'][0].strip().split('\n')[:10]
+        outputs = replace_citations(item['output'][0]).split('\n')[:n]
         ndocs = item['number_of_documents']
         nuggets.append({
             "example_id": example_id, 
@@ -48,7 +54,7 @@ def load_nuggets_and_claims(path):
 
         for j in range(1, ndocs+1): # the first one is nuggets
             example_doc_id = f"{example_id}#{j}" 
-            outputs = item['output'][j].strip().split('\n')[:10]
+            outputs = item['output'][j].strip().split('\n')[:n]
             claims.append({
                 "example_doc_id": example_doc_id, 
                 "contents": [normalize_texts(n).strip() for n in outputs],
@@ -62,9 +68,12 @@ def load_question(path):
 
     questions = []
     for i, item in enumerate(data['data']):
-        # example_id = f"mds-claim_{data['args']['shard']}-{i}" 
+        # example_id = item['example_id'].replace('question', 'claims')
+        # outputs = item['output'].strip().split('?')[0] + "?"
+        example_id = item['example_id']
         example_id = item['example_id'].replace('question', 'claims')
-        outputs = item['output'].strip().split('?')[0] + "?"
+        outputs = item['output'].strip().split('</query>')[0]
+        outputs = outputs.replace("?", "")
         questions.append({
             "id": example_id,
             "contents": outputs,
@@ -78,6 +87,7 @@ def load_result_to_dict(path, n=10, threshold=-99):
     with open(path, 'r') as f:
         for line in f:
             query_id, example_doc_claim_id, rank, score = line.split()
+            example_id = query_id.rsplit(':', 1)[0]
             rank = int(rank)
             score = float(score)
             # type_of_premise = "nugget" if ":" in query_id else "fulltext"
@@ -85,12 +95,14 @@ def load_result_to_dict(path, n=10, threshold=-99):
             if len(results[query_id]) >= n:
                 continue
 
-            if (score >= threshold) and (query_id in example_doc_claim_id): 
+            # for the concentrator. highere score and in the same example
+            if (score >= threshold) and (example_id in example_doc_claim_id): 
                 results[query_id].append({
                     "id": example_doc_claim_id, "rank": rank, "score": score
                 })
 
-            if (score < threshold) and (query_id not in example_doc_claim_id): 
+            # for the concentrator. lower score but not in the example
+            if (score < threshold) and (example_id not in example_doc_claim_id): 
                 results[query_id].append({
                     "id": example_doc_claim_id, "rank": rank, "score": score
                 })

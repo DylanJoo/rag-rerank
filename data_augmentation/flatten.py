@@ -48,15 +48,3 @@ if __name__ == "__main__":
                 "claim_contents": nugget['contents']
             }) +'\n')
 
-    # questions
-    # [NOTE] so far we dont need to flatten question
-    # questions_all = []
-    # files_questions = glob(os.path.join(args.input_dir, "*question*"))
-    # for file in tqdm(files_questions):
-    #     question = load_question(file) # one per example
-    #     questions_all += question
-    #
-    # with open(os.path.join(args.output_dir, "questions.jsonl"), 'w') as f:
-    #     for question in questions_all:
-    #         f.write(json.dumps(question) +'\n')
-

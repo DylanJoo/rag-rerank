@@ -62,21 +62,11 @@ def _run_nli_autoais(nugget, claim):
     result = autoais_tokenizer.decode(outputs.sequences[0], skip_special_tokens=True)
     inference = 1 if result == "1" else 0
 
-    # if inference == 0 and (outputs.scores[1].argmax() == 632):
-    #     logger.warning(f"Wrong pair of 0\npremise: {nugget} hypothesie: {claim}")
-    # elif inference == 1 and (outputs.scores[0].argmax() == 209):
-    #     logger.warning(f"Wrong pair of 1\npremise: {nugget} hypothesis: {claim}")
-    # else:
-    #     logger.warning(f"Not 0 or 1 = {inference} \npremise: {nugget} hypothesis: {claim}")
-    # contra = outputs.scores[1][0][3].item() # _
-    # contra = outputs.scores[1][0][632].item() # 0
-    # entail = outputs.scores[0][0][209].item() # _1
-    # score = torch.tensor([contra, entail]).softmax(-1).detach().numpy().tolist()[1]
-
     o1 = outputs.scores[0][0].log_softmax(-1)
     o2 = outputs.scores[1][0].log_softmax(-1)
     entail_score = (o1[209] + o2[1])
     contra_score = (o1[3] + o2[632])
+    ## [NOTE] see if we need to do the re-softmax trick.
     # score = torch.tensor([contra, entail]).softmax(-1).detach().numpy().tolist()[1]
     del outputs
     torch.cuda.empty_cache()
@@ -90,7 +80,6 @@ def get_max_memory():
     n_gpus = torch.cuda.device_count()
     max_memory = {i: max_memory for i in range(n_gpus)}
     return max_memory
-# append the 
 
 def compute_claims(nugget, claims):
     global autoais_model, autoais_tokenizer
@@ -101,8 +90,6 @@ def compute_claims(nugget, claims):
 	    torch_dtype=torch.bfloat16, 
             device_map="cuda",
         )
-            # offload_folder=OFFLOAD_HF,
-            # max_memory=get_max_memory(), 
         autoais_tokenizer = AutoTokenizer.from_pretrained(AUTOAIS_MODEL, use_fast=False)
 
     logger.info("Computing claims...")
@@ -129,17 +116,19 @@ if __name__ == "__main__":
     parser.add_argument("--input_dir", type=str, default=None)
     parser.add_argument("--result_jsonl", type=str, default=None)
     parser.add_argument("--doc_claims_index", type=str, default=None)
-    parser.add_argument("--full_nuggets_as_premise", action='store_true', default=False)
+    parser.add_argument("--premise_from", type=str, default='full_text', choices=['full_text', 'separated_nugget'])
     args = parser.parse_args()
 
     os.makedirs(args.result_jsonl.rsplit('/', 1)[0], exist_ok=True)
     writer = open(args.result_jsonl, 'w')
+
     # questions
-    # questions_all = []
-    # files_questions = glob(os.path.join(args.input_dir, "*question*.json"))
-    # for file in tqdm(files_questions):
-    #     question = load_question(file) # one per example
-    #     questions_all += question
+    questions_all = []
+    files_questions = glob(os.path.join(args.input_dir, "*question*.json"))
+    for file in tqdm(files_questions):
+        question = load_question(file) # one per example
+        questions_all += question
+    questions = {q['id']: q['contents'] for q in questions_all}
 
     # claims and nuggets
     claims_all = []
@@ -149,19 +138,10 @@ if __name__ == "__main__":
         nuggets, claims = load_nuggets_and_claims(file)
         nuggets_all += nuggets
         claims_all += claims
-        # print(nuggets[0]['contents'])
-
-    # reverse the claims to mapping
-    claims_all_dict = defaultdict(list)
-    for claims in claims_all:
-        example_doc_id = claims.pop('example_doc_id')
-        # print(example_doc_id)
-        # print(claims['contents'][0])
-        claims_all_dict[example_doc_id] = claims
+    claims = {c['example_doc_id']: c['contents'] for c in claims_all}
 
     ## align claims to nugget
-    start = 0
-    end = 0
+    start, end = 0, 0
     for nuggets_dict in tqdm(nuggets_all):
         example_id = nuggets_dict['example_id']
         nuggets = nuggets_dict['contents']
@@ -174,9 +154,8 @@ if __name__ == "__main__":
         ### the potentially entailed claims from ndocs
         for n in range(1, 1+ndocs):
             example_doc_id = f"{example_id}#{n}"
-            claims = claims_all_dict[example_doc_id]
-            claim_ids += [f"{example_doc_id}:{i}" for i in range(len(claims['contents']))]
-            claim_texts += claims['contents']
+            claim_ids += [f"{example_doc_id}:{i}" for i in range(len(claims[example_doc_id]))]
+            claim_texts += claims[example_doc_id]
 
         ### the potentially contradicted claims (optional)
         if args.doc_claims_index is not None:
@@ -185,18 +164,16 @@ if __name__ == "__main__":
                 dis_example_doc_ids = mine_distractor(
                     query=nugget, 
                     searcher=searcher, 
-                    k=10 if args.full_nuggets_as_premise else 1,
+                    k=10 if args.premise_from == 'full_text' else 1,
                     max_docs_return=1,
                     ignored_prefix=example_id
                 )
                 for example_doc_id in dis_example_doc_ids:
-                    claims = claims_all_dict[example_doc_id]
-                    claim_ids += [f"{example_doc_id}:{i}" for i in range(len(claims['contents']))]
-                    claim_texts += claims['contents']
+                    claim_ids += [f"{example_doc_id}:{i}" for i in range(len(claims[example_doc_id]))]
+                    claim_texts += claims[example_doc_id]
 
         claim_scores, claim_predictions = [], []
-
-        if args.full_nuggets_as_premise:
+        if args.premise_from == "full_text":
             query_id = example_id
             premise = maybe_truncation(summary, size=5000) # sometime would overlength
             predictions, scores = compute_claims(premise, claim_texts)
@@ -204,9 +181,8 @@ if __name__ == "__main__":
             claim_scores += scores
             write_results(writer, query_id, claim_ids, claim_scores)
 
-        else:
+        if args.premise_from == "separated_nugget":
             for j, premise in enumerate(nuggets):
-                # it can directly represent this example 
                 query_id = f"{example_id}:{j}" 
                 predictions, scores = compute_claims(premise, claim_texts)
                 claim_predictions += predictions
