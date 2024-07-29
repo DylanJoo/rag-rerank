@@ -9,6 +9,13 @@ import os
 import string
 import time
 
+def update_tokenizer(tokenizer, max_n_contexts=10):
+    for i in range(1, max_n_contexts+1):
+        tokenizer.add_tokens(f"[{i}]")
+
+    tokenizer.add_special_tokens({"additional_special_tokens": ["<more>"]})
+    return tokenizer
+
 def batch_iterator(iterable, size=1, return_index=False):
     l = len(iterable)
     for ndx in range(0, l, size):

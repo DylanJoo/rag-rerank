@@ -7,18 +7,18 @@ from transformers.tokenization_utils_base import (
     PreTrainedTokenizerBase
 )
 
-question_template = "Summarize each documents based on the topic. Write the summary with the document identifier (a number with square brackets). Only write the summary for relevant documents. Write `irrelevant` if the document is not related to the topic.\n\nTopic: {}\n"
+question_template = "Summarize each documents based on the topic. Write the summary with the document identifier (a number with square brackets). Only provide the summary for relevant documents and ignore the empty document. If the document is not relevant to the topic, write `irrelevant` instead. Topic: {}"
 doc_template = "Document [{}]: {}\n"
 summary_template = "[{}]: {}\n"
 
 @dataclass
 class DataCollatorForContextCompressor:
     tokenizer: Union[PreTrainedTokenizerBase] = None
+    max_src_length: Optional[int] = 512
+    max_tgt_length: Optional[int] = 512
     pad_to_multiple_of: Optional[int] = None
     padding: Union[bool, str, PaddingStrategy] = True
     truncation: Union[bool, str] = True
-    max_src_length: Optional[int] = 512
-    max_tgt_length: Optional[int] = 512
     n_contexts: Optional[int] = 1
 
     def __call__(self, features: List[Dict[str, Any]]) -> Dict[str, Any]:
@@ -32,8 +32,8 @@ class DataCollatorForContextCompressor:
             for i, idx in enumerate(random_idx):
                 ctx_orig += [doc_template.format(i+1, example['doc_ctxs'][idx])]
                 if example['labels'][idx] == 1:
-                    summaries = [summary_template.format(i+1, ctx) for ctx in enumerate(example['comp_ctxs'][idx])]
-                    ctx_comp += "\n".join(summaries)
+                    summaries = [summary_template.format(i+1, ctx) for ctx in example['comp_ctxs'][idx]]
+                    ctx_comp += "<more>".join(summaries)
                 else:
                     ctx_comp += "[{}]: irrelevant.".format(i+1)
 
@@ -51,13 +51,15 @@ class DataCollatorForContextCompressor:
             padding=self.padding,
             return_tensors='pt'
         )
-        inputs['labels'] = self.tokenizer(
+        outputs = self.tokenizer(
             tgt,
             max_length=self.max_tgt_length,
             truncation=self.truncation,
             padding=self.padding,
             return_tensors='pt'
-        ).input_ids
+        )
+        target_mask = outputs['attention_mask'].bool()
+        inputs['labels'] = outputs['input_ids'].masked_fill(~target_mask, -100)
 
         N = self.n_contexts + 1 
         inputs['input_ids'] = inputs['input_ids'].view(
