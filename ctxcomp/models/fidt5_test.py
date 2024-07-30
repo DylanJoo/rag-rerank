@@ -6,8 +6,9 @@ tokenizer = AutoTokenizer.from_pretrained(MODEL_PATH)
 MODEL_PATH='/ivi/ilps/personal/dju/checkpoints/ctxcomp-flan-t5-arge-inverted-mds/checkpoint-5000'
 model = FiDT5.from_pretrained(MODEL_PATH)
 
-question_template = "Summarize each documents based on the topic. Write the summary with the document identifier (a number with square brackets). Only write the summary for relevant documents. Write `irrelevant` if the document is not related to the topic.\n\nTopic: {}\n"
+question_template = "Summarize each documents based on the topic. Write the summary with the document identifier (a number with square brackets). Only provide the summary for relevant documents and ignore the empty document. If the document is not relevant to the topic, write `irrelevant` instead. Topic: {}"
 doc_template = "Document [{}]: {}\n"
+summary_template = "[{}]: {}\n"
 
 B = 2
 N = 3 + 1
@@ -16,7 +17,7 @@ inputs = tokenizer([
     'Document [1]: xxe512 is a dog.', 
     'Document [2]: x3x512 is a cat.', 
     'Document [3]: xxx512 is a car.', 
-    question_template.format('question: what is banana?'),
+    question_template.format('what is banana?'),
     'Document [1]: bana is a dog', 
     'Document [2]: apple is a fruit.', 
     'Document [3]: hanana is a car', 
@@ -29,7 +30,6 @@ attention_mask = inputs['attention_mask'].view(B, -1)
 output = model.generate(
     input_ids=input_ids, 
     attention_mask=attention_mask,
-    num_beams=5,
     max_new_tokens=512
 )
 print(output)

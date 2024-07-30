@@ -25,23 +25,39 @@ a = d(batched)
 # print(a.attention_mask.shape)
 # print(a.labels.shape)
 
-## inputs
+# inputs
 # b = a.input_ids[:, :, :100].contiguous()
 # B, N, L = b.shape
 #
-# o = tokenizer.batch_decode(b.view(B, N*L), skip_special_tokens=True)
+# o = tokenizer.batch_decode(b.view(B, N*L), skip_special_tokens=False)
 # print(o[0])
-# print(o[1])
-# print(o[2])
 
+from models import FiDT5
+from transformers import AutoTokenizer
 
-## outputs
-b = a.labels
-B, L = b.shape
-b[b == -100] = 0
+MODEL_PATH='google/flan-t5-large'
+tokenizer = AutoTokenizer.from_pretrained(MODEL_PATH)
+from utils import update_tokenizer
+tokenizer = update_tokenizer(tokenizer)
+MODEL_PATH='/ivi/ilps/personal/dju/checkpoints/ctxcomp-flan-t5-arge-inverted-mds/checkpoint-2000'
+model = FiDT5.from_pretrained(MODEL_PATH)
 
-o = tokenizer.batch_decode(b, skip_special_tokens=False)
-print(o[0])
-print(o[1])
+output = model.generate(
+    input_ids=a.input_ids, 
+    attention_mask=a.attention_mask,
+    do_sample=True,
+    top_p=0.1,
+    temperature=0.2,
+    max_new_tokens=512,
+)
 
+print(tokenizer.decode(output[0], skip_special_tokens=True))
+# print(tokenizer.decode(output[1], skip_special_tokens=True))
+# print(tokenizer.decode(output[2], skip_special_tokens=True))
+#
 
+print('label')
+a.labels[a.labels == -100] = 0
+print(tokenizer.decode(a.labels[0], skip_special_tokens=False))
+# print(tokenizer.decode(a.labels[1], skip_special_tokens=True))
+# print(tokenizer.decode(a.labels[2], skip_special_tokens=True))

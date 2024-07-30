@@ -7,9 +7,9 @@ from transformers.tokenization_utils_base import (
     PreTrainedTokenizerBase
 )
 
-question_template = "Summarize each documents based on the topic. Write the summary with the document identifier (a number with square brackets). Only provide the summary for relevant documents and ignore the empty document. If the document is not relevant to the topic, write `irrelevant` instead. Topic: {}"
-doc_template = "Document [{}]: {}\n"
-summary_template = "[{}]: {}\n"
+question_template = "Instruction: generate topic-related statements for each of the following documents in the given order. Ensure each statement is self-contained, concise and as short as possible. Topic: {} Documents:"
+doc_template = "[{}] {}"
+summary_template = "<pad> [{}]: {}{}"
 
 @dataclass
 class DataCollatorForContextCompressor:
@@ -32,13 +32,18 @@ class DataCollatorForContextCompressor:
             for i, idx in enumerate(random_idx):
                 ctx_orig += [doc_template.format(i+1, example['doc_ctxs'][idx])]
                 if example['labels'][idx] == 1:
-                    summaries = [summary_template.format(i+1, ctx) for ctx in example['comp_ctxs'][idx]]
-                    ctx_comp += "<more>".join(summaries)
+                    summaries = " ".join(example['comp_ctxs'][idx])
+                    ctx_comp += summary_template.format(i+1, "", summaries)
                 else:
-                    ctx_comp += "[{}]: irrelevant.".format(i+1)
+                    ## irrelevant but still generate summary
+                    summary = summary_template.format(i+1, "", example['comp_ctxs'][idx][0])
+                    ctx_comp += summary
+
+                    ## irrelevant with tag
+                    # ctx_comp += "[{}]: irrelevant.".format(i+1)
 
             for j, _ in enumerate(range(max(self.n_contexts - n, 0))):
-                ctx_orig += [doc_template.format(n+j+1, "")]
+                ctx_orig += [""] # padding
 
             src += [question_template.format(example['question'])] 
             src += ctx_orig

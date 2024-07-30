@@ -10,8 +10,8 @@ import string
 import time
 
 def update_tokenizer(tokenizer, max_n_contexts=10):
-    for i in range(1, max_n_contexts+1):
-        tokenizer.add_tokens(f"[{i}]")
+    # for i in range(1, max_n_contexts+1):
+    #     tokenizer.add_tokens(f"[{i}]")
 
     tokenizer.add_special_tokens({"additional_special_tokens": ["<more>"]})
     return tokenizer
