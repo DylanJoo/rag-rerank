@@ -1,8 +1,8 @@
 #!/bin/sh
 # The following lines instruct Slurm to allocate one GPU.
-#SBATCH --job-name=std_prefix
+#SBATCH --job-name=std
 #SBATCH --partition gpu
-#SBATCH --gres=gpu:nvidia_l40:1
+#SBATCH --gres=gpu:nvidia_rtx_a6000:1
 #SBATCH --mem=32G
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
@@ -30,14 +30,13 @@ accelerate launch \
     --model_name_or_path google/flan-t5-large \
     --tokenizer_name google/flan-t5-large \
     --config_name google/flan-t5-large  \
-    --output_dir ${MODEL_DIR}/ctxcomp-flan-t5-arge-inverted-mds-std_prefix \
+    --output_dir ${MODEL_DIR}/ctxcomp-flan-t5-arge-inverted-mds-std \
     --per_device_train_batch_size 1 \
     --per_device_eval_batch_size 1 \
     --gradient_accumulation_steps 2 \
-    --gradient_checkpointing true \
     --train_file data/inverted-mds/test.jsonl \
     --max_src_length 768 \
-    --max_tgt_length 256 \
+    --max_tgt_length 512 \
     --optim adamw_torch \
     --learning_rate 1e-5 \
     --lr_scheduler_type constant_with_warmup \
@@ -47,6 +46,6 @@ accelerate launch \
     --warmup_steps 500 \
     --do_train --do_eval \
     --bf16 true \
-    --run_name std_prefix \
-    --collator_type standard_with_prefix \
+    --run_name std \
+    --collator_type standard \
     --report_to wandb

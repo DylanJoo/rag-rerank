@@ -21,25 +21,26 @@ class DataOpt:
     preprocessing_num_workers: Optional[int] = field(default=None)
     train_file: Optional[str] = field(default=None)
     eval_file: Optional[str] = field(default=None)
-    max_p_length: int = field(default=512)
-    max_q_length: int = field(default=128)
-    max_src_length: int = field(default=320)
-    max_tgt_length: int = field(default=32)
+    max_src_length: int = field(default=512)
+    max_tgt_length: int = field(default=512)
 
 @dataclass
 class TrainOpt(Seq2SeqTrainingArguments):
     output_dir: str = field(default='./temp')
     seed: int = field(default=42)
     data_seed: int = field(default=None)
-    evaluation_strategy: Optional[str] = field(default='steps')
+    eval_strategy: Optional[str] = field(default='steps')
     per_device_train_batch_size: int = field(default=2)
     per_device_eval_batch_size: int = field(default=2)
     resume_from_checkpoint: Optional[str] = field(default=None)
-    save_total_limit: Optional[int] = field(default=5)
+    save_total_limit: Optional[int] = field(default=10)
     learning_rate: Union[float] = field(default=1e-5)
     remove_unused_columns: bool = field(default=False)
     report_to: Optional[List[str]] = field(default=None)
     warmup_steps: int = field(default=0)
-    n_contexts: int = field(default=5)
+    n_contexts: int = field(default=None)
     logging_steps: int = field(default=10)
+
+    # datacollator
+    collator_type: str = field(default='standard')
 

@@ -13,7 +13,7 @@ def update_tokenizer(tokenizer, max_n_contexts=10):
     # for i in range(1, max_n_contexts+1):
     #     tokenizer.add_tokens(f"[{i}]")
 
-    tokenizer.add_special_tokens({"additional_special_tokens": ["<more>"]})
+    tokenizer.add_special_tokens({"additional_special_tokens": ["<cls>"]})
     return tokenizer
 
 def batch_iterator(iterable, size=1, return_index=False):
@@ -59,3 +59,4 @@ def load_model(model_name_or_path, model_class='causualLM', dtype=torch.float16,
     # Load the tokenizer
     tokenizer = AutoTokenizer.from_pretrained(model_name_or_path, use_fast=False)
     return model, tokenizer
+

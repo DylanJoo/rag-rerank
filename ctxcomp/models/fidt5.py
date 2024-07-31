@@ -85,10 +85,10 @@ class FiDT5EncoderStack(T5Stack):
         # Minor modifying
         ## Prefix tuning at decoder. Avoid `past_key_value` being considered.
         encoder_outputs = super().forward(
-                input_ids=input_ids,
-                attention_mask=attention_mask, 
-                past_key_values=None,
-                **kwargs
+            input_ids=input_ids,
+            attention_mask=attention_mask, 
+            past_key_values=None,
+            **kwargs
         )
 
         # Modifying 2
