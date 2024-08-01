@@ -32,6 +32,7 @@ class Standard:
     max_src_length: Optional[int] = 1024
     max_tgt_length: Optional[int] = 512
     n_contexts: Optional[int] = None
+    shuffle: Optional[bool] = True
     src_template = "topic: {} context: [{}] {} [/{}]"
     tgt_template = "[{}] {}"
 
@@ -41,14 +42,16 @@ class Standard:
         src, tgt = [], []
         for example in features:
             n = len(example['doc_ctxs'])
-            random_idx = random.sample(range(n), n)[:self.n_contexts]
+            if self.shuffle:
+                random_idx = random.sample(range(n), n)[:self.n_contexts]
+            else:
+                random_idx = list(range(n))[:self.n_contexts]
+
             src_, tgt_ = [], ""
             topic = example['question']
 
             for i, idx in enumerate(random_idx):
-                # source
                 src_ += [self.src_template.format(topic, i+1, example['doc_ctxs'][idx], i+1)]
-                #target
                 if example['labels'][idx] == 1:
                     tgt_ += self.tgt_template.format(i+1, example['comp_ctxs'][idx][0])
                 else:
@@ -96,6 +99,7 @@ class StandardWithPrefix:
     max_src_length: Optional[int] = 1024
     max_tgt_length: Optional[int] = 256
     n_contexts: Optional[int] = None
+    shuffle: Optional[bool] = True
     src_template = "topic: {} context: [{}] {} [/{}]"
     tgt_template = "{}"
     prefix_template = "[{}] "
@@ -106,7 +110,10 @@ class StandardWithPrefix:
         src, tgt, prefix = [], [], []
         for example in features:
             n = len(example['doc_ctxs'])
-            random_idx = random.sample(range(n), n)[:self.n_contexts]
+            if self.shuffle:
+                random_idx = random.sample(range(n), n)[:self.n_contexts]
+            else:
+                random_idx = list(range(n))[:self.n_contexts]
             src_ = [] 
             topic = example['question']
 
@@ -148,12 +155,12 @@ class StandardWithPrefix:
         )
 
         target_mask = outputs['attention_mask'].bool()
-        inputs['decoder_input_ids'] = _shift_right(outputs['input_ids'])
+        # inputs['decoder_input_ids'] = _shift_right(outputs['input_ids'])
         inputs['labels'] = outputs['input_ids'].masked_fill(~target_mask, -100)
 
-        prefix_length = [len(l) for l in self.tokenizer(prefix, add_special_tokens=False).input_ids]
-        for i, l in enumerate(prefix_length):
-            inputs['labels'][i, :l] = -100 # maske the prefix
+        # prefix_length = [len(l) for l in self.tokenizer(prefix, add_special_tokens=False).input_ids]
+        # for i, l in enumerate(prefix_length):
+        #     inputs['labels'][i, :l] = -100 # maske the prefix
 
         # define batch size (and n_context)
         BS = len(tgt)

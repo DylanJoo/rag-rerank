@@ -30,7 +30,7 @@ accelerate launch \
     --model_name_or_path google/flan-t5-large \
     --tokenizer_name google/flan-t5-large \
     --config_name google/flan-t5-large  \
-    --output_dir ${MODEL_DIR}/ctxcomp-flan-t5-arge-inverted-mds-std_prefix \
+    --output_dir ${MODEL_DIR}/ctxcomp-flan-t5-large-inverted-mds-std_prefix \
     --per_device_train_batch_size 1 \
     --per_device_eval_batch_size 1 \
     --gradient_accumulation_steps 2 \
