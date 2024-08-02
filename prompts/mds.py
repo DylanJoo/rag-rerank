@@ -1,20 +1,29 @@
-# instruction_prompt = "Instruction: Write an accurate, engaging, and concise answer for the given question using only the provided documents as references (some of which might be irrelevant). Always cite at least one document for every sentences in the answer. Use the citation format of square brackets to indicate the cited documents (e.g., [1] for the first reference). If multiple documents support the sentence, only cite a minimum sufficient subset of the documents. Only generate the answer, excluding any disclaimers, notes or list of references at the end of the answer."
+# example_doc = "National Archives\nYes, it’s that time again, folks. It’s the first Friday of the month, when for one ever-so-brief moment the interests of Wall Street, Washington and Main Street are all aligned on one thing: Jobs. \n \n A fresh update on the U.S. employment situation for January hits the wires at 8:30 a.m. New York time offering one of the most important snapshots on how the economy fared during the previous month. Expectations are for 203,000 new jobs to be created, according to economists polled by Dow Jones Newswires, compared to 227,000 jobs added in February. The unemployment rate is expected to hold steady at 8.3%. \n \n Here at MarketBeat HQ, we’ll be offering color commentary before and after the data crosses the wires. Feel free to weigh-in yourself, via the comments section. And while you’re here, why don’t you sign up to follow us on Twitter. \n \n Enjoy the show."
 
-instruction_prompt_mds = "Instruction: write 3 to 5 long statements that support the given document below. Each statements shouldbe standalone and has necessary context to understand the statements. All the statements together should cover the document as much as possible. Every statements should start with the format of square bracket with number (e.g., [1])."
+# instruction_prompt_mds = "Instruction: write 3 to 5 comprehensive statements that support the given document below. Each statement should be standalone and provide enough context to be understood independently. These statements should cover the document as thoroughly as possible. Each statement should begin with a number in square brackets (e.g., [1])."
 
-instruction_prompt_mds = "Instruction: write 3 to 5 comprehensive statements that support the given document below. Each statement should be standalone and provide enough context to be understood independently. These statements should cover the document as thoroughly as possible. Each statement should begin with a number in square brackets (e.g., [1])."
+template_mds = "Instruction: {INST}\n\nDocument: {D}\n\n{PREFIX}"
+instruction_statement = "Write 10 diverse statements that are evident from the given document. Each statement should be standalone and have necessary context. Every statements should start with the format of a square bracket with number (e.g., [1])."
+def prompt_statement_gen(INST="", D="", PREFIX="Statements:\n[1]: "):
+    p = template_mds
+    p = p.replace("{INST}", INST).strip()
+    p = p.replace("{D}", D)
+    p = p.replace("{PREFIX}", PREFIX).strip()
+    return p
 
-instruction_prompt_doc = "Instruction: Break down the given document into 3 to 5 passages. Each passage should be clear, self-contained, and offer comprehensive context. Collectively, these statements should cover the main pooints of the document. Each statements should start with the format of number in square brackets (e.g., [1])."
+template_doc = "Instruction: {INST}\n\nDocument: {D}\n\n{PREFIX}"
+# instruction_summary = "Break down the given document into two standalone passages."
+instruction_summary = "Break down the given document into two standalone passages. Each passages should be self-contained and have necessary context. Keep the wording as similar as possible to the original document. These passages should start with the format of a square bracket with number (e.g., [1] and [2])."
+# instruction_summary = "Write two standalone summaries for the given document."
+def prompt_summary_gen(INST="", D="", PREFIX="Summaries:"):
+    p = template_doc
+    p = p.replace("{INST}", INST).strip()
+    p = p.replace("{D}", D)
+    p = p.replace("{PREFIX}", PREFIX).strip()
+    return p
 
-instruction_prompt_q = "Instruction: Write a query based on the information of the given document below. The query can be either a question or a topic title as long as it covers the overall information of the document. The query should be standalone, understandable and comprehensive. Write only one query and within `<query>` and `</query>` tags."
-# instruction_prompt_q = "Instruction: Based on the main information provided in the given document below, generate a single, clear, and standalone question. Ensure that the question is understandable on its own and that the answer can be directly found within the document. Write only one question."
 
-demo_sep = "\n\n"
-# doc_prompt_template = "Document [{ID}] {P}\n"
-# demo_prompt_template = "{INST}\n\nDocuments:\n{D}\nStatements:\n{S}"
-inst_prompt_template_c = "{INST}\n\n{DEMO}Document: {D}\n\nStatements:\n[1] {S}"
-inst_prompt_template_q = "{INST}\n\nDocument: {D}\n\n{Q_PREFIX} {Q}"
-
+# instruction_summary = "Instruction: Write an accurate, engaging, and concise answer for the given question using only the provided documents as references (some of which might be irrelevant). Always cite at least one document for every sentences in the answer. Use the citation format of square brackets to indicate the cited documents (e.g., [1] for the first reference). If multiple documents support the sentence, only cite a minimum sufficient subset of the documents. Only generate the answer, excluding any disclaimers, notes or list of references at the end of the answer."
 def apply_docs_prompt(doc_items, ndoc=None, field='text'):
     p = ""
     for idx, doc_item in enumerate(doc_items[:ndoc]):
@@ -25,25 +34,3 @@ def apply_docs_prompt(doc_items, ndoc=None, field='text'):
         p += p_doc
     return p
 
-def apply_demo_prompt(Q, D, A, instruction=""):
-    p = demo_prompt_template
-    p = p.replace("{INST}", instruction).strip()
-    p = p.replace("{Q}", Q).replace("{D}", D).replace("{A}", A)
-    return p
-
-def apply_inst_prompt_claim_gen(Q, D, instruction="", add_prefix=True):
-    """ handle {DEMO} during the training. """
-    p = inst_prompt_template_c
-    p = p.replace("{INST}", instruction).strip()
-    p = p.replace("{D}", D).replace("{S}", "")
-    if add_prefix is False:
-        p = p.replace("Statements:", "").strip()
-    return p
-
-def apply_inst_prompt_question_gen(Q, D, instruction="", prefix="<query>"):
-    """ handle {DEMO} during the training. """
-    p = inst_prompt_template_q
-    p = p.replace("{INST}", instruction).strip()
-    p = p.replace("{D}", D).replace("{Q}", "")
-    p = p.replace("{Q_PREFIX}", prefix).strip()
-    return p

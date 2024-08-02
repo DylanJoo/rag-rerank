@@ -4,8 +4,8 @@ import json
 import random
 from tqdm import tqdm
 
-# device='cuda'
-device='cpu'
+device='cuda'
+# device='cpu'
 from models import FiDT5
 MODEL_PATH='/ivi/ilps/personal/dju/checkpoints/ctxcomp-flan-t5-large-inverted-mds-std_prefix/checkpoint-5000'
 model = FiDT5.from_pretrained(MODEL_PATH).to(device)

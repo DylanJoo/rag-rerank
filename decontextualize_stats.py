@@ -123,7 +123,7 @@ def main():
         demo_prompt = ""
 
 
-    # Generate the prompt 
+    # Generate the prompt
     eval_data = []
     logger.info("Generating prompts...") 
     for idx, eval_item in enumerate(tqdm(eval_dataset)):
@@ -151,7 +151,6 @@ def main():
 
     eval_data = eval_data[start:end]
     for idx, item in enumerate(tqdm(eval_data)):
-
         prompt = item['prompt']
         prompt_len = len(llm.tokenizer.tokenize(prompt))
         full_text = item.pop('full_text')
@@ -166,7 +165,7 @@ def main():
 
         logger.info(f"Example: {item['example_id']} -- {item['shard_id']}")
         logger.info(f"prompt text (length={prompt_len}): {prompt}")
-        logger.info(f"Final model output (statements): {output_array[-1]}") 
+        logger.info(f"Final model output: {output_array[-1]}") 
 
         ### if we dont have a good-ish summary's claim. we move on to the next
         if (len(output_array[-1].split('[')) < 2):

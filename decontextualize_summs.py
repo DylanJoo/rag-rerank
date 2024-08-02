@@ -123,22 +123,30 @@ def main():
         demo_prompt = ""
 
 
-    # Generate the prompt 
+    # Generate the prompt
     eval_data = []
     logger.info("Generating prompts...") 
     for idx, eval_item in enumerate(tqdm(eval_dataset)):
-        summary_text = normalize_texts(eval_item['summary'])
-        prompt = prompt_statement_gen(
-            INST=instruction_statement,
-            D=summary_text,
-            PREFIX="Statements:\n[1]: "
-        )
+        document_list = eval_item['document'].split('|||||')
+        document_list = [normalize_texts(d, 5000) for d in document_list]
+
+        prompt_list = []
+        for document in document_list:
+            prompt = prompt_summary_gen(
+                INST=instruction_summary,
+                D=document,
+                PREFIX="Passages:\n"
+            )
+            prompt_list.append(prompt)
+
         eval_data.append({
             'example_id': f"{eval_item['mds-source']}-{eval_ids[idx]}", 
             'shard_id': f"{args.shard}-{idx}", 
-            'prompt': prompt,
-            'full_text': eval_item['summary'],
-            'ndoc': len(eval_item['document'].split('|||||'))
+            'prompt': 'see other file.',
+            'full_text': 'see other file.',
+            'ndoc': len(document_list),
+            'doc_full_text': document_list,
+            'doc_prompt': prompt_list,
         })
     logger.info("Done prompt preparation.")
 
@@ -151,30 +159,21 @@ def main():
 
     eval_data = eval_data[start:end]
     for idx, item in enumerate(tqdm(eval_data)):
-
-        prompt = item['prompt']
-        prompt_len = len(llm.tokenizer.tokenize(prompt))
-        full_text = item.pop('full_text')
-
-        ## The other claims of documetns are not.
-        output_array = [llm.generate(prompt, min(args.max_new_tokens, args.max_length-prompt_len))]
-        item['prompt_len'] = prompt_len
-        
-        output_array[-1] = output_array[-1].replace("<|im_end|>", "").rstrip()
-        if output_array[-1].endswith("End."):
-            output_array[-1] = output_array[-1][:-len("End.")]
+        output_array = []
+        for prompt in item['doc_prompt']:
+            prompt_len = len(llm.tokenizer.tokenize(prompt))
+            output_array.append(llm.generate(prompt, min(args.max_new_tokens, args.max_length-prompt_len)))
+            output_array[-1] = output_array[-1].replace("<|im_end|>", "").rstrip()
+            if output_array[-1].endswith("End."):
+                output_array[-1] = output_array[-1][:-len("End.")]
 
         logger.info(f"Example: {item['example_id']} -- {item['shard_id']}")
         logger.info(f"prompt text (length={prompt_len}): {prompt}")
-        logger.info(f"Final model output (statements): {output_array[-1]}") 
+        logger.info(f"Final model output: {output_array[-1]}") 
+        logger.info(f"Number of documents {item['ndoc']}") 
 
-        ### if we dont have a good-ish summary's claim. we move on to the next
-        if (len(output_array[-1].split('[')) < 2):
-            item['output'] = []
-            logger.info("Bypass this claims of documents', since the summary's is not successful")
-        else:
-            item['output'] = output_array if len(output_array) > 1 else output_array[0]
-        
+        ### if we dont have a good-ish summary. we still keep it
+        item['doc_output'] = output_array
     # Save the result
     model_name = args.model
     if "/" in model_name:
@@ -182,7 +181,7 @@ def main():
     name = f"{args.dataset_name}-{model_name}-{args.shard}-{args.tag}-{args.seed}"
 
     if args.quick_test is not None:
-        name += f"-susbet{args.quick_test}"
+        name += f"-subset{args.quick_test}"
 
     eval_data = {"args": args.__dict__, "data": eval_data}
 

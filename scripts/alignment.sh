@@ -17,7 +17,7 @@ cd ~/rag-rerank
 
 # option1. basic. full-summary to document's claims
 python3 data_augmentation/align_claims.py \
-    --input_dir data/mds  \
+    --input_dir data/mds \
     --result_jsonl data/mds/alignment/anchor_to_nuggets_TRUE_bm25.jsonl \
     --doc_claims_index ${INDEX_DIR}/mds-doc-claims \
     --premise_from full_text
