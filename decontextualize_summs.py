@@ -11,7 +11,7 @@ import json
 import numpy as np
 from tqdm import tqdm
 
-from llm.base import LLM
+from llm.base import LLM, vLLM
 from prompts.mds import *
 from data_augmentation.utils import normalize_texts
 
@@ -48,7 +48,6 @@ def main():
 
     # Use summarization/extraction of the documents
     parser.add_argument("--ampere_gpu", default=False, action='store_true')
-    # parser.add_argument("--used_field_in_demo", type=str, default=None, help="Use compressed text data. Option: `full`, `summary`, `extraction`")
 
     # Load config
     args = parser.parse_args()
@@ -79,7 +78,10 @@ def main():
     logger.info(f"Set the model max number of documents to {args.ndoc}/{args.ndoc_pool}")
         
     # Load the model or setup the API
-    llm = LLM(args)
+    if args.load_mode == 'vllm':
+        llm = vLLM(args)
+    else:
+        llm = LLM(args)
     
     # Generate prompts
     np.random.seed(args.seed)
@@ -116,37 +118,29 @@ def main():
         eval_ids = np.random.choice(len(eval_dataset), args.quick_test, replace=False)
         eval_dataset = [eval_dataset[int(idx)] for idx in eval_ids]
 
-    # Generate the demonstration part
-    if args.shot > 0:
-        pass
-    else:
-        demo_prompt = ""
-
-
     # Generate the prompt
     eval_data = []
     logger.info("Generating prompts...") 
     for idx, eval_item in enumerate(tqdm(eval_dataset)):
         document_list = eval_item['document'].split('|||||')
-        document_list = [normalize_texts(d, 5000) for d in document_list]
+        document_list = [normalize_texts(d, 5120) for d in document_list]
 
         prompt_list = []
         for document in document_list:
             prompt = prompt_summary_gen(
                 INST=instruction_summary,
                 D=document,
-                PREFIX="Summaries\n[1]:"
+                PREFIX="Paragraphs:\n<p>"
             )
             prompt_list.append(prompt)
 
         eval_data.append({
             'example_id': f"{eval_item['mds-source']}-{eval_ids[idx]}", 
             'shard_id': f"{args.shard}-{idx}", 
-            'prompt': 'see other file.',
-            'full_text': 'see other file.',
+            'prompt': '',
+            'full_text': '',
             'ndoc': len(document_list),
-            'doc_full_text': document_list,
-            'doc_prompt': prompt_list,
+            'docs': {'full_text': document_list, 'prompt': prompt_list }
         })
     logger.info("Done prompt preparation.")
 
@@ -161,23 +155,36 @@ def main():
     for idx, item in enumerate(tqdm(eval_data)):
         output_array = []
 
-        for prompt in item['doc_prompt']:
+        for prompt in item['docs']['prompt']:
             prompt_len = len(llm.tokenizer.tokenize(prompt))
-            output_array.append(llm.generate(prompt, min(args.max_new_tokens, args.max_length-prompt_len)))
+            output = llm.generate(prompt, 
+                max_tokens=min(args.max_new_tokens, args.max_length-prompt_len),
+            )
+            output_array.append(output)
+
             output_array[-1] = output_array[-1].replace("<|im_end|>", "").rstrip()
             if output_array[-1].endswith("End."):
                 output_array[-1] = output_array[-1][:-len("End.")]
+
+            output_array[-1] = output_array[-1].split('Instruction:')[0]
+
+            if output_array[-1] == "":
+                logger.info(f"Original raw output: {output}")
+                output = llm.generate(prompt, 
+                    max_tokens=min(args.max_new_tokens, args.max_length-prompt_len), 
+                    min_tokens=64
+                )
 
         logger.info(f"Example: {item['example_id']} -- {item['shard_id']}")
         logger.info(f"prompt text (length={prompt_len}): {prompt}")
         logger.info(f"Final model output: {output_array[-1]}") 
         logger.info(f"Number of documents {item['ndoc']}") 
+        item['docs']['output'] = output_array
 
-        item['doc_output'] = output_array
+        assert len(output_array) == len(item['docs']['prompt']), 'The output amount is incorrect.'
 
         if idx != 0:
-            del item['prompt']
-            del item['doc_prompt']
+            del item['docs']['prompt']
 
     # Save the result
     model_name = args.model

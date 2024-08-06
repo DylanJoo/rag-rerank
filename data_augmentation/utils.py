@@ -51,6 +51,7 @@ def load_passages(path, n=10):
             doc_output = replace_citations(doc_output)
             if doc_output == "":
                 doc_outputs.append(["No content."])
+
             else:
                 doc_output = doc_output.split('\n')
                 doc_output = [o.strip() for o in doc_output if o.strip() != ""]
@@ -71,6 +72,27 @@ def load_question(path, n=10):
             questions.append({"example_id": example_id, "texts": outputs})
     return questions
 
+
+# def load_statements(path, n=10):
+#     data = json.load(open(path, 'r'))
+#
+#     passages = []
+#     for i, item in enumerate(data['data']):
+#         example_id = item['example_id']
+#
+#         doc_outputs = []
+#         for doc_output in item['doc_output']:
+#             doc_output = replace_citations(doc_output)
+#             if doc_output == "":
+#                 doc_outputs.append(["No content."])
+#
+#             else:
+#                 doc_output = doc_output.split('\n')
+#                 doc_output = [o.strip() for o in doc_output if o.strip() != ""]
+#                 doc_outputs.append(doc_output)
+#
+#         passages.append({"example_id": example_id, "texts": doc_outputs})
+#     return passages
 
 def load_nuggets_and_claims(path, n=10):
     data = json.load(open(path, 'r'))

@@ -23,7 +23,7 @@ def load_model(
     dtype=torch.float16, 
     load_mode=None, 
     reserve_memory=10, 
-    flash_attention_2=False
+    flash_attention_2=False,
 ):
     # Load a huggingface model and tokenizer
     # dtype: torch.float16 or torch.bfloat16

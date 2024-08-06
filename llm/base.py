@@ -17,6 +17,31 @@ from nltk import sent_tokenize
 def remove_citations(sent):
     return re.sub(r"\[\d+", "", re.sub(r" \[\d+", "", sent)).replace(" |", "").replace("]", "")
 
+from vllm import LLM as v_llm 
+from vllm import SamplingParams
+from transformers import AutoTokenizer
+class vLLM:
+
+    def __init__(self, args):
+        self.model = v_llm(
+            args.model, 
+            dtype='half',
+            enforce_eager=True
+        )
+        self.tokenizer = AutoTokenizer.from_pretrained(args.model, use_fast=False)
+        self.tokenizer.padding_side = "left"
+        self.sampling_params = SamplingParams(
+            temperature=args.temperature, 
+            top_p=args.top_p,
+            skip_special_tokens=False
+        )
+
+    def generate(self, x, **kwargs):
+        self.sampling_params.max_tokens = kwargs.pop('max_tokens', 256)
+        self.sampling_params.min_tokens = kwargs.pop('min_tokens', 256)
+        output = self.model.generate(x, self.sampling_params)[0].outputs[0].text
+        return output
+
 class LLM:
 
     def __init__(self, args):
@@ -30,7 +55,7 @@ class LLM:
         self.prompt_exceed_max_length = 0
         self.fewer_than_50 = 0
 
-    def generate(self, prompt, max_tokens, stop=None):
+    def generate(self, prompt, max_tokens, min_tokens=None, stop=None):
         args = self.args
         if max_tokens <= 0:
             self.prompt_exceed_max_length += 1
@@ -54,17 +79,14 @@ class LLM:
             do_sample=True, 
             temperature=args.temperature, 
             top_p=args.top_p, 
+            min_new_tokens=min_tokens,
             max_new_tokens=max_tokens,
             num_return_sequences=1,
             eos_token_id=stop_token_ids
         )
         generation = self.tokenizer.decode(outputs[0][inputs['input_ids'].size(1):], skip_special_tokens=True)
-        generation = self.postprocess(generation)
+        # generation = self.postprocess(generation)
         del inputs, outputs
         torch.cuda.empty_cache()
         return generation
 
-    def postprocess(self, x):
-        x = x.split('\n\n')[0] 
-        x = x.split('Instruction:')[0] 
-        return x
