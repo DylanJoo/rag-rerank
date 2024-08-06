@@ -135,7 +135,7 @@ def main():
             prompt = prompt_summary_gen(
                 INST=instruction_summary,
                 D=document,
-                PREFIX="Passages:\n"
+                PREFIX="Summaries\n[1]:"
             )
             prompt_list.append(prompt)
 
@@ -160,6 +160,7 @@ def main():
     eval_data = eval_data[start:end]
     for idx, item in enumerate(tqdm(eval_data)):
         output_array = []
+
         for prompt in item['doc_prompt']:
             prompt_len = len(llm.tokenizer.tokenize(prompt))
             output_array.append(llm.generate(prompt, min(args.max_new_tokens, args.max_length-prompt_len)))
@@ -172,8 +173,12 @@ def main():
         logger.info(f"Final model output: {output_array[-1]}") 
         logger.info(f"Number of documents {item['ndoc']}") 
 
-        ### if we dont have a good-ish summary. we still keep it
         item['doc_output'] = output_array
+
+        if idx != 0:
+            del item['prompt']
+            del item['doc_prompt']
+
     # Save the result
     model_name = args.model
     if "/" in model_name:

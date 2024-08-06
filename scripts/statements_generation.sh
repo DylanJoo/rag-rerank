@@ -16,7 +16,6 @@ cd ~/rag-rerank
 
 # Start the experiment.
 
-## zero-shot
 for shard_i in $(seq 0 24);do
     python3 decontextualize.py \
         --shard $shard_i --shard_size 200 \

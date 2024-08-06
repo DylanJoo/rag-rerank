@@ -10,6 +10,7 @@ import argparse
 import json
 import numpy as np
 from tqdm import tqdm
+from glob import glob
 
 from llm.base import LLM
 from prompts.mds import *
@@ -18,10 +19,9 @@ from data_augmentation.utils import normalize_texts
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", type=str, default=None, help="Path to the config file")
-    parser.add_argument("--shard", type=int, default=0, help="the n-th shard")
-    parser.add_argument("--shard_size", type=int, default=200, help="size of one shard")
 
     # Evaluation file is a json file that contains a list of item, each of which contains
+    parser.add_argument("--input_dir", type=str, help="Path to generated results")
     parser.add_argument("--multi_news_file", type=str, help="Path to multi-news")
     parser.add_argument("--wcep_10_file", type=str, help="Path to wcep-10")
     parser.add_argument("--quick_test", type=int, default=None, help="Quickly test a few examples")
@@ -85,22 +85,21 @@ def main():
     np.random.seed(args.seed)
 
     # Load training data
-    train_data = None
+    # train_data = None
 
     # Load evaluation data
     from datasets import load_from_disk, concatenate_datasets
     multi_news = load_from_disk(args.multi_news_file)['train'] # hf data
     wcep_10 = load_from_disk(args.wcep_10_file)['train'] # torch files are from original raw file
-
     ## super long document: multi_news 16430
 
     ## preproces documents here
     import re
     def normalize(string):
         string = string.strip()
-        pattern = re.compile(r"\s+")
-        string = re.sub(pattern, ' ', string).strip()
         pattern = re.compile(r"\n")
+        string = re.sub(pattern, ' ', string).strip()
+        pattern = re.compile(r"\s+")
         string = re.sub(pattern, ' ', string).strip()
         pattern = re.compile("</s>")
         string = re.sub(pattern, '|||||', string).strip() # align seperation 
@@ -116,79 +115,102 @@ def main():
         eval_ids = np.random.choice(len(eval_dataset), args.quick_test, replace=False)
         eval_dataset = [eval_dataset[int(idx)] for idx in eval_ids]
 
-    # Generate the demonstration part
-    if args.shot > 0:
-        pass
-    else:
-        demo_prompt = ""
-
-
-    # Generate the prompt 
-    eval_data = []
-    logger.info("Generating prompts...") 
+    # build mapping for full text
+    fulltexts = {}
+    logger.info("Build full text mapping...") 
     for idx, eval_item in enumerate(tqdm(eval_dataset)):
-        summary_text = normalize_texts(eval_item['summary'])
-        prompt = prompt_statement_gen(
-            INST=instruction_statement,
-            D=summary_text,
-            PREFIX="Statements:\n[1]: "
-        )
-        eval_data.append({
-            'example_id': f"{eval_item['mds-source']}-{eval_ids[idx]}", 
-            'shard_id': f"{args.shard}-{idx}", 
-            'prompt': prompt,
-            'full_text': eval_item['summary'],
-            'ndoc': len(eval_item['document'].split('|||||'))
-        })
-    logger.info("Done prompt preparation.")
+        example_id = f"{eval_item['mds-source']}-{eval_ids[idx]}"
+        document_list = eval_item['document'].split('|||||')
+        document_list = [normalize_texts(d, 5000) for d in document_list]
+        fulltexts[example_id] = {'mds': eval_item['summary'], 'docs': document_list}
+    logger.info("Done full text mapping.")
+
+    # build mapping for questions and summaries
+    logger.info("load questions...") 
+    from data_augmentation.utils import load_question
+    questions_all = []
+    for file in tqdm(glob(os.path.join(args.input_dir, "*ques*.json"))):
+        questions = load_question(file)
+        questions_all += questions
+    questions_all = {q['example_id']: q['texts'] for q in questions_all}
+
+    logger.info("load passages...") 
+    from data_augmentation.utils import load_passages
+    passages_all = []
+    for file in tqdm(glob(os.path.join(args.input_dir, "*summ*.json"))):
+        passages = load_passages(file)
+        passages_all += passages
+    passages_all = {p['example_id']: p['texts'] for p in passages_all}
+
+    ## get intercept
+    overlap = questions_all.keys() & passages_all.keys()
+    questions_all = {k: v for k, v in questions_all.items() if k in overlap}
+    passages_all = {k: v for k, v in passages_all.items() if k in overlap}
+    logger.info(f"{len(questions_all)} remained...")
 
     # Start generation
     logger.info("Generating output...")
-    start = args.shard * args.shard_size
-    end = start + args.shard_size
-    if start >= len(eval_data):
-        exit(0) # finished
 
-    eval_data = eval_data[start:end]
-    for idx, item in enumerate(tqdm(eval_data)):
+    ratings = []
+    for t, example_id in enumerate(tqdm(questions_all)):
+        if t == 10:
+            break
+        # mds = fulltexts[example_id]['mds']
+        questions = questions_all[example_id]
+        docs = fulltexts[example_id]['docs']
+        passages = passages_all[example_id]
 
-        prompt = item['prompt']
-        prompt_len = len(llm.tokenizer.tokenize(prompt))
-        full_text = item.pop('full_text')
+        output_array = []
+        for i, passage_list in enumerate(passages):
+            document = docs[i]
 
-        ## The other claims of documetns are not.
-        output_array = [llm.generate(prompt, min(args.max_new_tokens, args.max_length-prompt_len))]
-        item['prompt_len'] = prompt_len
-        
-        output_array[-1] = output_array[-1].replace("<|im_end|>", "").rstrip()
-        if output_array[-1].endswith("End."):
-            output_array[-1] = output_array[-1][:-len("End.")]
+            for j, passage in enumerate(passage_list):
+                if len(passage) > 10:
+                    output_vector = [-1 for _ in questions]
+                    for k, question in enumerate(questions):
+                        prompt = prompt_rating_gen(
+                            INST=instruction_rating,
+                            Q=question,
+                            C=passage,
+                            PREFIX="Rating:"
+                        )
+                        prompt_len = len(llm.tokenizer.tokenize(prompt))
+                        output = llm.generate(prompt, min(args.max_new_tokens, args.max_length-prompt_len))
+                        output = output.replace("<|im_end|>", "").rstrip()
+                        if output.endswith("End."):
+                            output = output[:-len("End.")]
 
-        logger.info(f"Example: {item['example_id']} -- {item['shard_id']}")
-        logger.info(f"prompt text (length={prompt_len}): {prompt}")
-        logger.info(f"Final model output (statements): {output_array[-1]}") 
+                        # extract rating
+                        c = re.compile(r"\d|-\d")
+                        output = re.findall(c, output + "-1")[0]
+                        output = -1 if len(output) == 0 else int(output)
+                        output_vector[k] = output
+                else:
+                    output_vector = [-1 for _ in questions]
+                    prompt = ""
+                    prompt_len = -1
 
-        ### if we dont have a good-ish summary's claim. we move on to the next
-        if (len(output_array[-1].split('[')) < 2):
-            item['output'] = []
-            logger.info("Bypass this claims of documents', since the summary's is not successful")
-        else:
-            item['output'] = output_array if len(output_array) > 1 else output_array[0]
-        
+                output_array.append(output_vector)
+                logger.info(f"Example: {example_id} - {i} - {j}")
+                logger.info(f"prompt text (length={prompt_len}): {prompt}")
+                logger.info(f"Final model output: {output_vector}") 
+
+        ratings.append({
+            "example_id": example_id,
+            "passages": passages,
+            "questions": questions,
+            "ratings": output_array
+        })
+
     # Save the result
-    model_name = args.model
-    if "/" in model_name:
-        model_name = model_name.split("/")[-1]
-    name = f"{args.dataset_name}-{model_name}-{args.shard}-{args.tag}-{args.seed}"
+    name = "question_to_summaries_llama3.1"
 
-    if args.quick_test is not None:
-        name += f"-susbet{args.quick_test}"
+    if not os.path.exists("data/mds/alignment"):
+        os.makedirs("data/mds/alignment")
 
-    eval_data = {"args": args.__dict__, "data": eval_data}
-
-    if not os.path.exists("data/mds"):
-        os.makedirs("data/mds")
-    json.dump(eval_data, open("data/mds/" + name + ".json", "w"), indent=4)
+    with open("data/mds/alignment/" + name + ".jsonl", "w") as f:
+        for rating in ratings:
+            f.write(json.dumps(rating, indent=4)+'\n')
 
 if __name__ == "__main__":
     main()

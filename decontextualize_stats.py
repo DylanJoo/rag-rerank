@@ -153,7 +153,7 @@ def main():
     for idx, item in enumerate(tqdm(eval_data)):
         prompt = item['prompt']
         prompt_len = len(llm.tokenizer.tokenize(prompt))
-        full_text = item.pop('full_text')
+        # full_text = item.pop('full_text')
 
         ## The other claims of documetns are not.
         output_array = [llm.generate(prompt, min(args.max_new_tokens, args.max_length-prompt_len))]

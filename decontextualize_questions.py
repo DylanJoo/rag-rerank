@@ -123,22 +123,24 @@ def main():
         demo_prompt = ""
 
 
-    # Generate the prompt 
+    # Generate the prompt
     eval_data = []
     logger.info("Generating prompts...") 
     for idx, eval_item in enumerate(tqdm(eval_dataset)):
         summary_text = normalize_texts(eval_item['summary'])
-        prompt = prompt_statement_gen(
-            INST=instruction_statement,
+        prompt = prompt_question_gen(
+            INST=instruction_question,
             D=summary_text,
-            PREFIX="Statements:\n[1]: "
+            PREFIX="Questions:\n<q>"
         )
         eval_data.append({
             'example_id': f"{eval_item['mds-source']}-{eval_ids[idx]}", 
             'shard_id': f"{args.shard}-{idx}", 
             'prompt': prompt,
             'full_text': eval_item['summary'],
-            'ndoc': len(eval_item['document'].split('|||||'))
+            'ndoc': len(eval_item['document'].split('|||||')),
+            'doc_full_text': "see other file",
+            'doc_prompt': "see other file"
         })
     logger.info("Done prompt preparation.")
 
@@ -151,10 +153,9 @@ def main():
 
     eval_data = eval_data[start:end]
     for idx, item in enumerate(tqdm(eval_data)):
-
         prompt = item['prompt']
         prompt_len = len(llm.tokenizer.tokenize(prompt))
-        full_text = item.pop('full_text')
+        # full_text = item.pop('full_text') # this should be taken out later.
 
         ## The other claims of documetns are not.
         output_array = [llm.generate(prompt, min(args.max_new_tokens, args.max_length-prompt_len))]
@@ -166,14 +167,18 @@ def main():
 
         logger.info(f"Example: {item['example_id']} -- {item['shard_id']}")
         logger.info(f"prompt text (length={prompt_len}): {prompt}")
-        logger.info(f"Final model output (statements): {output_array[-1]}") 
+        logger.info(f"Final model output: {output_array[-1]}") 
 
         ### if we dont have a good-ish summary's claim. we move on to the next
-        if (len(output_array[-1].split('[')) < 2):
+        if (len(output_array[-1].split('</q>')) < 2):
             item['output'] = []
-            logger.info("Bypass this claims of documents', since the summary's is not successful")
+            logger.info("Bypass this document', since generated questions are invalid.")
         else:
             item['output'] = output_array if len(output_array) > 1 else output_array[0]
+
+        if idx != 0:
+            del item['prompt']
+            del item['doc_prompt']
         
     # Save the result
     model_name = args.model

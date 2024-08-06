@@ -15,10 +15,15 @@ conda activate rag
 
 cd ~/rag-rerank
 
-# option1. basic. full-summary to document's claims
-python3 data_augmentation/align_claims.py \
-    --input_dir data/mds/archived \
-    --result_jsonl data/mds/alignment/summary_claims_alignment_bm25top1.jsonl \
-    --doc_claims_index ${INDEX_DIR}/mds-doc-claims \
-    --premise_from full_text
-
+python3 auto_alignment.py \
+    --input_dir data/mds/ \
+    --multi_news_file /home/dju/datasets/multi_news \
+    --wcep_10_file /home/dju/datasets/wcep-10 \
+    --dataset_name mds \
+    --model meta-llama/Meta-Llama-3.1-8B-Instruct \
+    --temperature 1.0 \
+    --top_p 0.95 \
+    --tag align-gen \
+    --max_new_tokens 10 --quick_test 5000 \
+    --shot 0 --ndoc_in_demo 0 --ndoc 0  \
+    --ampere_gpu

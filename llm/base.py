@@ -66,5 +66,5 @@ class LLM:
 
     def postprocess(self, x):
         x = x.split('\n\n')[0] 
-        x = x.split('Question: ')[0] 
+        x = x.split('Instruction:')[0] 
         return x
