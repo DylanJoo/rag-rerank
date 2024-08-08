@@ -5,6 +5,15 @@ import argparse
 from tqdm import tqdm
 from utils import batch_iterator, load_model
 
+def truncate_and_concat(texts, tokenizer, max_length=512):
+    tokenized = tokenizer.tokenize(texts)
+    length = len(tokenizer.tokenize(texts))
+    max_length = (max_length or tokenizer.max_lengt_single_sentence-1)
+    if (length+6) < max_length:
+        return text
+    else:
+        return tokenizer.convert_tokens_to_string(tokenized[:(max_length-6)])
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--model_name_or_path", type=str, default=None)
@@ -13,6 +22,7 @@ def main():
     parser.add_argument("--eval_file", type=str, default=None)
     parser.add_argument("--output_key", type=str, default="summary_debug")
     parser.add_argument("--output_file", type=str, default=None)
+    parser.add_argument("--truncate", type=bool, default=False, action='store_true')
     parser.add_argument("--template", type=str, default="title: {T} content: {P}")
     args = parser.parse_args()
 
@@ -33,9 +43,11 @@ def main():
         summaries = []
         for batch_docs in batch_iterator(eval_data_item['docs'], args.batch_size):
 
-            # the input format can be further tunned
+            if truncate:
+                batch_docs = [truncate_and_concat(doc) for doc in batch_docs]
+
             input = list(
-                args.template.replace("{T}", doc['title']).replace("{P}", doc['text']).replace("{Q}", request) \
+                args.template.replace("{Q}", request).replace("{T}", doc['title']).replace("{P}", doc['text']) \
                         for doc in batch_docs
             )
             tokenized_input = tokenizer(input, padding=True, truncation=True, max_length=512, return_tensors='pt').to(model.device)

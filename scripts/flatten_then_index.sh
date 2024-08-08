@@ -14,16 +14,16 @@ conda activate rag
 
 cd ~/rag-rerank
 
-# flatten generated doc-claims
+# flatten generated passages
 python3 data_augmentation/flatten.py \
     --input_dir data/mds  \
-    --output_dir data/mds/doc_claims
+    --output_dir data/mds/mds-docs-psgs
 
 # indexing
 python -m pyserini.index.lucene \
     --collection JsonCollection \
-    --input data/mds/doc_claims \
-    --index ${INDEX_DIR}/mds-doc-claims \
+    --input data/mds/mds-docs-psgs \
+    --index ${INDEX_DIR}/mds-docs-psgs \
     --generator DefaultLuceneDocumentGenerator \
     --threads 8 \
     --storePositions --storeDocvectors --storeRaw 

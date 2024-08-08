@@ -16,8 +16,12 @@ def replace_citations(sent):
     sent = re.sub(pattern, '\n', sent)
     return sent
 
-def replace_tags(sent):
-    sent = re.sub(r"\<q\>|\<\/q\>", "\n", sent)
+def replace_tags(sent, tag='q'):
+    if tag == 'q':
+        sent = re.sub(r"\<q\>|\<\/q\>", "\n", sent)
+    if tag == 'p':
+        sent = re.sub(r"\<p\>|\<\/p\>", "\n", sent)
+
     pattern = re.compile(r"\n+")
     sent = re.sub(pattern, '\n', sent)
     return sent
@@ -39,7 +43,7 @@ def maybe_truncation(text, size=10000):
     else:
         return text
 
-def load_passages(path, n=10):
+def load_passages(path, n=3):
     data = json.load(open(path, 'r'))
 
     passages = []
@@ -47,13 +51,14 @@ def load_passages(path, n=10):
         example_id = item['example_id']
 
         doc_outputs = []
-        for doc_output in item['doc_output']:
-            doc_output = replace_citations(doc_output)
+        for doc_output in item['docs']['output']:
+            doc_output = normalize_texts(doc_output)
+            doc_output = replace_tags(doc_output, 'p')
             if doc_output == "":
                 doc_outputs.append(["No content."])
 
             else:
-                doc_output = doc_output.split('\n')
+                doc_output = doc_output.split('\n')[:n]
                 doc_output = [o.strip() for o in doc_output if o.strip() != ""]
                 doc_outputs.append(doc_output)
 

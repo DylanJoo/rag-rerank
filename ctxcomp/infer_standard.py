@@ -7,7 +7,7 @@ from tqdm import tqdm
 device='cuda'
 # device='cpu'
 from models import FiDT5
-MODEL_PATH='/ivi/ilps/personal/dju/checkpoints/ctxcomp-flan-t5-arge-inverted-mds-std/checkpoint-5000'
+MODEL_PATH='/ivi/ilps/personal/dju/checkpoints/ctxcomp-flan-t5-large-inverted-mds-std/checkpoint-5000'
 model = FiDT5.from_pretrained(MODEL_PATH).to(device)
 
 from transformers import AutoTokenizer

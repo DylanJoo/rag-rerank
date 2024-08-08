@@ -22,7 +22,6 @@ def load_model(
     model_name_or_path, 
     dtype=torch.float16, 
     load_mode=None, 
-    reserve_memory=10, 
     flash_attention_2=False,
 ):
     # Load a huggingface model and tokenizer

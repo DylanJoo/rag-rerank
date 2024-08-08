@@ -38,7 +38,7 @@ class vLLM:
 
     def generate(self, x, **kwargs):
         self.sampling_params.max_tokens = kwargs.pop('max_tokens', 256)
-        self.sampling_params.min_tokens = kwargs.pop('min_tokens', 256)
+        self.sampling_params.min_tokens = kwargs.pop('min_tokens', 32)
         output = self.model.generate(x, self.sampling_params)[0].outputs[0].text
         return output
 

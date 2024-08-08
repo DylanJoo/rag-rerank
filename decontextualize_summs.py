@@ -160,31 +160,31 @@ def main():
             output = llm.generate(prompt, 
                 max_tokens=min(args.max_new_tokens, args.max_length-prompt_len),
             )
-            output_array.append(output)
 
-            output_array[-1] = output_array[-1].replace("<|im_end|>", "").rstrip()
-            if output_array[-1].endswith("End."):
-                output_array[-1] = output_array[-1][:-len("End.")]
+            output = output.replace("<|im_end|>", "").rstrip()
+            if output.endswith("End."):
+                output = output[:-len("End.")]
 
-            output_array[-1] = output_array[-1].split('Instruction:')[0]
+            output = output.split('Note: ')[0]
 
-            if output_array[-1] == "":
+            if output == "":
                 logger.info(f"Original raw output: {output}")
                 output = llm.generate(prompt, 
                     max_tokens=min(args.max_new_tokens, args.max_length-prompt_len), 
                     min_tokens=64
                 )
 
+            output_array.append(output)
+
         logger.info(f"Example: {item['example_id']} -- {item['shard_id']}")
         logger.info(f"prompt text (length={prompt_len}): {prompt}")
         logger.info(f"Final model output: {output_array[-1]}") 
         logger.info(f"Number of documents {item['ndoc']}") 
         item['docs']['output'] = output_array
+        item['docs']['prompt'] = ""
 
-        assert len(output_array) == len(item['docs']['prompt']), 'The output amount is incorrect.'
+        # assert len(output_array) == len(item['docs']['prompt']), 'The output amount is incorrect.'
 
-        if idx != 0:
-            del item['docs']['prompt']
 
     # Save the result
     model_name = args.model

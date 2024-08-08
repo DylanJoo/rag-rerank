@@ -137,8 +137,8 @@ def main():
     logger.info("load passages...") 
     from data_augmentation.utils import load_passages
     passages_all = []
-    # for file in tqdm(glob(os.path.join(args.input_dir, "*summ*.json"))):
-    for file in tqdm(glob(os.path.join(args.input_dir, "*stat*.json"))):
+
+    for file in tqdm(glob(os.path.join(args.input_dir, "*summ*.json"))):
         passages = load_passages(file)
         passages_all += passages
     passages_all = {p['example_id']: p['texts'] for p in passages_all}

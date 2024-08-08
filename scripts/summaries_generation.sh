@@ -16,15 +16,15 @@ cd ~/rag-rerank
 
 # Start the experiment.
 
-# for shard_i in $(seq 0 10);do
-for shard_i in $(seq 11 24);do
+for shard_i in $(seq 0 10);do
+# for shard_i in $(seq 11 24);do
     python3 decontextualize_summs.py \
         --shard $shard_i --shard_size 200 \
         --config configs/mds-decontextualize.llama3-8b-chat.yaml \
         --tag summ-gen \
-        --load_mode no \
+        --load_mode vllm \
         --temperature 0.7 \
-        --max_new_tokens 768 \
+        --max_new_tokens 640 \
         --quick_test 5000 \
         --ampere_gpu 
 done
