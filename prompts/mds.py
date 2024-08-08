@@ -26,14 +26,19 @@ def prompt_question_gen(INST="", D="", PREFIX="Questions:\n<q>"):
     return p
 
 ###################################
-# prompt for topic generation     #
+# prompt for request generation   #
 ###################################
-template_request = "Instruction: {INST}\n\nUser's questions: {QS}\n\nProduced passage: {P}\n\n{PREFIX}"
-instruction_request = "Create a general statement of report request that corresponds to the questions the user is about to ask. Given that a report generation system has produced the passage below, write a report request statement of approximately 30 words. Write the statement within <r> and </r> tags."
-# instruction_question = "Write 10 diverse questions that can reveal the information contained in the given document. Each question should be self-contained and have necessary context. Write the question within `<q>` and `</q>` tags."
-def prompt_request_gen(INST="", D="", QS="", PREFIX="Statement of report request:\n<r>"):
-    p = template_question
+template_request = "Instruction: {INST}\n\nReport: {DEMO_R}\n\n{PREFIX}: <r>{DEMO_RR}</r>\n\nReport: {D}\n\n{PREFIX}: <r>"
+# instruction_request (the one with questions) = "Create a general statement of report request that corresponds to the questions the user is about to ask. Given that a report generation system has produced the passage below, write a report request statement of approximately 30 words. Write the statement within <r> and </r> tags."
+instruction_request = "Create a general statement of report request that corresponds to given report. Write a report request statement of approximately 50 words within <r> and </r> tags."
+# demo_background = "I work for a news magazine that reports on a wide variety of topics of interest to the general reading public. Against the backdrop of recent reports from the U.S. military of their encounters with UFOs, I feel there is an interest in these phenomena and whether anyone in the U.S. is studying them. The histories, costs, goals, and results of such studies are bound to be of interest to our readership."
+demo_request = "Please produce a report on investigations within the United States in either the public or private sector into Unidentified Flying Objects (UFOs). The report should cover only investigative activities into still unidentified phenomena, and not the phenomena themselves. It should include information on the histories, costs, goals, and results of such investigations."
+demo_report = "Whether you dismiss UFOs as a fantasy or believe that extraterrestrials are visiting the Earth and flying rings around our most sophisticated aircraft, the U.S. government has been taking them seriously for quite some time. “Project Blue Book”, commissioned by the U.S. Air Force, studied reports of “flying saucers” but closed down in 1969 with a conclusion that they did not present a threat to the country. As the years went by UFO reports continued to be made and from 2007 to 2012 the Aerospace Threat Identification Program, set up under the sponsorship of Senator Harry Reid, spent $22 million looking into the issue once again. Later, the Pentagon formed a “working group for the study of unidentified aerial phenomena”. This study, staffed with personnel from Naval Intelligence, was not aimed at finding extraterrestrials, but rather at determining whether craft were being flown by potential U.S. opponents with new technologies. In June, 2022, in a report issued by the Office of the Director for National Intelligence and based on the observations made by members of the U.S. military and intelligence  from 2004 to 2021 it was stated that at that time there was, with one exception, not enough information to explain the 144 cases of what were renamed as “Unidentified Aerial Phenomena” examined."
+def prompt_request_gen(INST="", DEMO_R=demo_report, DEMO_RR=demo_request, D="", PREFIX="Statement of report request"):
+    p = template_request
     p = p.replace("{INST}", INST).strip()
+    p = p.replace("{DEMO_R}", DEMO_R).strip()
+    p = p.replace("{DEMO_RR}", DEMO_RR).strip()
     p = p.replace("{D}", D)
     p = p.replace("{PREFIX}", PREFIX).strip()
     return p
@@ -51,15 +56,17 @@ def prompt_summary_gen(INST="", D="", PREFIX="Paragraphs:\n<p>"):
     p = p.replace("{D}", D)
     p = p.replace("{PREFIX}", PREFIX).strip()
     return p
-# demo_background = "I work for a news magazine that reports on a wide variety of topics of interest to the general reading public. Against the backdrop of recent reports from the U.S. military of their encounters with UFOs, I feel there is an interest in these phenomena and whether anyone in the U.S. is studying them. The histories, costs, goals, and results of such studies are bound to be of interest to our readership."
-demo_topic = "Please produce a report on investigations within the United States in either the public or private sector into Unidentified Flying Objects (UFOs). The report should cover only investigative activities into still unidentified phenomena, and not the phenomena themselves. It should include information on the histories, costs, goals, and results of such investigations."
-demo_report = "Whether you dismiss UFOs as a fantasy or believe that extraterrestrials are visiting the Earth and flying rings around our most sophisticated aircraft, the U.S. government has been taking them seriously for quite some time. “Project Blue Book”, commissioned by the U.S. Air Force, studied reports of “flying saucers” but closed down in 1969 with a conclusion that they did not present a threat to the country. As the years went by UFO reports continued to be made and from 2007 to 2012 the Aerospace Threat Identification Program, set up under the sponsorship of Senator Harry Reid, spent $22 million looking into the issue once again. Later, the Pentagon formed a “working group for the study of unidentified aerial phenomena”. This study, staffed with personnel from Naval Intelligence, was not aimed at finding extraterrestrials, but rather at determining whether craft were being flown by potential U.S. opponents with new technologies. In June, 2022, in a report issued by the Office of the Director for National Intelligence and based on the observations made by members of the U.S. military and intelligence  from 2004 to 2021 it was stated that at that time there was, with one exception, not enough information to explain the 144 cases of what were renamed as “Unidentified Aerial Phenomena” examined."
 
 ################################
 # prompt for rating generation #
 ################################
-# guideline = "- 5: The answer is highly relevant, complete, and accurate.\n- 4: The answer is mostly relevant and complete but may have minor gaps or inaccuracies.\n- 3: The answer is partially relevant and complete, with noticeable gaps or inaccuracies.\n- 2: The answer has limited relevance and completeness, with significant gaps or inaccuracies.\n- 1: The answer is minimally relevant or complete, with substantial shortcomings.\n- 0: The answer is not relevant or complete at all."
-guideline = "- 0: The context provides no relevant information.\n- 1: The context provides very little relevant information.\n- 2: The context provides some relevant information but is mostly insufficient.\n- 3: The context provides an adequate amount of relevant information.\n- 4: The context provides a good amount of relevant information.\n- 5: The context provides all necessary information in detail."
+guideline = "- 5: The context is highly relevant, complete, and accurate.\n- 4: The context is mostly relevant and complete but may have minor gaps or inaccuracies.\n- 3: The context is partially relevant and complete, with noticeable gaps or inaccuracies.\n- 2: The context has limited relevance and completeness, with significant gaps or inaccuracies.\n- 1: The context is minimally relevant or complete, with substantial shortcomings.\n- 0: The context is not relevant or complete at all."
+# - 5: The context is highly relevant, complete, and accurate.
+# - 4: The context is mostly relevant and complete but may have minor gaps or inaccuracies.
+# - 3: The context is partially relevant and complete, with noticeable gaps or inaccuracies.
+# - 2: The context has limited relevance and completeness, with significant gaps or inaccuracies.
+# - 1: The context is minimally relevant or complete, with substantial shortcomings.
+# - 0: The context is not relevant or complet at all.
 template_rating = "Instruction: {INST}\n\nGuideline:\n{G}\n\nQuestion: {Q}\n\nContext: {C}\n\n{PREFIX}" 
 instruction_rating = "Determine whether the question can be answered based on the provided context? Rate the context with on a scale from 0 to 5 according to the guideline below. Do not write anything except the rating."
 def prompt_rating_gen(INST="", Q="", C="", PREFIX="Rating:"):

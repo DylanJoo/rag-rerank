@@ -1,6 +1,6 @@
 #!/bin/sh
 # The following lines instruct Slurm to allocate one GPU.
-#SBATCH --job-name=align
+#SBATCH --job-name=autoalign
 #SBATCH --partition gpu
 #SBATCH --gres=gpu:nvidia_l40:1
 #SBATCH --mem=32G
@@ -22,6 +22,7 @@ python3 auto_alignment.py \
     --dataset_name mds \
     --model meta-llama/Meta-Llama-3.1-8B-Instruct \
     --temperature 1.0 \
+    --load_mode vllm \
     --top_p 0.95 \
     --tag align-gen \
     --max_new_tokens 10 --quick_test 5000 \

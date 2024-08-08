@@ -1,6 +1,6 @@
 #!/bin/sh
 # The following lines instruct Slurm to allocate one GPU.
-#SBATCH --job-name=statgen
+#SBATCH --job-name=requestgen
 #SBATCH --partition gpu
 #SBATCH --gres=gpu:nvidia_rtx_a6000:1
 #SBATCH --mem=32G
@@ -16,19 +16,13 @@ cd ~/rag-rerank
 
 # Start the experiment.
 
-for shard_i in $(seq 0 24);do
-    python3 decontextualize.py \
+# for shard_i in $(seq 0 10);do
+for shard_i in $(seq 11 24);do
+    python3 decontextualize_request_for_neuclir.py \
         --shard $shard_i --shard_size 200 \
         --config configs/mds-decontextualize.llama3-8b-chat.yaml \
-        --tag stat-gen \
-        --max_new_tokens 512 --quick_test 5000 \
+        --tag request-gen \
+        --max_new_tokens 128 --quick_test 5000 \
         --shot 0 --ndoc_in_demo 0 --ndoc 0  \
         --ampere_gpu 
 done
-
-# python3 decontextualize.py \
-# --shard $shard_i --shard_size 200 \
-# --config configs/mds-decontextualize.llama3-8b-chat.yaml \
-# --tag claims-gen --generation claims \
-# --max_new_tokens 512 --quick_test 5000 --shot 0 --ndoc_in_demo 0 --ndoc 0 \
-# --ampere_gpu 
