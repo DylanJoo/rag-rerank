@@ -25,6 +25,6 @@ python3 auto_alignment.py \
     --load_mode vllm \
     --top_p 0.95 \
     --tag align-gen \
-    --max_new_tokens 10 --quick_test 5000 \
+    --max_new_tokens 5 --quick_test 5000 \
     --shot 0 --ndoc_in_demo 0 --ndoc 0  \
     --ampere_gpu

@@ -157,8 +157,6 @@ def main():
 
     ratings = []
     for t, example_id in enumerate(tqdm(questions_all)):
-        if t == 10:
-            break
         # mds = fulltexts[example_id]['mds']
         questions = questions_all[example_id]
         docs = fulltexts[example_id]['docs']
@@ -208,6 +206,7 @@ def main():
             "questions": questions,
             "ratings": output_array
         })
+        del output, output_array, output_vector, prompt
 
     # Save the result
     name = "question_to_summaries_llama3.1"
