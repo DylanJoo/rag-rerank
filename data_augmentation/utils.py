@@ -53,16 +53,21 @@ def load_passages(path, n=3):
         doc_outputs = []
         for doc_output in item['docs']['output']:
             doc_output = normalize_texts(doc_output)
-            doc_output = replace_tags(doc_output, 'p')
-            if doc_output == "":
+            # doc_output = replace_tags(doc_output, 'p')
+            if doc_output == " ":
                 doc_outputs.append(["No content."])
 
             else:
-                doc_output = doc_output.split('\n')[:n]
+                doc_output = doc_output.strip().split('</p>')[:n]
+                doc_output = [replace_tags(o, 'p').strip() for o in doc_output]
                 doc_output = [o.strip() for o in doc_output if o.strip() != ""]
                 doc_outputs.append(doc_output)
 
-        passages.append({"example_id": example_id, "texts": doc_outputs})
+        passages.append({
+            "example_id": example_id, 
+            "texts": doc_outputs, 
+            "docs_full_texts": [normalize_texts(d) for d in item["docs"]["full_text"]]
+        })
     return passages
 
 def load_question(path, n=10):
@@ -76,6 +81,18 @@ def load_question(path, n=10):
             outputs = [replace_tags(o).strip() for o in outputs]
             questions.append({"example_id": example_id, "texts": outputs})
     return questions
+
+def load_topic(path):
+    data = json.load(open(path, 'r'))
+
+    topic = []
+    for i, item in enumerate(data['data']):
+        example_id = item['example_id']
+        if not isinstance(item['output'], list):
+            output = item['output'].strip().split('</r>')[0]
+            output = normalize_texts(output)
+            topic.append({"example_id": example_id, "texts": output})
+    return topic
 
 
 # def load_statements(path, n=10):

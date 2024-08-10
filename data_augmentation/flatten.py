@@ -4,7 +4,7 @@ import argparse
 import json
 from tqdm import tqdm
 from glob import glob
-from utils import load_question, load_passages
+from utils import load_passages
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Print output")
@@ -23,10 +23,12 @@ if __name__ == "__main__":
 
     with open(os.path.join(args.output_dir, "doc_to_passages.jsonl"), 'w') as f:
          for example_id in tqdm(passages_all, total=len(passages_all)):
+             j = 0
              for i, passages in enumerate(passages_all[example_id]):
-                 for j, passage in passages:
+                 for passage in passages:
                      f.write(json.dumps({
                          "id": f"{example_id}#{i}:{j}", 
-                         "contents": content
+                         "contents": passage
                      })+'\n')
+                     j += 1
 
