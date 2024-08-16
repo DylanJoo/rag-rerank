@@ -109,7 +109,6 @@ if __name__ == "__main__":
     parser.add_argument("--input_dir", type=str, default=None)
     parser.add_argument("--dataset_jsonl", type=str, default=None)
     parser.add_argument("--alignment_jsonl", type=str, default=None)
-    parser.add_argument("--n_max_docs", type=int, default=None)
     parser.add_argument("--n_max_distractors", type=int, default=None)
     parser.add_argument("--threshold", type=float, default=1)
     parser.add_argument("--doc_passages_index", type=str)
@@ -192,11 +191,11 @@ if __name__ == "__main__":
             else:
                 full_ctxs_r.append(documents[i])
 
-        comp_ctxs = []
-        for i in range(ndocs):
+        comp_ctxs = [[] for _ in labels['documents']]
+        for i, i_doc in enumerate(labels['documents']):
             for (ii, j) in labels['passages']:
-                if ii == i:
-                    comp_ctxs.append(passages[j])
+                if ii == i_doc:
+                    comp_ctxs[i].append(passages[j])
 
         full_ctxs_d = alignment['dis_documents'][:args.n_max_distractors]
 

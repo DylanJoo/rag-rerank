@@ -63,6 +63,7 @@ def main():
 
     # Dataset
     dataset = load_dataset('json', data_files=data_opt.train_file, keep_in_memory=True)
+    dataset = dataset.filter(lambda x: len(x['docids']) !=0 )
     n_examples = len(dataset['train'])
     if train_opt.do_eval:
         dataset = dataset['train'].train_test_split(test_size=100, seed=1997)
@@ -78,8 +79,12 @@ def main():
         tokenizer=tokenizer, 
         max_src_length=data_opt.max_src_length,
         max_tgt_length=data_opt.max_tgt_length,
-        n_contexts=train_opt.n_contexts
+        max_num_contexts=train_opt.max_num_contexts,
+        num_distractor_docs=train_opt.num_distractor_docs,
+        num_redundant_docs=train_opt.num_redundant_docs,
+        shuffle=True,
     )
+    # num_contexts is for batch-wsie training
 
     # Trainer
     trainer = VerboseTrainer(

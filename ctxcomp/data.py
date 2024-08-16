@@ -31,9 +31,13 @@ class Standard:
     tokenizer: Union[PreTrainedTokenizerBase] = None
     max_src_length: Optional[int] = 1024
     max_tgt_length: Optional[int] = 512
-    n_contexts: Optional[int] = None
+    max_num_contexts: Optional[int] = None
+    num_contexts: Optional[int] = None
+    num_distractor_docs: Optional[int] = None
+    num_redundant_docs: Optional[int] = None
+    n_psgs_per_doc: Optional[int] = 1
     shuffle: Optional[bool] = True
-    src_template = "topic: {} context: [{}] {} [/{}]"
+    src_template = "Summarize context based on the topic. Write `unrelated` if context is irrelevant and write `redundant` if the information has been summarized in the former contexts. Topic: {} Context: [{}] {} [/{}]"
     tgt_template = "[{}] {}"
 
     def __call__(self, features: List[Dict[str, Any]]) -> Dict[str, Any]:
@@ -41,35 +45,51 @@ class Standard:
         # prepare source and target 
         src, tgt = [], []
         for example in features:
-            n = len(example['doc_ctxs'])
+
+            # compressed ctx with distractors
+            doc_ctxs = example['doc_ctxs']  
+            doc_ctxs_d = example['distract_ctxs'][:self.num_distractor_docs]
+            src = (doc_ctxs[:self.max_num_contexts] + doc_ctxs_d)
+
+            comp_ctxs = [" ".join(psg_list[:self.n_psgs_per_doc]) for psg_list in example['comp_ctxs']]
+            comp_ctxs_d = ["unrelated."] * len(doc_ctxs_d)
+            tgt = (comp_ctxs[:self.max_num_contexts] + comp_ctxs_d)
+
+            # redundant ctxs
+            if self.num_redundant_docs >= 1:
+                doc_ctxs_r = example['redundant_ctxs'][:self.num_redundant_docs]
+                # comp_ctxs_r = ["redundant."] * len(doc_ctxs_r)
+                for j, doc_ctx in enumerate(doc_ctxs_r):
+                    src += [doc_ctx]
+                    tgt += ["redundant."]
+
+            assert len(src) == len(tgt), 'inconsistent length.'
+
+            n = len(src)
             if self.shuffle:
-                random_idx = random.sample(range(n), n)[:self.n_contexts]
+                random_idx = random.sample(range(n), n)
             else:
-                random_idx = list(range(n))[:self.n_contexts]
+                random_idx = list(range(n))
 
             src_, tgt_ = [], ""
-            topic = example['question']
+            topic = example['topic']
 
             for i, idx in enumerate(random_idx):
-                src_ += [self.src_template.format(topic, i+1, example['doc_ctxs'][idx], i+1)]
-                if example['labels'][idx] == 1:
-                    tgt_ += self.tgt_template.format(i+1, example['comp_ctxs'][idx][0])
-                else:
-                    tgt_ += self.tgt_template.format(i+1, "unrelated.")
-
-            src += src_
-            tgt.append(tgt_)
+                doc_ctx = src[idx]
+                comp_ctx = tgt[idx]
+                src_ += [self.src_template.format(topic, i+1, doc_ctx, i+1)]
+                tgt_ += self.tgt_template.format(i+1, comp_ctx)
 
         # tokenize
         inputs = self.tokenizer(
-            src,
+            src_,
             max_length=self.max_src_length-1,
             truncation=True,
             padding=True,
             return_tensors='pt'
         )
         outputs = self.tokenizer(
-            tgt,
+            tgt_,
             max_length=self.max_tgt_length-1,
             truncation=True,
             padding=True,
@@ -79,10 +99,10 @@ class Standard:
         inputs['labels'] = outputs['input_ids'].masked_fill(~target_mask, -100)
 
         # define number of contexts
-        if self.n_contexts is None:
+        if self.num_contexts is None:
             N = inputs['input_ids'].size(0)
         else:
-            N = self.n_contexts
+            N = self.num_contexts
 
         # reshape
         inputs['input_ids'] = inputs['input_ids'].view(

@@ -11,28 +11,29 @@ import numpy as np
 from tqdm import tqdm
 
 from llm.base import LLM
-from prompts.eli5 import *
-from data.utils import irrelevant_removal
+from prompts.neuclir import *
+from tools.utils import load_hits_tsv, load_hits_jsonl
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", type=str, default=None, help="Path to the config file")
-    parser.add_argument("--prompt_file", type=str, help="Path to the prompt file")
 
     # Evaluation file is a json file that contains a list of item, each of which contains
+    parser.add_argument("--train_file", type=str, help="Path to the eval file")
     parser.add_argument("--eval_file", type=str, help="Path to the eval file")
+    parser.add_argument("--candidates_tsv", type=str, help="Path to the eval file")
+    parser.add_argument("--candidates_jsonl", type=str, help="Path to the eval file")
     parser.add_argument("--quick_test", type=int, default=None, help="Quickly test a few examples")
+    parser.add_argument("--max_doc_length", type=int, default=512)
+    parser.add_argument("--split", type=str, default='dev')
 
     # ICL setting
     parser.add_argument("--ndoc", type=int, help="Number of documents, the exact number will go in decoder.")
-    parser.add_argument("--ndoc_pool", type=None, help="Number of documents pool. None will be the same as ndoc")
-    parser.add_argument("--shot", type=int, help="Number of ICL demonstrations")
-    parser.add_argument("--ndoc_in_demo", type=int, default=None, help="When using --fewer_doc_in_demo, use this to designate how many docs in demo")
+    parser.add_argument("--shot", type=int, default=1)
+    parser.add_argument("--closebook", action='store_true', default=False)
     parser.add_argument("--seed", type=int, default=42, help="Seed for the random number generator")
-    parser.add_argument("--retrieve_in_all_docs", type=bool, default=False, help="Retrieve in all documents instead of just top ndoc")
 
     # Model and name
-    parser.add_argument("--dataset_name", type=str, help="Name of the dataset (for saving)")
     parser.add_argument("--tag", type=str, help="Tag of run (for saving)")
     parser.add_argument("--model", type=str, help="Model to use")
     parser.add_argument("--load_mode", type=str, default='no', help="Model to use")
@@ -41,21 +42,18 @@ def main():
     # Decoding
     parser.add_argument("--temperature", type=float, default=0.5, help="Temperature for decoding")
     parser.add_argument("--top_p", type=float, default=1.0, help="Nucleus sampling top-p")
-    parser.add_argument("--max_new_tokens", type=int, default=300, help="Max number of new tokens to generate in one step")
+    parser.add_argument("--max_new_tokens", type=int, default=512, help="Max number of new tokens to generate in one step")
     parser.add_argument("--max_length", type=int, default=2048, help="Max length the model can take. Should set properly wrt the model to avoid position overflow.")
     parser.add_argument("--num_samples", type=int, default=1, help="Sample multiple answers.")
 
-    # Use summarization/extraction of the documents
-    parser.add_argument("--used_field", type=str, default="full", help="Use compressed text data. Option: `full`, `summary`, `extraction`")
-    parser.add_argument("--used_field_in_demo", type=str, default=None, help="Use compressed text data. Option: `full`, `summary`, `extraction`")
+    # Use original/translation of the documents
+    parser.add_argument("--used_field", type=str, default="target_contents", help="Use compressed text data. Option: `target_contents`, `translation`")
 
     # Load config
     args = parser.parse_args()
     config = yaml.safe_load(open(args.config)) if args.config is not None else {}
     parser.set_defaults(**config)
     args = parser.parse_args()
-    for k in args.__dict__:
-        print(f"{k}: {args.__dict__[k]}")
 
     if "turbo" in args.model:
         args.max_length = 4096
@@ -73,10 +71,9 @@ def main():
         args.max_length = 8192
     logger.info(f"Set the model max length to {args.max_length} (if not correct, check the code)")
 
-    if args.ndoc_pool is None:
-        args.ndoc_pool = args.ndoc
-    logger.info(f"Set the model max number of documents to {args.ndoc}/{args.ndoc_pool}")
-        
+    for k in args.__dict__:
+        print(f"{k}: {args.__dict__[k]}")
+
     # Load the model or setup the API
     llm = LLM(args)
     
@@ -84,34 +81,14 @@ def main():
     np.random.seed(args.seed)
 
     # Load data
-    train_data = json.load(open(args.prompt_file))
-    eval_data = json.load(open(args.eval_file))
-
-    # Generate the demonstration part
-    head_prompt = ""
-    train_ids = np.random.choice(len(train_data["demos"]), args.shot, replace=False)
+    # train_data = json.load(open(args.train_file))
+    eval_data = [json.loads(line.strip()) for line in open(args.eval_file).readlines()]
+    if args.candidates_tsv:
+        candidates = load_hits_tsv(args.candidates_tsv)
+    if args.candidates_jsonl:
+        candidates = load_hits_jsonl(args.candidates_jsonl, key=args.used_field)
 
     ## Prepare instruction and the demo prompts
-    #### in-context demo examepls via retrieved document
-    demo_prompt = ""
-    for i, train_id in enumerate(train_ids):
-
-        train_item = train_data["demos"][train_id]
-        doc_prompt = apply_docs_prompt(
-            doc_items=train_item["docs"], 
-            ndoc=args.ndoc_in_demo,
-            field=(args.used_field_in_demo or args.used_field)
-        )
-        demo_prompt += apply_demo_prompt(
-            Q=train_item["question"],
-            D=doc_prompt, 
-            A=train_item["answer"],
-            instruction="" # if adding instruction for each demo examples
-        )
-        demo_prompt += demo_sep
-
-        ## [TODO]: in ALCE, they use multiple instruction prompts for ICL
-
     # Sample quick test
     if args.quick_test is not None:
         np.random.seed(args.seed)
@@ -119,35 +96,44 @@ def main():
         eval_data = [eval_data[int(idx)] for idx in eval_ids]
 
     logger.info("Generating prompts...") 
-    incomplete_doc_list = 0 # For some questions there might be fewer than ndoc documents
     for idx, eval_item in enumerate(tqdm(eval_data)):
 
+        request_id = eval_item['request_id']
+        lang = eval_item['collection_ids'][0].replace('neuclir/1/', '')[:2]
+
         ## preprocess
-        ### (1) irrelevant removal
-        eval_item["docs"] = irrelevant_removal(
-            eval_item["docs"], 
-            args.ndoc_pool,
-            args.used_field
-        )
+        demo_prompt = ""
 
-        # `ndoc` is a bit tricky when considering summary (irrelevant will be removed)
-        doc_prompt = apply_docs_prompt(
-            eval_item["docs"], 
-            args.ndoc, 
-            args.used_field
-        )
-
-        prompt = apply_inst_prompt(
-            Q=eval_item['question'],
-            D=doc_prompt,
-            instruction=instruction_prompt,
-            add_prefix=True
-        )
+        ### ZS-closebook
+        if args.closebook:
+            promt = apply_closebook_prompt(
+                PS=eval_item["problem_statement"], 
+                BG=eval_item["background"],
+                LIMIT=eval_item["limit"],
+                R="", INST=rag_instruction
+            )
+        ### ZS-rag and 1S-rag (may overlength)
+        else:
+            doc_prompt = apply_docs_prompt(
+                doc_items=candidates[request_id + lang],
+                ndoc=args.ndoc,
+                field=args.used_field,
+                max_length=args.max_doc_length
+            )
+            prompt = apply_rag_prompt(
+                PS=eval_item["problem_statement"], 
+                BG=eval_item["background"],
+                LIMIT=eval_item["limit"],
+                D=doc_prompt,
+                R="", INST=rag_instruction
+            )
         prompt = prompt.replace("{DEMO}", demo_prompt)
         eval_data[idx]['prompt'] = prompt
+        eval_data[idx]['lang'] = lang
+        doc_ids = [c["id"] for c in candidates[request_id + lang]]
+        eval_data[idx]['references'] = doc_ids
 
     logger.info("Done prompt preparation.")
-
     for idx, item in enumerate(tqdm(eval_data)):
         prompt = item['prompt']
         prompt_len = len(llm.tokenizer.tokenize(prompt))
@@ -165,9 +151,8 @@ def main():
             if output_array[-1].endswith("End."):
                 output_array[-1] = output_array[-1][:-len("End.")]
 
-            logger.info(f"Question: {item['question']}")
+            logger.info(f"Question: {item['problem_statement'][:40]}")
             logger.info(f"Prompt text (length={prompt_len}): {prompt}")
-            # logger.info(f"Gold answer: {item['answer']}")
             logger.info(f"Final model output: {output_array[-1]}") 
         
         item['output'] = output_array if len(output_array) > 1 else output_array[0]
@@ -179,16 +164,13 @@ def main():
     model_name = args.model
     if "/" in model_name:
         model_name = model_name.split("/")[-1]
-    name = f"{args.dataset_name}-{model_name}-{args.tag}-{args.shot}shotx{args.ndoc_in_demo}-top{args.ndoc}-{args.used_field}-{args.seed}"
-
-    if args.quick_test is not None:
-        name += f"-quick_test{args.quick_test}"
+    name = f"report-{args.tag}-{args.split}-all"
 
     eval_data = {"args": args.__dict__, "data": eval_data}
 
-    if not os.path.exists("result"):
-        os.makedirs("result")
-    json.dump(eval_data, open("result/" + name + ".json", "w"), indent=4)
+    if not os.path.exists("results"):
+        os.makedirs("results")
+    json.dump(eval_data, open("results/" + name + ".json", "w"), indent=4)
 
 if __name__ == "__main__":
     main()

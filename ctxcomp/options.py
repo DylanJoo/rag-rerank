@@ -38,7 +38,10 @@ class TrainOpt(Seq2SeqTrainingArguments):
     remove_unused_columns: bool = field(default=False)
     report_to: Optional[List[str]] = field(default=None)
     warmup_steps: int = field(default=0)
-    n_contexts: int = field(default=None)
+    max_num_contexts: int = field(default=10)
+    num_contexts: int = field(default=None)
+    num_distractor_docs: int = field(default=1)
+    num_redundant_docs: int = field(default=1)
     logging_steps: int = field(default=10)
 
     # datacollator
