@@ -1,6 +1,4 @@
-import string
-from vllm import LLM
-from vllm import SamplingParams
+import vllm
 
 class vLLM:
 
@@ -9,14 +7,14 @@ class vLLM:
         dtype='half', gpu_memory_utilization=0.75, 
         num_gpus=1, 
     ):
-        self.model = LLM(
+        self.model = vllm.LLM(
             model, 
             dtype=dtype,
             enforce_eager=True,
             tensor_parallel_size=num_gpus,
             gpu_memory_utilization=gpu_memory_utilization
         )
-        self.sampling_params = SamplingParams(
+        self.sampling_params = vllm.SamplingParams(
             temperature=temperature, 
             top_p=top_p,
             skip_special_tokens=False

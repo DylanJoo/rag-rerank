@@ -4,14 +4,12 @@ import argparse
 #     pass
 
 # Retrieval
-## Load retrieval modules
 from retrieve.bm25 import search
 ## Retrieval -- query reformulation
-## Retrieval -- search
 
 writer = open('temp.run', 'w')
 output = search(
-    index='/home/dju/indexes/litsearch.bm25_lucene_doc',
+    index='/home/dju/indexes/s2orc-v2.document.lucene', 
     k1=0.9,
     b=0.4,
     topics={'1': 'What is bi-directional attention.'},
@@ -21,6 +19,11 @@ output = search(
 )
 writer.close()
 
+# Augment
+from augment.pointwise import rerank
+
+from augment.pointwise import filter
+
 # Generate
-from generate.llm.base import vLLM
-generator = vLLM(model=model_opt.generator_name_or_path, temperature=0.7)
+# from generate.llm.vllm_back import vLLM
+# generator = vLLM(model=model_opt.generator_name_or_path, temperature=0.7)

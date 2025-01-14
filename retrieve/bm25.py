@@ -3,7 +3,7 @@ import json
 import argparse
 from collections import defaultdict 
 from tqdm import tqdm 
-from retrieve.tools import load_topic, batch_iterator
+from retrieve.utils import load_topic, batch_iterator
 from pyserini.search.lucene import LuceneSearcher
 
 def search(index, k1, b, topics, batch_size, k, writer=None):
@@ -30,8 +30,9 @@ def search(index, k1, b, topics, batch_size, k, writer=None):
         )
 
         for key, value in hits.items():
+            outputs[key] = [h.docid for h in hits[key]]
+
             for i in range(len(hits[key])):
-                outputs[key].append(hits[key][i].docid)
                 if writer is not None:
                     writer.write(
                         f'{key} Q0 {hits[key][i].docid} {i+1} {hits[key][i].score:.5f} bm25\n'

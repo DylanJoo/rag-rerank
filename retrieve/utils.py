@@ -1,9 +1,8 @@
 import collections 
 import json
 from tqdm import tqdm
-from datasets import load_dataset
 from pyserini.search.lucene import LuceneSearcher
-from pyserini.search.faiss import FaissSearcher, AutoQueryEncoder
+from pyserini.search.faiss import FaissSearcher
 
 def load_searcher(path, dense=False):
     if dense:
