@@ -1,7 +1,11 @@
-# retrieval-augmented-adaptation
+# Inference Retrieval-augmengated Generation
+---
 
-## Checkpoints 
-0. Vanilla prompting. 
-1. Reorgnize text-level contexts
+### Pipeline
+This repo modularizes the following phase into standalone modules.
 
-## Results
+- [Indexing]()
+- [Retrieval]()
+- [Augment]()
+- [Generate]()
+- [Verify](): under construction.
