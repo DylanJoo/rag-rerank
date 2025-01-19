@@ -1,4 +1,7 @@
-""" [TODO] document segmentation and aggregation """
+""" 
+[TODO] document segmentation and aggregation
+[TODO] think about long-document scenario. Chunk-and-aggregate?
+"""
 
 from operator import itemgetter
 import os
@@ -7,11 +10,12 @@ import logging
 import argparse 
 from tqdm import tqdm
 import json
+import torch
 
 from tools.ranking_utils import (
     load_runs, 
     load_corpus,
-    load_topic, 
+    load_topics, 
     batch_iterator
 )
 from augment.pointwise.reranking.utils import load_reranker
@@ -27,7 +31,6 @@ def rerank(
     reranker = load_reranker(**reranker_config)
 
     qids = list(topics.keys())
-    qtexts = list(topics.values())
 
     outputs = {}
     qids = [qid for qid in qids if qid in runs]  # only appeared in run
@@ -77,7 +80,6 @@ if __name__ == '__main__':
     # reranker config
     parser.add_argument("--reranker_class", type=str, default=None)
     parser.add_argument("--reranker_name_or_path", type=str, default=None)
-    parser.add_argument("--tokenizer_name", type=str, default=None)
     parser.add_argument("--device", type=str, default='cpu')
     parser.add_argument("--fp16", default=False, action='store_true')
     args = parser.parse_args()
@@ -86,17 +88,18 @@ if __name__ == '__main__':
     writer = open(args.output, 'w')
 
     ## load data
-    topics = load_topic(args.topic_file)
+    topics = load_topics(args.topic_file)
     corpus = load_corpus(args.corpus_dir_or_file)
     runs = load_runs(args.run_file, topk=args.top_k, output_score=True)
 
-    rerank(
-        topics=topics, corpus=corpus, input_run=runs,
-        reranker_config=vars(args),
-        top_k=args.top_k, batch_size=args.batch_size_per_query,
-        max_length=args.max_length,
-        writer=writer
-    )
+    with torch.no_grad():
+        rerank(
+            topics=topics, corpus=corpus, input_run=runs,
+            reranker_config=vars(args),
+            top_k=args.top_k, batch_size=args.batch_size_per_query,
+            max_length=args.max_length,
+            writer=writer
+        )
     writer.close()
 
     print('done')

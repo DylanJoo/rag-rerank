@@ -14,17 +14,6 @@ def load_searcher(path, dense=False):
         searcher.set_bm25(k1=0.9, b=0.4)
     return searcher
 
-def load_topic(path, use_answer=False):
-    topic = {}
-    with open(path) as f:
-        for line in tqdm(f):
-            data = json.loads(line.strip())
-            qid = data['qid']
-            qtext = data['question_text']
-            topic[qid.strip()] = qtext.strip()
-
-    return topic
-
 def batch_iterator(iterable, size=1, return_index=False):
     l = len(iterable)
     for ndx in range(0, l, size):
@@ -33,13 +22,13 @@ def batch_iterator(iterable, size=1, return_index=False):
         else:
             yield iterable[ndx:min(ndx + size, l)]
 
-def load_topic(path):
-    topic = {}
+def load_topics(path):
+    topics = {}
     with open(path, 'r') as f:
         for line in f:
             qid, qtext = line.split('\t')
-            topic[str(qid.strip())] = qtext.strip()
-    return topic
+            topics[str(qid.strip())] = qtext.strip()
+    return topics
 
 def load_corpus(path, allow_missing=False):
     if allow_missing:

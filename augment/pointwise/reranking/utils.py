@@ -4,7 +4,7 @@ def load_reranker(
     reranker_class, 
     reranker_name_or_path, 
     tokenizer_name=None, 
-    device='auto',
+    device='cuda',
     fp16=False,
     **kwargs
 ):

@@ -14,10 +14,11 @@ class monoT5(nn.Module):
         self, 
         model_name_or_dir='castorini/monot5-3b-msmarco-10k',
         tokenizer_name=None, 
-        device='auto', 
+        device='cpu',
         fp16=False
     ):
-        """ monot5 will use the logit of the first token.  Then estimate the probablity re-softmax 'yes' and 'no' tokens. """
+        """ monot5 will use the logit of the first token.  
+        Then estimate the probablity re-softmax 'yes' and 'no' tokens. """
         super().__init__()
         self.model = T5ForConditionalGeneration.from_pretrained(
             model_name_or_dir,
@@ -69,14 +70,14 @@ class monoBERT(nn.Module):
         self,
         model_name_or_dir='cross-encoder/ms-marco-MiniLM-L-6-v2',
         tokenizer_name=None, 
-        device='auto', 
+        device='cpu',
         fp16=False
     ):
         super().__init__()
         self.model = AutoModelForSequenceClassification.from_pretrained(
             model_name_or_dir,
             torch_dtype=torch.float16 if fp16 else torch.float32,
-            device_map=device,
+            device_map=device
         )
         self.model.eval()
         self.tokenizer = AutoTokenizer.from_pretrained(
