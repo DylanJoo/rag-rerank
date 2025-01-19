@@ -4,15 +4,15 @@ import collections
 import json
 from tqdm import tqdm
 
-# def load_searcher(path, dense=False):
-#     if dense:
-#         from pyserini.search.faiss import FaissSearcher
-#         searcher = FaissSearcher(path, None)
-#     else:
-#         from pyserini.search.lucene import LuceneSearcher
-#         searcher = LuceneSearcher(path)
-#         searcher.set_bm25(k1=0.9, b=0.4)
-#     return searcher
+def load_searcher(path, dense=False):
+    if dense:
+        from pyserini.search.faiss import FaissSearcher
+        searcher = FaissSearcher(path, None)
+    else:
+        from pyserini.search.lucene import LuceneSearcher
+        searcher = LuceneSearcher(path)
+        searcher.set_bm25(k1=0.9, b=0.4)
+    return searcher
 
 def load_topic(path, use_answer=False):
     topic = {}
@@ -41,23 +41,33 @@ def load_topic(path):
             topic[str(qid.strip())] = qtext.strip()
     return topic
 
-def load_corpus(path):
-    # empty = {'title': "", 'text': ""}
-    # corpus = collections.defaultdict(lambda: empty)
-    corpus = {}
+def load_corpus(path, allow_missing=False):
+    if allow_missing:
+        empty = {'title': "", 'text': ""}
+        corpus = collections.defaultdict(lambda: empty)
+    else:
+        corpus = {}
+
     id_field = 'id'
     content_field = 'contents'
 
     if os.path.isdir(path):
-        files = [f for f in glob.glob(f'{path}/*')]
+        files = [f for f in glob.glob(f'{path}/*jsonl')]
     else:
         files = [path]
 
-    for file in files:
+    for file in tqdm(files, total=len(files)):
         with open(file, 'r') as f:
             for line in f:
                 data = json.loads(line.strip())
-                docid = data[id_field] # two datasets have diff identifier
+
+                if "id" not in data.keys():
+                    id_field = "_id"
+
+                if "contents" not in data.keys():
+                    content_field = "text"
+
+                docid = data[id_field] 
                 title = data.get('title', "").strip()
                 text = data.get(content_field, "").strip()
                 corpus[str(docid)] = {'title': title, 'text': text}
