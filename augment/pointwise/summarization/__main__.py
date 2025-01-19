@@ -22,7 +22,7 @@ from augment.pointwise.summarization.utils import load_summarizer
 def summarize(
     topics, corpus, runs,
     summarizer_config,
-    batch_size,
+    top_k, batch_size,
     max_length,
     template="{d}",
     writer=None,
@@ -33,15 +33,12 @@ def summarize(
     qids = list(topics.keys())
 
     outputs = {}
-    # outputs = load_corpus(args.output_file)
-    # psgids = []
-    # input_data = []
 
     for qid in tqdm(qids, total=len(qids)):
 
         result = runs[qid]
         topic = topics[qid]
-        documents = [corpus[docid] for docid in result]
+        documents = [corpus[docid] for i, docid in enumerate(result)][:top_k]
 
         # predict
         summaries = []
@@ -52,7 +49,6 @@ def summarize(
             )
             batch_outputs = summarizer.generate(inputs, min_tokens=32, max_tokens=512)
             summaries.extend(batch_outputs)
-            print(batch_outputs)
 
         outputs[qid] = summaries
 
@@ -60,7 +56,7 @@ def summarize(
         if writer is not None:
             writer.write(json.dumps({
                 "qid": qid, "topic": topic, "contexts": summaries, 
-                "context_type": summarizer_config['summarizer_name_or_path'],
+                "context_type": f"{summarizer_config['summarizer_name_or_path']}_{top_k}",
                 "docids": [docid for docid in result], 
             }, ensure_ascii=False)+'\n')
 
@@ -96,6 +92,7 @@ if __name__ == '__main__':
         summarize(
             topics=topics, corpus=corpus, input_run=runs,
             summarizer_config=vars(args),
+            top_k=args.top_k,
             batch_size=args.batch_size_per_query,
             max_length=args.max_length,
             template=args.template,

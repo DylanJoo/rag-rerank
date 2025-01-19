@@ -17,15 +17,14 @@ output_run = search(
     b=0.4,
     topics=example_topic,
     batch_size=4,
-    k=10, 
-    writer=None
+    k=1000, 
+    writer=writer
 )
 writer.close()
 
 """ II. Retrieval Augmentation 
 ## [TODO] Add listwise (mulitdocument) reranking/summarization
 """
-
 from tools.ranking_utils import load_corpus
 corpus = load_corpus(corpus_dir)
 
@@ -45,12 +44,11 @@ output_run = rerank(
     top_k=1000,
     batch_size=2,
     max_length=512,
-    writer=None,
+    writer=writer,
 )
 writer.close()
 
 ## II(b). Passage summariation
-output_run = {k: v for i, (k, v) in enumerate(output_run.items()) if i < 100}
 writer = open('temp3.jsonl', 'w')
 from augment.pointwise import summarize
 output_context = summarize(
@@ -63,6 +61,7 @@ output_context = summarize(
         'fp16': True,
         'flash_attention_2': False
     },
+    top_k=10,
     batch_size=2,
     max_length=1024,
     template="Summarize the document based on the query. Query: {q} Document: {d} Summary: ",
