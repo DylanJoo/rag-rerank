@@ -5,11 +5,11 @@ index_dir='/home/dju/indexes/litsearch/bm25.litsearch.full_documents.lucene/'
 corpus_dir='/home/dju/datasets/litsearch/full_paper/corpus.jsonl'
 example_topic = {'1': 'Are there any research papers on methods to compress large-scale language models using task-agnostic knowledge distillation techniques?'}
 # golden doc: 202719327
+writer = None
 
 """ I. First-stage Retrieval
 ## [TODO] query reformulation 
 """
-writer = open('temp1.txt', 'w')
 from retrieve.bm25 import search
 output_run = search(
     index=index_dir,
@@ -20,7 +20,6 @@ output_run = search(
     k=1000, 
     writer=writer
 )
-writer.close()
 
 """ II. Retrieval Augmentation 
 ## [TODO] Add listwise (mulitdocument) reranking/summarization
@@ -29,7 +28,6 @@ from tools.ranking_utils import load_corpus
 corpus = load_corpus(corpus_dir)
 
 ## II(a). Passage reranking
-writer = open('temp2.txt', 'w')
 from augment.pointwise import rerank
 output_run = rerank(
     topics=example_topic,
@@ -46,10 +44,8 @@ output_run = rerank(
     max_length=512,
     writer=writer,
 )
-writer.close()
 
 ## II(b). Passage summariation
-writer = open('temp3.jsonl', 'w')
 from augment.pointwise import summarize
 output_context = summarize(
     topics=example_topic,
@@ -67,7 +63,7 @@ output_context = summarize(
     template="Summarize the document based on the query. Query: {q} Document: {d} Summary: ",
     writer=writer,
 )
-writer.close()
+print(output_context)
 
 
 """ III. Generation

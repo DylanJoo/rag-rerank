@@ -2,7 +2,11 @@ import json
 import string
 import random
 import torch
-from transformers import AutoModelForCausalLM, AutoModelForSeq2SeqLM, AutoTokenizer
+from transformers import (
+    AutoModelForCausalLM, 
+    AutoModelForSeq2SeqLM, 
+    AutoTokenizer
+)
 
 class dummyLLM:
 

@@ -44,7 +44,7 @@ def summarize(
         summaries = []
         for batch_docs in batch_iterator(documents, batch_size):
             inputs = list(
-                template.replace('{q}', topic).replace('{d}', (doc['title']+doc['text']).strip() ) \
+                template.replace('{q}', topic).replace('{d}', (doc['title']+" "+doc['text']).strip() ) \
                         for doc in batch_docs
             )
             batch_outputs = summarizer.generate(inputs, min_tokens=32, max_tokens=512)
