@@ -9,3 +9,5 @@ This repo modularizes the following phase into standalone modules.
 - [Augment]()
 - [Generate]()
 - [Verify](): under construction.
+
+The [Wrapper]() would integrate all the modules and take the query as input for generate RAG results.
