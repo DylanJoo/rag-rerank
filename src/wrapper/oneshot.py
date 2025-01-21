@@ -1,8 +1,6 @@
 index_dir='/home/dju/indexes/litsearch/bm25.litsearch.full_documents.lucene/'
 corpus_dir='/home/dju/datasets/litsearch/full_paper/corpus.jsonl'
 example_topic = {'1': 'Are there any research papers on methods to compress large-scale language models using task-agnostic knowledge distillation techniques?'}
-# golden doc: 202719327
-writer = None
 
 """ I. First-stage Retrieval
 ## [TODO] query reformulation 
@@ -14,8 +12,7 @@ output_run = search(
     b=0.4,
     topics=example_topic,
     batch_size=4,
-    k=1000, 
-    writer=writer
+    k=100, 
 )
 
 """ II. Retrieval Augmentation 
@@ -26,7 +23,24 @@ corpus = load_corpus(corpus_dir)
 
 ## II(a). Passage reranking
 from augment.pointwise import rerank
-output_run = rerank(
+# output_run = rerank(
+#     topics=example_topic,
+#     corpus=corpus,
+#     runs=output_run,
+#     reranker_config={
+#         "reranker_class": 'monobert',
+#         "reranker_name_or_path": 'cross-encoder/ms-marco-MiniLM-L-6-v2',
+#         "device": 'cuda',
+#         "fp16": True
+#     },
+#     top_k=1000,
+#     batch_size=2,
+#     max_length=512,
+# )
+
+## II(b). Passage filtering
+from augment.pointwise import filter
+output_context = filter(
     topics=example_topic,
     corpus=corpus,
     runs=output_run,
@@ -36,31 +50,31 @@ output_run = rerank(
         "device": 'cuda',
         "fp16": True
     },
-    top_k=1000,
+    top_k=100,
     batch_size=2,
     max_length=512,
-    writer=writer,
-)
-
-## II(b). Passage summariation
-from augment.pointwise import summarize
-output_context = summarize(
-    topics=example_topic,
-    corpus=corpus,
-    runs=output_run,
-    summarizer_config={
-        "summarizer_class": 'seq2seq',
-        "summarizer_name_or_path": 'google/flan-t5-base',
-        'fp16': True,
-        'flash_attention_2': False
-    },
-    top_k=10,
-    batch_size=2,
-    max_length=1024,
-    template="Summarize the document based on the query. Query: {q} Document: {d} Summary: ",
-    writer=writer,
+    threshold=0.0,
 )
 print(output_context)
+
+## II(c). Passage summariation
+# from augment.pointwise import summarize
+# output_context = summarize(
+#     topics=example_topic,
+#     corpus=corpus,
+#     runs=output_run,
+#     summarizer_config={
+#         "summarizer_class": 'seq2seq',
+#         "summarizer_name_or_path": 'google/flan-t5-base',
+#         'fp16': True,
+#         'flash_attention_2': False
+#     },
+#     top_k=10,
+#     batch_size=2,
+#     max_length=1024,
+#     template="Summarize the document based on the query. Query: {q} Document: {d} Summary: ",
+# )
+# print(output_context)
 
 
 """ III. Generation

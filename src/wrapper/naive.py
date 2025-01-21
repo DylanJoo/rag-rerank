@@ -62,12 +62,9 @@ output_context = summarize(
 )
 print(output_context)
 
-
 """ III. Generation
 ## [TODO] Huggingface generation pipeline (maybe dont need)
 """
-
-# from augment.pointwise import filter
 
 # Generate
 # from generate.llm.vllm_back import vLLM

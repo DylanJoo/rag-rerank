@@ -20,11 +20,12 @@ from tools.ranking_utils import (
 )
 from augment.pointwise.reranking.utils import load_reranker
 
-def rerank(
+def filter(
     topics, corpus, runs,
     reranker_config,
     top_k, batch_size,
     max_length,
+    threshold,
     writer=None
 ):
 
@@ -57,6 +58,11 @@ def rerank(
         sorted_result = {k: v for k,v in sorted(hits.items(), key=itemgetter(1), reverse=True)} 
         outputs[qid] = sorted_result
 
+        # filter candidates
+        if threshold is not None:
+            outputs[qid] = {k: v for k,v in sorted_result.items() if v >= filter_threshold}
+            outputs[qid] = sorted_result
+
         # write
         if writer is not None:
             for i, (docid, score) in enumerate(sorted_result.items()):
@@ -74,6 +80,7 @@ if __name__ == '__main__':
     parser.add_argument("-bs", "--batch_size_per_query", type=int, default=2)
     parser.add_argument("--max_length", type=int, default=384)
     parser.add_argument("--output", type=str, default=None)
+    parser.add_argument("--threshold", type=float, default=-1)
 
     # reranker config
     parser.add_argument("--reranker_class", type=str, default=None)
