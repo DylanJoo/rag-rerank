@@ -46,7 +46,7 @@ def rerank(
             queries = [query] * len(batch_docs)
             batch_scores = reranker.predict(
                 queries=queries,
-                documents=[doc['text'] for doc in batch_docs],
+                texts=[doc['text'] for doc in batch_docs],
                 titles=[doc['title'] for doc in batch_docs],
                 max_length=max_length
             )

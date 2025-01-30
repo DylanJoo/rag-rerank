@@ -1,6 +1,9 @@
 index_dir='/home/dju/indexes/litsearch/bm25.litsearch.full_documents.lucene/'
-corpus_dir='/home/dju/datasets/litsearch/full_paper/corpus.jsonl'
-example_topic = {'1': 'Are there any research papers on methods to compress large-scale language models using task-agnostic knowledge distillation techniques?'}
+corpus_dir='/home/dju/datasets/litsearch/corpus.jsonl'
+example_topic = {
+    '1': 'Are there any research papers on methods to compress large-scale language models using task-agnostic knowledge distillation techniques?',
+    '2': 'Are there any research papers on new language model pre-training that can outperform masked language modeling?'
+}
 
 """ I. First-stage Retrieval
 ## [TODO] query reformulation 
@@ -23,24 +26,7 @@ corpus = load_corpus(corpus_dir)
 
 ## II(a). Passage reranking
 from augment.pointwise import rerank
-# output_run = rerank(
-#     topics=example_topic,
-#     corpus=corpus,
-#     runs=output_run,
-#     reranker_config={
-#         "reranker_class": 'monobert',
-#         "reranker_name_or_path": 'cross-encoder/ms-marco-MiniLM-L-6-v2',
-#         "device": 'cuda',
-#         "fp16": True
-#     },
-#     top_k=1000,
-#     batch_size=2,
-#     max_length=512,
-# )
-
-## II(b). Passage filtering
-from augment.pointwise import filter
-output_context = filter(
+output_run = rerank(
     topics=example_topic,
     corpus=corpus,
     runs=output_run,
@@ -53,36 +39,40 @@ output_context = filter(
     top_k=100,
     batch_size=2,
     max_length=512,
+)
+
+## II(b). Passage filtering
+### [TODO] use the reranking model as the selection baseline.
+from augment.pointwise import select
+output_context = select(
+    topics=example_topic,
+    corpus=corpus,
+    runs=output_run,
+    selector_config={
+        "reranker_class": 'monobert',
+        "reranker_name_or_path": 'cross-encoder/ms-marco-MiniLM-L-6-v2',
+        "device": 'cuda',
+        "fp16": True
+    },
+    max_k=3,
+    batch_size=2,
+    max_length=512,
     threshold=0.0,
 )
-print(output_context)
-
-## II(c). Passage summariation
-# from augment.pointwise import summarize
-# output_context = summarize(
-#     topics=example_topic,
-#     corpus=corpus,
-#     runs=output_run,
-#     summarizer_config={
-#         "summarizer_class": 'seq2seq',
-#         "summarizer_name_or_path": 'google/flan-t5-base',
-#         'fp16': True,
-#         'flash_attention_2': False
-#     },
-#     top_k=10,
-#     batch_size=2,
-#     max_length=1024,
-#     template="Summarize the document based on the query. Query: {q} Document: {d} Summary: ",
-# )
-# print(output_context)
 
 
 """ III. Generation
-## [TODO] Huggingface generation pipeline (maybe dont need)
 """
+PROMPT = "Write a passage that answers the given query. Use the provided search results to draft the answer (some of them might be irrelevant). Cite the documents if they are relevant. Write the passage within 100 words. Add the `<p>` and `</p>` tags at the beginning and the end.\n\nQuery: {Q}\nSearch results:\n{Ds}\nPassage: <p>"
 
-# from augment.pointwise import filter
-
-# Generate
 # from generate.llm.vllm_back import vLLM
-# generator = vLLM(model=model_opt.generator_name_or_path, temperature=0.7)
+from generate.llm.hf_back import LLM
+generator = LLM(model='meta-llama/Llama-3.2-1B-Instruct', temperature=0.7)
+xs = []
+for qid in example_topic:
+    q = example_topic[qid]
+    ds = output_context[qid]
+    xs.append(PROMPT.replace("{Q}", q).replace("{Ds}", ds))
+
+output_response = generator.generate(x=xs, max_tokens=500)
+print([r.split('</p>')[0] for r in output_response])

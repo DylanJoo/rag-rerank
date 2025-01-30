@@ -32,11 +32,11 @@ class monoT5(nn.Module):
         self.REL = self.tokenizer.encode('yes')[0]
         self.NREL = self.tokenizer.encode('no')[0]
 
-    def predict(self, queries, documents, titles=None, max_length=512):
+    def predict(self, queries, texts, titles=None, max_length=512):
         # [NOTE] sometimes the token `relevant` token will be truncated
         if titles is not None:
-            documents = [f'{title} {text}'.strip() for title, text in zip(titles, documents)] 
-        text_pairs = [f"Query: {q} Document: {d} Relevant:" for (q, d) in zip(queries, documents)]
+            texts = [f'{title} {text}'.strip() for title, text in zip(titles, texts)] 
+        text_pairs = [f"Query: {q} Document: {d} Relevant:" for (q, d) in zip(queries, texts)]
         inputs = self.tokenizer(
             text_pairs,
             padding=True,
@@ -84,12 +84,12 @@ class monoBERT(nn.Module):
             tokenizer_name or model_name_or_dir
         )
 
-    def predict(self, queries, documents, titles=None, max_length=512):
+    def predict(self, queries, texts, titles=None, max_length=512):
         # prepare inputs
         if titles is not None:
-            documents = [f'{title} {text}'.strip() for title, text in zip(titles, documents)] 
+            texts = [f'{title} {text}'.strip() for title, text in zip(titles, texts)] 
         inputs = self.tokenizer(
-                queries, documents,
+                queries, texts,
                 padding=True,
                 truncation=True,
                 return_tensors='pt',
