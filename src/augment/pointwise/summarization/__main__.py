@@ -11,7 +11,7 @@ import argparse
 from tqdm import tqdm
 from collections import defaultdict
 
-from tools.ranking_utils import (
+from tools import (
     load_runs, 
     load_corpus, 
     load_topics,
@@ -69,11 +69,11 @@ if __name__ == '__main__':
     parser.add_argument("--run_file", type=str, default=None)
 
     parser.add_argument("--template", type=str, default="{d}")
+    parser.add_argument("--output", type=str, default=None)
+
     parser.add_argument("--top_k", type=int, default=100)
     parser.add_argument('-bs', "--batch_size_per_query", type=int, default=32)
     parser.add_argument("--max_length", type=int, default=None)
-    parser.add_argument("--output", type=str, default=None)
-
     parser.add_argument("--summarizer_class", type=str, default=None)
     parser.add_argument("--summarizer_name_or_path", type=int, default=None)
     parser.add_argument("--device", type=str, default='cpu')

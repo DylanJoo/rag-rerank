@@ -1,11 +1,14 @@
 import vllm
+from typing import List
 
 class vLLM:
 
-    def __init__(self, model, 
+    def __init__(self, 
+        model, 
         temperature=0.7, top_p=0.9, 
         dtype='half', gpu_memory_utilization=0.75, 
         num_gpus=1, 
+        think_activated=False
     ):
         self.model = vllm.LLM(
             model, 
@@ -19,13 +22,28 @@ class vLLM:
             top_p=top_p,
             skip_special_tokens=False
         )
+        self.think_activated = think_activated
+
+    def preprocess(self, inputs: List):
+        if self.think_activated:
+            inputs = [i + "<think>\n" for i in inputs]
+        return inputs
+
+    def postprocess(self, outputs: List):
+        if self.think_activated:
+            for i, o in enumerate(outputs):
+                if '</think>' in o:
+                    outputs[i] = o.split('</think>')[-1]
+        return outputs
 
     def generate(self, x, max_tokens=1024, min_tokens=0, **kwargs):
         self.sampling_params.max_tokens = kwargs.pop('max_tokens', 256)
         self.sampling_params.min_tokens = kwargs.pop('min_tokens', 32)
+
+        x = self.preprocess(x)
         outputs = self.model.generate(x, self.sampling_params, use_tqdm=False)
         if len(outputs) > 1:
-            return [o.outputs[0].text for o in outputs]
+            return self.postprocess([o.outputs[0].text for o in outputs])
         else:
-            return [outputs[0].outputs[0].text]
+            return self.postprocess([outputs[0].outputs[0].text])
 

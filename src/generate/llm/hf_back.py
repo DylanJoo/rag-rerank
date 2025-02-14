@@ -8,6 +8,7 @@ from transformers import (
     AutoTokenizer,
     pipeline
 )
+from typing import List
 
 class dummyLLM:
 
@@ -24,7 +25,13 @@ class dummyLLM:
 
 class LLM:
 
-    def __init__(self, model, temperature=0.7, top_p=1.0, flash_attention_2=False):
+    def __init__(self, 
+        model, 
+        temperature=0.7, 
+        top_p=1.0, 
+        flash_attention_2=False,
+        think_activated=False
+    ):
 
         if flash_attention_2:
             model_kwargs = {'torch_dtype': torch.bfloat16}
@@ -39,12 +46,29 @@ class LLM:
         )
         self.temperature = temperature
         self.top_p = top_p
+        self.think_activated = think_activated
+
+    def preprocess(self, inputs: List):
+        if self.think_activated:
+            inputs = [i + "<think>\n" for i in inputs]
+        return inputs
+
+    def postprocess(self, outputs: List, verbose=False):
+        if self.think_activated:
+            for i, o in enumerate(outputs):
+                if '</think>' in o:
+                    o_think, o_response, = o.split('</think>')
+                    if verbose:
+                        print(o_think)
+                    outputs[i] = o_response
+        return outputs
 
     def generate(self, x, max_tokens=1024, min_tokens=0, **kwargs):
 
         if isinstance(x, str):
             x = [x]
 
+        x = self.preprocess(x)
         outputs = self.pipeline(
             x,
             do_sample=True,
@@ -55,8 +79,9 @@ class LLM:
             num_return_sequences=1,
             return_full_text=False
         )
-        generation = [o[0]['generated_text'] for o in outputs]
-        return generation
+        outputs = [o[0]['generated_text'] for o in outputs]
+        outputs = self.postprocess(outputs, kwargs.get('verbose', False))
+        return outputs
 
 class Seq2seqLLM(LLM):
 

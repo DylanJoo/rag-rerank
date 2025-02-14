@@ -23,8 +23,9 @@ from augment.pointwise.reranking.utils import load_reranker
 def rerank(
     topics, corpus, runs,
     reranker_config,
-    top_k, batch_size,
+    batch_size,
     max_length,
+    top_k=None, 
     writer=None
 ):
 
@@ -38,7 +39,7 @@ def rerank(
 
         result = runs[qid]
         query = topics[qid]
-        documents = [corpus[docid] for docid in result]
+        documents = [corpus[docid] for docid in result][:top_k]
 
         # predict
         scores = []

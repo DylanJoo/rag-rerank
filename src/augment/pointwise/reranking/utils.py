@@ -1,5 +1,10 @@
 from augment.pointwise.reranking.crossencoders import monoT5, monoBERT
 
+model_cls_map = {
+    "monot5": monoT5, 
+    "monobert": monoBERT
+}
+
 def load_reranker(
     reranker_class, 
     reranker_name_or_path, 
@@ -8,8 +13,6 @@ def load_reranker(
     fp16=False,
     **kwargs
 ):
-    model_cls_map = {"monot5": monoT5, "monobert": monoBERT}
-
     if reranker_class is not None:
         model_cls = model_cls_map[reranker_class.lower()]
     else:
