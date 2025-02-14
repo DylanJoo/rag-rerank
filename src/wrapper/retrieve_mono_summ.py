@@ -7,9 +7,7 @@ topic_file='/home/dju/datasets/crux/ranking_3/test_topics.tsv'
 all_topic = load_topics(topic_file)
 example_topic = {"1": all_topic[next(iter(all_topic))]}
 
-""" I. Retrieval
-## [TODO] query reformulation 
-"""
+""" I. First-stage Retrieval """
 from retrieve.bm25 import search
 output_run = search(
     index=index_dir,
@@ -20,12 +18,10 @@ output_run = search(
     k=1000, 
 )
 
-""" II. Retrieval Augmentation 
-## [TODO] listwise summarization
-"""
+""" II. Retrieval Augmentation """
 corpus = load_corpus(corpus_dir)
 
-## II(a). Passage reranking pointwise
+## II(a). Passage reranking (mono)
 from augment.pointwise import rerank
 output_run = rerank(
     topics=example_topic,
@@ -42,43 +38,22 @@ output_run = rerank(
     max_length=512,
 )
 
-## II(b). Passage reranking listwise 
-from augment.listwise import rerank
-output_run = rerank(
+## II(b). Passage summariation
+from augment.pointwise import summarize
+output_context = summarize(
     topics=example_topic,
     corpus=corpus,
     runs=output_run,
-    model_path='castorini/first_mistral',
-    top_k=100,
-    max_length=512,
-    batch_size=2,
-    prompt_mode='rank_GPT',
-    cpntext_size=4096,
-    variable_passages=True,
-    use_logits=False,
-    use_alpha=True,
-    vllm_batched=True,
-    num_gpus=1
-)
-print(output_run)
-
-
-## II(c). Passage filtering
-from augment.pointwise import select
-output_context = select(
-    topics=example_topic,
-    corpus=corpus,
-    runs=output_run,
-    selector_config={
-        "reranker_class": 'monobert',
-        "reranker_name_or_path": 'cross-encoder/ms-marco-MiniLM-L-6-v2',
-        "device": 'cuda',
-        "fp16": True
+    summarizer_config={
+        "summarizer_class": 'seq2seq',
+        "summarizer_name_or_path": 'google/flan-t5-base',
+        'fp16': True,
+        'flash_attention_2': False
     },
-    max_k=3,
+    top_k=30,
     batch_size=2,
-    max_length=512,
-    threshold=0.0,
+    max_length=1024,
+    template="Summarize the document based on the query. Query: {q} Document: {d} Summary: ",
 )
 
 
@@ -91,7 +66,7 @@ generator = LLM(model='meta-llama/Llama-3.2-1B-Instruct', temperature=0.7)
 xs = []
 for qid in example_topic:
     q = example_topic[qid]
-    ds = output_context[qid]
+    ds = output_context[qid]['contexts']
     xs.append(PROMPT.replace("{Q}", q).replace("{Ds}", ds))
 output_response = generator.generate(x=xs, max_tokens=500)
 

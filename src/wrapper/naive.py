@@ -65,7 +65,3 @@ print(output_context)
 """ III. Generation
 ## [TODO] Huggingface generation pipeline (maybe dont need)
 """
-
-# Generate
-# from generate.llm.vllm_back import vLLM
-# generator = vLLM(model=model_opt.generator_name_or_path, temperature=0.7)
