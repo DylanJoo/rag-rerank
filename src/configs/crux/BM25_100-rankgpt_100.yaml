@@ -1,0 +1,48 @@
+data:
+  index_dir: "/home/dju/indexes/crux/bm25.crux.passages.lucene/"
+  corpus_dir: "/home/dju/datasets/crux/passages/"
+  topic_file: "/home/dju/datasets/crux/ranking_3/testb_topics.tsv"
+  qrels_file: "/home/dju/datasets/crux/ranking_3/testb_qrels_pr.txt"
+  judgement_file: "/home/dju/datasets/crux/ranking_3/testb_oracle-passages_judgements.jsonl"
+  n_questions: 15
+  threshold: 3
+
+retrieval:
+  category: 'retrieval'
+  model: "bm25"
+  k: 100
+  k1: 0.9
+  b: 0.4
+  batch_size: 64
+
+reranking:
+  category: 'reranking'
+  model_class: "listwise"
+  model_name_or_path: "na"
+  top_k: 100
+  batch_size: 8
+  max_length: 512
+  use_logits: False
+  num_passes: 1
+
+diversity_reranking:
+  category: 'diversity_reranking'
+  model_name_or_path: "na"
+  max_k: 100
+  batch_size: 32
+  max_length: 512
+
+augmentation:
+  category: 'augmentation'
+  type: 'vanilla'
+  max_k: 10
+  batch_size: -1
+  max_length: 1024
+
+generation:
+  category: 'generation'
+  model_name_or_path: "na"
+  batch_size: 2
+  max_length: 2048
+  temperature: 0.6
+  # think_activated: True

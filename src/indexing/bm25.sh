@@ -13,26 +13,39 @@ source ${HOME}/.bashrc
 conda activate rag
 
 # peS2o corpus (which is default pyserini corpus)
-DATASET_DIR=/home/dju/datasets/peS2o
-INDEX_DIR=/home/dju/indexes/peS2o
+# DATASET_DIR=/home/dju/datasets/peS2o
+# INDEX_DIR=/home/dju/indexes/peS2o
+# python -m pyserini.index.lucene \
+#     --collection JsonCollection \
+#     --input ${DATASET_DIR}/documents \
+#     --index ${INDEX_DIR}/bm25.peS2o.documents.lucene \
+#     --generator DefaultLuceneDocumentGenerator \
+#     --threads 128
+
+# Litsearch corpus (transformed to BEIR-style corpus)
+# see collection here. https://github.com/castorini/anserini/tree/master/src/main/java/io/anserini/collection
+# DATASET_DIR=/home/dju/datasets/litsearch
+# INDEX_DIR=/home/dju/indexes/litsearch/
+# python -m pyserini.index.lucene \
+#     --collection BeirFlatCollection \
+#     --input ${DATASET_DIR}/full_paper \
+#     --index ${INDEX_DIR}/bm25.litsearch.full_documents.lucene \
+#     --generator DefaultLuceneDocumentGenerator \
+#     --threads 128 
+
+# crux corpus (which is default pyserini corpus)
+DATASET_DIR=/home/dju/datasets/crux
+INDEX_DIR=/home/dju/indexes/crux
+python -m pyserini.index.lucene \
+    --collection JsonCollection \
+    --input ${DATASET_DIR}/passages \
+    --index ${INDEX_DIR}/bm25.crux.passages.lucene \
+    --generator DefaultLuceneDocumentGenerator \
+    --threads 128
 
 python -m pyserini.index.lucene \
     --collection JsonCollection \
     --input ${DATASET_DIR}/documents \
-    --index ${INDEX_DIR}/bm25.peS2o.documents.lucene \
+    --index ${INDEX_DIR}/bm25.crux.documents.lucene \
     --generator DefaultLuceneDocumentGenerator \
     --threads 128
-
-# Litsearch (which has been transformed to BEIR-style corpus)
-# see collection here. https://github.com/castorini/anserini/tree/master/src/main/java/io/anserini/collection
-DATASET_DIR=/home/dju/datasets/litsearch
-INDEX_DIR=/home/dju/indexes/litsearch/
-
-python -m pyserini.index.lucene \
-    --collection BeirFlatCollection \
-    --input ${DATASET_DIR}/full_paper \
-    --index ${INDEX_DIR}/bm25.litsearch.full_documents.lucene \
-    --generator DefaultLuceneDocumentGenerator \
-    --threads 128 
-# --fields text title
-
