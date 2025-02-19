@@ -6,27 +6,27 @@ import string
 from glob import glob
 from collections import defaultdict
 from generate.llm.vllm_back import vLLM
-from generate.llm.hf_back import Seq2seqLLM
+from generate.llm.hf_back import LLM
 
 def load_summarizer(
-    summarizer_class='seq2seq', 
-    summarizer_name_or_path='t5-base', 
+    model_class='seq2seq', 
+    model_name_or_path='t5-base', 
     temperature=0.7,
     top_p=0.95,
     **kwargs
 ):
 
-    model_cls_map = {"seq2seq": Seq2seqLLM, "causal": vLLM}[summarizer_class.lower()]
+    model_cls_map = {"seq2seq": LLM, "causal": vLLM}[model_class.lower()]
 
-    if summarizer_class == 'seq2seq':
+    if model_class == 'seq2seq':
         model = model_cls_map(
-            model=summarizer_name_or_path,
+            model=model_name_or_path,
             flash_attention_2=kwargs.pop('flash_attention_2', False)
         )
 
-    if summarizer_class == 'vllm':
+    if model_class == 'vllm':
         model = model_cls_map(
-            model=summarizer_name_or_path, 
+            model=model_name_or_path, 
             temperature=temperature, 
             top_p=top_p,
             num_gpus=kwargs.get("num_gpus")

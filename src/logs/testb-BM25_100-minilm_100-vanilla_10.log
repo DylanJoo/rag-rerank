@@ -1,0 +1,44 @@
+{
+    "data": {
+        "default_config": "configs/crux/testb-BM25_100-minilm_100.yaml",
+        "debug": null,
+        "index_dir": "/home/dju/indexes/crux/bm25.crux.passages.lucene/",
+        "corpus_dir": "/home/dju/datasets/crux/passages/",
+        "topic_file": "/home/dju/datasets/crux/ranking_3/testb_topics.tsv",
+        "qrels_file": "/home/dju/datasets/crux/ranking_3/testb_qrels_pr.txt",
+        "judgement_file": "/home/dju/datasets/crux/ranking_3/testb_oracle-passages_judgements.jsonl"
+    },
+    "retrieval": {
+        "default_config": "configs/crux/testb-BM25_100-minilm_100.yaml",
+        "debug": null,
+        "model": "bm25",
+        "k": 100,
+        "k1": 0.9,
+        "b": 0.4,
+        "batch_size": 64
+    },
+    "reranking": {
+        "default_config": "configs/crux/testb-BM25_100-minilm_100.yaml",
+        "debug": null,
+        "model_class": "monobert",
+        "model_name_or_path": "cross-encoder/ms-marco-MiniLM-L-6-v2",
+        "top_k": 100,
+        "batch_size": 4,
+        "max_length": 512
+    },
+    "diversity_reranking": null,
+    "augmentation": {
+        "default_config": "configs/crux/testb-BM25_100-minilm_100.yaml",
+        "debug": null,
+        "type": "vanilla",
+        "max_k": 10,
+        "batch_size": -1,
+        "max_length": 1024
+    },
+    "generation": null,
+    "default_config": "configs/crux/testb-BM25_100-minilm_100.yaml",
+    "debug": null
+}
+INFO 02-19 17:05:44 __init__.py:183] Automatically detected platform cuda.
+WARNING 02-19 17:05:44 cuda.py:32] You are using a deprecated `pynvml` package. Please install `nvidia-ml-py` instead, and make sure to uninstall `pynvml`. When both of them are installed, `pynvml` will take precedence and cause errors. See https://pypi.org/project/pynvml for more information.
+{'mean_coverage': 0.6027875457875458, 'mean_density': 0.5474590864107542, 'mean_num_segments': 10.0, 'mean_num_tokens': 1222.12, 'num_coverage': 50, 'RPrec': (0.15480952380952384, 0.401518502673456, 0.402588549777248), 'MAP': 0.34357652584095066}

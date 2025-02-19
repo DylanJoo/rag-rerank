@@ -1,0 +1,69 @@
+{
+    "data": {
+        "default_config": "configs/crux/testb-BM25_100-rankgpt_100.yaml",
+        "debug": null,
+        "num_gpus": 1,
+        "index_dir": "/home/dju/indexes/crux/bm25.crux.passages.lucene/",
+        "corpus_dir": "/home/dju/datasets/crux/passages/",
+        "topic_file": "/home/dju/datasets/crux/ranking_3/testb_topics.tsv",
+        "qrels_file": "/home/dju/datasets/crux/ranking_3/testb_qrels_pr.txt",
+        "judgement_file": "/home/dju/datasets/crux/ranking_3/testb_oracle-passages_judgements.jsonl"
+    },
+    "retrieval": {
+        "default_config": "configs/crux/testb-BM25_100-rankgpt_100.yaml",
+        "debug": null,
+        "num_gpus": 1,
+        "model": "bm25",
+        "k": 100,
+        "k1": 0.9,
+        "b": 0.4,
+        "batch_size": 64
+    },
+    "reranking": {
+        "default_config": "configs/crux/testb-BM25_100-rankgpt_100.yaml",
+        "debug": null,
+        "num_gpus": 1,
+        "model_class": "listwise",
+        "model_name_or_path": "castorini/rank_zephyr_7b_v1_full",
+        "top_k": 100,
+        "batch_size": 8,
+        "max_length": 512,
+        "use_logits": false,
+        "num_passes": 1
+    },
+    "diversity_reranking": null,
+    "augmentation": {
+        "default_config": "configs/crux/testb-BM25_100-rankgpt_100.yaml",
+        "debug": null,
+        "num_gpus": 1,
+        "type": "vanilla",
+        "max_k": 10,
+        "batch_size": -1,
+        "max_length": 1024
+    },
+    "generation": null,
+    "default_config": "configs/crux/testb-BM25_100-rankgpt_100.yaml",
+    "debug": null,
+    "num_gpus": 1
+}
+INFO 02-19 18:10:13 __init__.py:183] Automatically detected platform cuda.
+WARNING 02-19 18:10:13 cuda.py:32] You are using a deprecated `pynvml` package. Please install `nvidia-ml-py` instead, and make sure to uninstall `pynvml`. When both of them are installed, `pynvml` will take precedence and cause errors. See https://pypi.org/project/pynvml for more information.
+Loading castorini/rank_zephyr_7b_v1_full ...
+INFO 02-19 18:10:21 config.py:520] This model supports multiple tasks: {'generate', 'reward', 'classify', 'score', 'embed'}. Defaulting to 'generate'.
+INFO 02-19 18:10:21 llm_engine.py:232] Initializing an LLM engine (v0.7.0) with config: model='castorini/rank_zephyr_7b_v1_full', speculative_config=None, tokenizer='castorini/rank_zephyr_7b_v1_full', skip_tokenizer_init=False, tokenizer_mode=auto, revision=None, override_neuron_config=None, tokenizer_revision=None, trust_remote_code=False, dtype=torch.bfloat16, max_seq_len=32768, download_dir=None, load_format=auto, tensor_parallel_size=1, pipeline_parallel_size=1, disable_custom_all_reduce=False, quantization=None, enforce_eager=False, kv_cache_dtype=auto,  device_config=cuda, decoding_config=DecodingConfig(guided_decoding_backend='xgrammar'), observability_config=ObservabilityConfig(otlp_traces_endpoint=None, collect_model_forward_time=False, collect_model_execute_time=False), seed=0, served_model_name=castorini/rank_zephyr_7b_v1_full, num_scheduler_steps=1, multi_step_stream_outputs=True, enable_prefix_caching=False, chunked_prefill_enabled=False, use_async_output_proc=True, disable_mm_preprocessor_cache=False, mm_processor_kwargs=None, pooler_config=None, compilation_config={"splitting_ops":[],"compile_sizes":[],"cudagraph_capture_sizes":[256,248,240,232,224,216,208,200,192,184,176,168,160,152,144,136,128,120,112,104,96,88,80,72,64,56,48,40,32,24,16,8,4,2,1],"max_capture_size":256}, use_cached_outputs=False, 
+INFO 02-19 18:10:24 cuda.py:225] Using Flash Attention backend.
+INFO 02-19 18:10:25 model_runner.py:1110] Starting to load model castorini/rank_zephyr_7b_v1_full...
+INFO 02-19 18:10:25 weight_utils.py:251] Using model weights format ['*.safetensors']
+INFO 02-19 18:13:35 model_runner.py:1115] Loading model weights took 13.4967 GB
+INFO 02-19 18:13:40 worker.py:266] Memory profiling takes 4.59 seconds
+INFO 02-19 18:13:40 worker.py:266] the current vLLM instance can use total_gpu_memory (47.44GiB) x gpu_memory_utilization (0.93) = 44.12GiB
+INFO 02-19 18:13:40 worker.py:266] model weights take 13.50GiB; non_torch_memory takes 0.06GiB; PyTorch activation peak memory takes 3.38GiB; the rest of the memory reserved for KV Cache is 27.18GiB.
+INFO 02-19 18:13:40 executor_base.py:108] # CUDA blocks: 13915, # CPU blocks: 2048
+INFO 02-19 18:13:40 executor_base.py:113] Maximum concurrency for 32768 tokens per request: 6.79x
+INFO 02-19 18:13:44 model_runner.py:1430] Capturing cudagraphs for decoding. This may lead to unexpected consequences if the model is not static. To run the model in eager mode, set 'enforce_eager=True' or use '--enforce-eager' in the CLI. If out-of-memory error occurs during cudagraph capture, consider decreasing `gpu_memory_utilization` or switching to eager mode. You can also reduce the `max_num_seqs` as needed to decrease memory usage.
+INFO 02-19 18:14:00 model_runner.py:1558] Graph capturing finished in 16 secs, took 0.26 GiB
+INFO 02-19 18:14:00 llm_engine.py:429] init engine (profile, create kv cache, warmup model) took 25.04 seconds
+Completed loading castorini/rank_zephyr_7b_v1_full
+Reranking and returning 100 passages with castorini/rank_zephyr_7b_v1_full...
+Pass 1 of 1:
+{'mean_coverage': 0.5624285714285715, 'mean_density': 0.5099507377827246, 'mean_num_segments': 10.0, 'mean_num_tokens': 1257.46, 'num_coverage': 50, 'RPrec': (0.15459523809523812, 0.32690468229164116, 0.32486181234565525), 'MAP': 0.2648141281551933}

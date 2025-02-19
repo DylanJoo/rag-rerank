@@ -28,9 +28,10 @@ def vanilla(
         output = {
             "qid": qid, "topic": topic, 
             "type": f"vanilla_{max_k}",
-            "texts": raw_content, 
+            "context_list": raw_content, 
             "prompt": template_fn_mapping[template_type](documents),
             "docids": [docid for docid in result][:max_k], 
+            "response": None
         }
         outputs[qid] = output
 
@@ -44,7 +45,6 @@ if __name__ == '__main__':
     parser.add_argument("--topic_file", type=str, default=None)
     parser.add_argument("--corpus_dir_or_file", type=str, default=None)
     parser.add_argument("--run_file", type=str, default=None)
-
     parser.add_argument("--max_k", type=int, default=None)
     parser.add_argument("--output", type=str, default=None)
     args = parser.parse_args()
