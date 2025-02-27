@@ -43,8 +43,8 @@ def parse_rag_command(commands, yaml_config):
     data_parser.add_argument("--qrels_file", type=str, default=data_config['qrels_file'])
     data_parser.add_argument("--judgement_file", type=str, default=data_config['judgement_file'])
     # crux-specific
-    data_parser.add_argument("--n_questions", type=str, default=data_config['n_questions'])
-    data_parser.add_argument("--threshold", type=str, default=data_config['threshold'])
+    data_parser.add_argument("--n_questions", type=int, default=data_config['n_questions'])
+    data_parser.add_argument("--threshold", type=int, default=data_config['threshold'])
 
     rt_parser = commands.add_parser("retrieval")
     rt_config = yaml_config['retrieval']
@@ -61,16 +61,17 @@ def parse_rag_command(commands, yaml_config):
     rr_parser.add_argument("--top_k", type=int, default=rr_config['top_k'])
     rr_parser.add_argument("--batch_size", type=int, default=rr_config['batch_size'])
     rr_parser.add_argument("--max_length", type=int, default=rr_config['max_length'])
-    rr_parser.add_argument("--use_logits", default=rr_config['use_logits'], action='store_true')
-    rr_parser.add_argument("--num_passes", type=int, default=rr_config['num_passes'])
 
-    dr_parser = commands.add_parser("diversity_reranking")
-    dr_config = yaml_config['diversity_reranking']
-    dr_parser.add_argument("--model_class", type=str, default=rr_config['model_class'])
-    dr_parser.add_argument("--model_name_or_path", type=str, default=rr_config['model_name_or_path'])
-    dr_parser.add_argument("--top_k", type=int, default=rr_config['top_k'])
-    dr_parser.add_argument("--batch_size", type=int, default=rr_config['batch_size'])
-    dr_parser.add_argument("--max_length", type=int, default=rr_config['max_length'])
+    lw_parser = commands.add_parser("listwise_reranking")
+    lw_config = yaml_config['listwise_reranking']
+    lw_parser.add_argument("--model_name_or_path", type=str, default=lw_config['model_name_or_path'])
+    lw_parser.add_argument("--max_k", type=int, default=lw_config['max_k'])
+    lw_parser.add_argument("--batch_size", type=int, default=lw_config['batch_size'])
+    lw_parser.add_argument("--max_length", type=int, default=lw_config['max_length'])
+    lw_parser.add_argument("--use_logits", default=lw_config['use_logits'], action='store_true')
+    lw_parser.add_argument("--use_alpha", default=lw_config['use_alpha'], action='store_true')
+    lw_parser.add_argument("--num_passes", type=int, default=lw_config['num_passes'])
+    lw_parser.add_argument("--system_message", type=str, default=lw_config['system_message'])
 
     aug_parser = commands.add_parser("augmentation")
     aug_config = yaml_config['augmentation']

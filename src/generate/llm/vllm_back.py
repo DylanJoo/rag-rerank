@@ -1,7 +1,7 @@
 import vllm
 from typing import List
 
-class vLLM:
+class LLM:
 
     def __init__(self, 
         model, 
@@ -39,6 +39,9 @@ class vLLM:
     def generate(self, x, max_tokens=1024, min_tokens=0, **kwargs):
         self.sampling_params.max_tokens = kwargs.pop('max_tokens', 256)
         self.sampling_params.min_tokens = kwargs.pop('min_tokens', 32)
+
+        if isinstance(x, str):
+            x = [x]
 
         x = self.preprocess(x)
         outputs = self.model.generate(x, self.sampling_params, use_tqdm=False)

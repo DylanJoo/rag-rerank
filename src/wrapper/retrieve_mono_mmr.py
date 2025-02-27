@@ -9,7 +9,6 @@ judgements_file='/home/dju/datasets/crux/ranking_3/testb_oracle-passages_judgeme
 
 example_topic = load_topics(topics_file)
 corpus = load_corpus(corpus_dir)
-# example_topic = {"1": all_topic[next(iter(all_topic))]}
 qrels = load_qrels(qrels_file)
 judgements = load_judgements(judgements_file)
 

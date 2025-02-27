@@ -30,7 +30,7 @@ def search(index, k1, b, topics, batch_size, k, writer=None):
         )
 
         for key, value in hits.items():
-            outputs[key] = {h.docid: h.score for h in hits[key]}
+            outputs[key] = {h.docid: float(h.score) for h in hits[key]}
 
             for i in range(len(hits[key])):
                 if writer is not None:

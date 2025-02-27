@@ -13,24 +13,28 @@ retrieval:
   k: 100
   k1: 0.9
   b: 0.4
-  batch_size: 64
+  batch_size: 256
 
 reranking:
   category: 'reranking'
-  model_class: "listwise"
-  model_name_or_path: "na"
+  model_class: "monot5"
+  model_name_or_path: "castorini/monot5-3b-msmarco"
   top_k: 100
-  batch_size: 8
-  max_length: 512
-  use_logits: False
-  num_passes: 1
-
-diversity_reranking:
-  category: 'diversity_reranking'
-  model_name_or_path: "na"
-  max_k: 100
   batch_size: 32
   max_length: 512
+
+listwise_reranking:
+  category: 'listwise_reranking'
+  model_name_or_path: "na"
+  max_k: 100
+  batch_size: 4
+  max_length: 4096
+  use_logits: True
+  use_alpha: True
+  num_passes: 1
+  prompt_mode: 'rank_GPT'
+  context_size: 4096
+  system_message: null
 
 augmentation:
   category: 'augmentation'

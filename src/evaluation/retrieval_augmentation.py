@@ -1,0 +1,127 @@
+import logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+
+import os
+import re
+import argparse
+import json
+import numpy as np
+from tqdm import tqdm
+from glob import glob
+import ir_measures
+from ir_measures import RPrec, MAP
+from transformers import AutoTokenizer
+from tools import load_judgements
+
+def rac_evaluate(
+    corpus, qrels, judgements,
+    rac_data,
+    n_questions,
+    threshold=0,
+    rel_threshold=3,
+    runs=None,
+    tokenizer_name='bert-base-uncased',
+    gamma=0.5, tag='experiment'
+):
+    tokenizer = AutoTokenizer.from_pretrained(tokenizer_name)
+
+    outputs = {'coverage': [], 'density': [], 'num_segs': [], 'num_tokens': []}
+
+    overlapped = {k: v for k, v in qrels.items() if k in rac_data}
+
+    if len(overlapped) != len(qrels):
+        logger.warning(' #Topics in qrels and rac_data are not consistent.' + \
+                f' Got {len(qrels)} and {len(rac_data)}.')
+        qrels = overlapped
+
+    for qid in qrels:
+
+        # [oracle] 
+        docids = [docid for docid, score in qrels[qid].items() if score >= rel_threshold ] 
+        rac_text = " ".join([corpus[docid]['text'] for docid in docids])
+        n_tokens = len(tokenizer.tokenize(rac_text))
+
+        judgement_oracle = np.array([judgements[qid][docid] for docid in docids]).max(0)
+        answerable = (judgement_oracle >= threshold)
+        density_oracle = sum(answerable) / n_tokens
+
+        # [retrieval-augmented context] 
+        rac_type = rac_data[qid]['type']
+        rac_text = " ".join(rac_data[qid]['context_list'])
+        docids = rac_data[qid]['docids']
+
+        if 'oracle-report' in tag:
+            docids = [f'{qid}:report']
+
+        ratings = [[0] * n_questions]
+        for docid in docids:
+
+            ## answerability 
+            if qid == docid.split(":")[0]: # only consider the context derieved from relevant
+                judgement = judgements[qid][docid]
+                ratings.append(judgement)
+
+        print(ratings)
+        print('\n\n')
+        ratings = np.array(ratings).max(0)
+
+        # [calculate] coverage
+        coverage = sum(ratings[answerable] >= threshold) / sum(answerable)
+
+        # [calculate] density
+        n_tokens = len(tokenizer.tokenize(rac_text)) 
+        density = sum(ratings[answerable] >= threshold) / n_tokens
+        norm_density = (density / density_oracle) ** gamma
+
+        outputs['coverage'].append(coverage)
+        outputs['density'].append(norm_density)
+        outputs['num_segs'].append(len(docids))
+        outputs['num_tokens'].append(n_tokens)
+
+    # results
+    mean_coverage = np.mean(outputs['coverage'])
+    mean_density = np.mean(outputs['density'])
+    mean_num_segments = np.mean(outputs['num_segs'])
+    mean_num_tokens = np.mean(outputs['num_tokens'])
+    num_coverage = len(outputs['coverage'])
+
+    output_eval = {
+        'mean_coverage': mean_coverage,
+        'mean_density': mean_density,
+        'mean_num_segments': mean_num_segments,
+        'mean_num_tokens': mean_num_tokens,
+        'num_coverage': num_coverage,
+    }
+
+    # results from ir_measures if have runs
+    if runs is not None:
+        rank_results = ir_measures.calc_aggregate([RPrec(rel=3), RPrec(rel=2), RPrec, MAP], qrels, runs)
+        rprec = (rank_results[RPrec(rel=3)], rank_results[RPrec(rel=2)], rank_results[RPrec])
+        mmap = rank_results[MAP]
+        output_eval['RPrec'] = rprec
+        output_eval['MAP'] = mmap
+
+    return output_eval
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Print output")
+    parser.add_argument("--generator_name", type=str, default=None)
+
+    # base
+    parser.add_argument("--dataset_dir", type=str, default=None)
+    parser.add_argument("--rel_subset", type=int, default=3)
+    parser.add_argument("--split", type=str, default='test')
+    parser.add_argument("--threshold", type=int, default=3)
+    parser.add_argument("--weighted_factor", type=float, default=1)
+    # context 
+    parser.add_argument("--passage_path", type=str, default=None)
+    parser.add_argument("--judgement_file", type=str, default=None)
+    # ranking
+    parser.add_argument("--run_file", type=str, default=None)
+    parser.add_argument("--topk", type=int, default=100)
+    parser.add_argument("--tag", type=str, default=None)
+    parser.add_argument("--report_file", type=str, default=None)
+    args = parser.parse_args()
+

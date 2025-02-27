@@ -5,8 +5,7 @@ import os
 import string
 from glob import glob
 from collections import defaultdict
-from generate.llm.vllm_back import vLLM
-from generate.llm.hf_back import LLM
+from generate.llm import vllm_back, hf_back 
 
 def load_summarizer(
     model_class='seq2seq', 
@@ -16,7 +15,7 @@ def load_summarizer(
     **kwargs
 ):
 
-    model_cls_map = {"seq2seq": LLM, "causal": vLLM}[model_class.lower()]
+    model_cls_map = {"seq2seq": hf_back.LLM, "causal": vllm_back.LLM}[model_class.lower()]
 
     if model_class == 'seq2seq':
         model = model_cls_map(

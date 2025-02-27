@@ -21,8 +21,9 @@ def main(args):
         batch_size=args.retrieval.batch_size,
         k=args.retrieval.k, 
     )
+    print(output_run)
 
-    # Reranking
+    # Pointiwse reraning
     if args.reranking is not None:
         from augment.pointwise import rerank
         output_run = rerank(
@@ -38,6 +39,28 @@ def main(args):
             top_k=args.reranking.top_k,
             batch_size=args.reranking.batch_size,
             max_length=args.reranking.max_length,
+        )
+
+    # Listiwse reranking 
+    if args.listwise_reranking is not None:
+        from augment.listwise import rerank
+        output_run = rerank(
+            topics=topics,
+            corpus=corpus,
+            runs=output_run,
+            model_path=args.listwise_reranking.model_name_or_path,
+            top_k=args.listwise_reranking.max_k,
+            num_passes=args.listwise_reranking.num_passes,
+            prompt_mode='rank_GPT',  # maybe also this parameter
+            context_size=4096,       # add this parameter
+            use_logits=args.listwise_reranking.use_logits, 
+            num_gpus=args.num_gpus, # check if it can be adjusted dynamically
+            batch_size=args.listwise_reranking.batch_size,
+            use_alpha=args.listwise_reranking.use_alpha,
+            vllm_batched=True,
+            variable_passages=False,
+            window_size=20,
+            system_message=args.listwise_reranking.system_message
         )
 
     # Context augmentation
@@ -57,8 +80,8 @@ def main(args):
             qrels=qrels, 
             judgements=judgements,
             rac_data=output_rac,
-            n_questions=15,
-            threshold=3,
+            n_questions=args.data.n_questions,
+            threshold=args.data.threshold,
             runs=output_run,
         )
         print(output_eval)
@@ -90,6 +113,7 @@ if __name__ == "__main__":
     config_parser = argparse.ArgumentParser(add_help=False)
     config_parser.add_argument("--default_config", type=str, default=None)
     config_parser.add_argument("--debug", type=int, default=None)
+    config_parser.add_argument("--num_gpus", type=int, default=1)
     config_args, remaining_argv = config_parser.parse_known_args()
     
     yaml_config = load_yaml_config(config_args.default_config)

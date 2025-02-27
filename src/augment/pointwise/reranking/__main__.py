@@ -58,6 +58,8 @@ def rerank(
             for i, (docid, score) in enumerate(sorted_result.items()):
                 writer.write(f"{qid} Q0 {docid} {str(i+1)} {score} {reranker}\n")
 
+            writer.close()
+
     return outputs
 
 if __name__ == '__main__':
@@ -95,6 +97,5 @@ if __name__ == '__main__':
             max_length=args.max_length,
             writer=writer
         )
-    writer.close()
 
     print('done')
