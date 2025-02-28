@@ -45,15 +45,15 @@ def mmr_process(
 
     return selected_docs + remaining_docs # use the last ranking process as remaining's
 
-def rerank(
+def mmr_rerank(
     topics, corpus, runs,
-    model_path,
-    top_k, batch_size,
+    encoder_name_or_path,
+    max_k, batch_size,
     lambda_param=0.5,
-    writer=None,
-    **kwargs
+    max_length=512,
+    writer=None
 ):
-    encoder = SentenceTransformer(model_path)
+    encoder = SentenceTransformer(encoder_name_or_path)
 
     qids = list(topics.keys())
     qids = [qid for qid in qids if qid in runs]  # only appeared in run
@@ -70,14 +70,14 @@ def rerank(
 
         # get document embdedings
         documents = [corpus[docid] for docid in result]
-        top_k = min(top_k, len(documents))
+        max_k = min(max_k, len(documents))
         dembeds = encoder.encode([ (doc['title'] + " " + doc['text']).strip() for doc in documents], batch_size=batch_size)
 
         # mmr 
         mmr_orders = mmr_process(
             qembed=qembeds[i], 
             dembeds=dembeds, 
-            k=top_k, lambda_param=lambda_param
+            k=max_k, lambda_param=lambda_param
         )
 
         # sort candidates
@@ -90,6 +90,7 @@ def rerank(
         if writer is not None:
             for i, (docid, score) in enumerate(sorted_result.items()):
                 writer.write(f"{qid} Q0 {docid} {str(i+1)} {score} {encoder_name_or_path}-MMR:{lambda_param}\n")
+            writer.close()
 
     return outputs
 

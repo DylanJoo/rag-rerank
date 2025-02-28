@@ -32,12 +32,13 @@ def search(index, k1, b, topics, batch_size, k, writer=None):
         for key, value in hits.items():
             outputs[key] = {h.docid: float(h.score) for h in hits[key]}
 
-            for i in range(len(hits[key])):
-                if writer is not None:
+            if writer is not None:
+                for i in range(len(hits[key])):
                     writer.write(
                         f'{key} Q0 {hits[key][i].docid} {i+1} {hits[key][i].score:.5f} bm25\n'
                     )
-    return outputs  # could be a writer or a dict
+                writer.close()
+    return outputs  
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -51,7 +52,6 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     os.makedirs(args.output.rsplit('/', 1)[0], exist_ok=True)
-    writer = open(args.output, 'w')
 
     ## load data
     topics = load_topic(args.topics)
@@ -63,8 +63,8 @@ if __name__ == '__main__':
         topics=topics,
         batch_size=args.batch_size, 
         k=args.k,
-        output=output
+        output=output,
+        writer = open(args.output, 'w')
     )
-    writer.close()
 
     print('done')

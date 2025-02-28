@@ -11,16 +11,16 @@ import numpy as np
 from tqdm import tqdm
 from glob import glob
 import ir_measures
-from ir_measures import RPrec, MAP
+from ir_measures import RPrec, MAP, alpha_nDCG
 from transformers import AutoTokenizer
 from tools import load_judgements
 
 def rac_evaluate(
-    corpus, qrels, judgements,
+    corpus, qrels, judgements, diversity_qrels,
     rac_data,
     n_questions,
-    threshold=0,
-    rel_threshold=3,
+    threshold=0,     # answerability threshold (tau)
+    rel_threshold=3, # on qrel's last column
     runs=None,
     tokenizer_name='bert-base-uncased',
     gamma=0.5, tag='experiment'
@@ -63,8 +63,7 @@ def rac_evaluate(
                 judgement = judgements[qid][docid]
                 ratings.append(judgement)
 
-        print(ratings)
-        print('\n\n')
+        # print(ratings)
         ratings = np.array(ratings).max(0)
 
         # [calculate] coverage
@@ -102,6 +101,9 @@ def rac_evaluate(
         mmap = rank_results[MAP]
         output_eval['RPrec'] = rprec
         output_eval['MAP'] = mmap
+
+        rank_results = ir_measures.calc_aggregate([alpha_nDCG@20], diversity_qrels, runs)
+        output_eval['alpha_nDCG'] = rank_results[alpha_nDCG@20]
 
     return output_eval
 

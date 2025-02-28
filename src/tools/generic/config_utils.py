@@ -72,6 +72,7 @@ def parse_rag_command(commands, yaml_config):
     lw_parser.add_argument("--use_alpha", default=lw_config['use_alpha'], action='store_true')
     lw_parser.add_argument("--num_passes", type=int, default=lw_config['num_passes'])
     lw_parser.add_argument("--system_message", type=str, default=lw_config['system_message'])
+    lw_parser.add_argument("--type", type=str, default=lw_config['type'], choices=['listwise', 'setwise', 'mmr'])
 
     aug_parser = commands.add_parser("augmentation")
     aug_config = yaml_config['augmentation']

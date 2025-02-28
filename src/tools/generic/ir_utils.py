@@ -3,6 +3,7 @@ import glob
 from collections import defaultdict, OrderedDict
 import json
 from tqdm import tqdm
+import ir_measures
 
 def load_searcher(path, dense=False):
     if dense:
@@ -30,6 +31,11 @@ def load_qrels(path, threshold=0):
             if int(score) >= threshold:
                 data[qid].update({docid: int(score)})
     return data
+
+def load_diversity_qrels(path):
+    # qrels = pd.read_csv(path, sep='\s+', names=['query_id', 'iteration', 'doc_id', 'relevance'])
+    # return qrels
+    return ir_measures.read_trec_qrels(path)
 
 def load_topics(path, debug=None):
     topics = {}

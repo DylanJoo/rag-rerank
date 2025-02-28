@@ -1,0 +1,53 @@
+{
+    "data": {
+        "default_config": "configs/crux/bm25_100-setwise_100.yaml",
+        "debug": null,
+        "num_gpus": 1,
+        "index_dir": "/home/dju/indexes/crux/bm25.crux.passages.lucene/",
+        "corpus_dir": "/home/dju/datasets/crux/passages/",
+        "topic_file": "/home/dju/datasets/crux/ranking_3/testb_topics.tsv",
+        "qrels_file": "/home/dju/datasets/crux/ranking_3/testb_qrels_pr.txt",
+        "judgement_file": "/home/dju/datasets/crux/ranking_3/testb_oracle-passages_judgements.jsonl",
+        "n_questions": 15,
+        "threshold": 3
+    },
+    "retrieval": {
+        "default_config": "configs/crux/bm25_100-setwise_100.yaml",
+        "debug": null,
+        "num_gpus": 1,
+        "model": "bm25",
+        "k": 100,
+        "k1": 0.9,
+        "b": 0.4,
+        "batch_size": 256
+    },
+    "reranking": null,
+    "listwise_reranking": {
+        "default_config": "configs/crux/bm25_100-setwise_100.yaml",
+        "debug": null,
+        "num_gpus": 1,
+        "model_name_or_path": "google/flan-t5-xl",
+        "max_k": 100,
+        "batch_size": 32,
+        "max_length": 4096,
+        "use_logits": false,
+        "use_alpha": false,
+        "num_passes": 1,
+        "system_message": "na",
+        "setwise": true
+    },
+    "augmentation": {
+        "default_config": "configs/crux/bm25_100-setwise_100.yaml",
+        "debug": null,
+        "num_gpus": 1,
+        "type": "vanilla",
+        "max_k": 10,
+        "batch_size": -1,
+        "max_length": 1024
+    },
+    "generation": null,
+    "default_config": "configs/crux/bm25_100-setwise_100.yaml",
+    "debug": null,
+    "num_gpus": 1
+}
+{'mean_coverage': 0.5965641025641026, 'mean_density': 0.539151908371177, 'mean_num_segments': 10.0, 'mean_num_tokens': 1233.64, 'num_coverage': 50, 'RPrec': (0.17480952380952386, 0.3835978977789555, 0.37915347235833946), 'MAP': 0.3311922155258689, 'alpha_nDCG': 0.5445946708090562}

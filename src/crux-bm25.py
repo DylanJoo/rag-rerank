@@ -1,6 +1,7 @@
 import argparse
 from tools import load_corpus, load_topics, load_judgements, load_qrels
 from tools import load_yaml_config, parse_args, parse_rag_command
+from tools import load_diversity_qrels
 
 def main(args):
 
@@ -8,6 +9,7 @@ def main(args):
     topics = load_topics(args.data.topic_file, args.debug)
     corpus = load_corpus(args.data.corpus_dir)
     qrels = load_qrels(args.data.qrels_file)
+    diversity_qrels = load_diversity_qrels(args.data.qrels_file.replace('qrels', 'div_qrels'))
     judgements = load_judgements(args.data.judgement_file) \
             if args.data.judgement_file is not None else None
 
@@ -21,7 +23,6 @@ def main(args):
         batch_size=args.retrieval.batch_size,
         k=args.retrieval.k, 
     )
-    print(output_run)
 
     # Pointiwse reraning
     if args.reranking is not None:
@@ -43,7 +44,15 @@ def main(args):
 
     # Listiwse reranking 
     if args.listwise_reranking is not None:
-        from augment.listwise import rerank
+        # [TODO] See if we should separate thme 
+        if args.listwise_reranking.type == 'setwise':
+            from augment.setwise import rerank
+        elif args.listwise_reranking.type == 'listwise':
+            from augment.listwise import rerank
+            # from augment.listwise import mmr_rerank
+        elif args.listwise_reranking.type == 'mmr':
+            from augment.selection import rerank
+
         output_run = rerank(
             topics=topics,
             corpus=corpus,
@@ -60,7 +69,8 @@ def main(args):
             vllm_batched=True,
             variable_passages=False,
             window_size=20,
-            system_message=args.listwise_reranking.system_message
+            system_message=args.listwise_reranking.system_message,
+            lambda_param=0.1
         )
 
     # Context augmentation
@@ -78,6 +88,7 @@ def main(args):
         output_eval = rac_evaluate(
             corpus=corpus,
             qrels=qrels, 
+            diversity_qrels=diversity_qrels, 
             judgements=judgements,
             rac_data=output_rac,
             n_questions=args.data.n_questions,
