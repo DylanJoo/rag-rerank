@@ -7,7 +7,7 @@ from tools import load_runs, load_corpus, load_topics
 from augment.template import template_fn_mapping
 
 def vanilla(
-    topics, corpus, runs,
+    topics, corpus, runs, questions,
     max_k,
     template_type='citation',
     writer=None,
@@ -21,12 +21,13 @@ def vanilla(
 
         result = runs[qid]
         topic = topics[qid]
-        documents = [corpus[docid] for i, docid in enumerate(result)][:max_k]
+        list_questions = questions[qid]
+        documents = [corpus[docid] for docid in result][:max_k]
         raw_content = [(d['title'] + " " + d['text']).strip() for d in documents]
 
         # arrange
         output = {
-            "qid": qid, "topic": topic, 
+            "qid": qid, "topic": topic, "questions": list_questions,
             "type": f"vanilla_{max_k}",
             "context_list": raw_content, 
             "prompt": template_fn_mapping[template_type](documents),

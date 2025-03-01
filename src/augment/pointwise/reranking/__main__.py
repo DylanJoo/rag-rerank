@@ -30,7 +30,7 @@ def rerank(
     qids = [qid for qid in qids if qid in runs]  # only appeared in run
 
     outputs = {}
-    for qid in tqdm(qids, total=len(qids)):
+    for qid in tqdm(qids, total=len(qids), desc='1st Reranking'):
 
         result = runs[qid]
         query = topics[qid]

@@ -1,12 +1,21 @@
+import os
+import json
 import argparse
-from tools import load_corpus, load_topics, load_judgements, load_qrels
+from tqdm import tqdm
+from tools import (
+    load_corpus, load_topics, load_questions,
+    load_judgements, 
+    load_qrels, load_diversity_qrels
+)
 from tools import load_yaml_config, parse_args, parse_rag_command
-from tools import load_diversity_qrels
+from tools import batch_iterator
+from generate.llm.utils import check_if_ampere, cleanup_vllm
 
 def main(args):
 
     # Data 
     topics = load_topics(args.data.topic_file, args.debug)
+    questions = load_questions(args.data.topic_file)
     corpus = load_corpus(args.data.corpus_dir)
     qrels = load_qrels(args.data.qrels_file)
     diversity_qrels = load_diversity_qrels(args.data.qrels_file.replace('qrels', 'div_qrels'))
@@ -42,7 +51,7 @@ def main(args):
             max_length=args.reranking.max_length,
         )
 
-    # Listiwse reranking 
+    # Second-stage reranking 
     if args.listwise_reranking is not None:
         # [TODO] See if we should separate thme 
         if args.listwise_reranking.type == 'setwise':
@@ -70,7 +79,7 @@ def main(args):
             variable_passages=False,
             window_size=20,
             system_message=args.listwise_reranking.system_message,
-            lambda_param=0.1
+            lambda_param=1.0
         )
 
     # Context augmentation
@@ -79,45 +88,87 @@ def main(args):
         topics=topics,
         corpus=corpus,
         runs=output_run,
+        questions=questions,
         max_k=args.augmentation.max_k if args.augmentation else None
     )
 
     # Retrieval-augmented context evaluation
     if judgements:
         from evaluation import rac_evaluate
-        output_eval = rac_evaluate(
+        output_rac_eval = rac_evaluate(
             corpus=corpus,
             qrels=qrels, 
-            diversity_qrels=diversity_qrels, 
             judgements=judgements,
+            diversity_qrels=diversity_qrels, 
             rac_data=output_rac,
             n_questions=args.data.n_questions,
             threshold=args.data.threshold,
             runs=output_run,
+            tokenizer_name=args.generation.model_name_or_path,
         )
-        print(output_eval)
+        print(output_rac_eval)
 
     # Generation
+    # [TODO] See if generation needs to pack into a module
     if args.generation is not None:
         PROMPT = \
-        "Write a passage for given query. Always use the provided contexts to write the passage (some of them might be irrelevant). " + \
-        "Cite at least one context in each sentence in the passage. When citing several search results, use [1][2][3]. " + \
-        "Write the passage within 300 words.\n\nQuery: {Q}\nContexts:\n{Ds}\nPassage: <think>\n"
+            "Write a passage for the given query. Always use the provided contexts to write the passage (some of the contexts might be irrelevant). " + \
+            "Cite at least one context in each sentence in the passage. When citing several search results, use [1][2][3]. " + \
+            "Write the passage within 300 words.\n\nQuery: {Q}\nContexts:\n{Ds}\nPassage:\n"
+        # PROMPT = \
+        # "Write one paragraph to answer the given query. Always use the provided contexts to write the paragraph (some of the contexts might be irrelevant). " + \
+        # "Cite at least one context in each sentence in the paragraph. When citing several search results, use [1][2][3]. " + \
+        # "Write the paragraph within 300 words.\n\nQuery: {Q}\nContexts:\n{Ds}\nParagraph:\n"
 
-        from generate.llm.hf_back import LLM
+        if check_if_ampere:
+            from generate.llm.vllm_back import LLM
+        else:
+            from generate.llm.hf_back import LLM
         generator = LLM(
             model=args.generation.model_name_or_path, 
             temperature=args.generation.temperature,
         )
-        xs = []
+        all_prompts, all_qids = {}, []
         for qid in topics:
             q = output_rac[qid]['topic']
             ds = output_rac[qid]['prompt']
-            xs.append(PROMPT.replace("{Q}", q).replace("{Ds}", ds))
+            all_qids.append(qid)
+            all_prompts[qid] = PROMPT.replace("{Q}", q).replace("{Ds}", ds)
 
-            response = generator.generate(x=xs, max_tokens=args.generation.max_length)
-            output_rac[qid]['response'] = response
-            print("\n\n".join(response))
+        for batch_qid in tqdm(batch_iterator(all_qids, size=args.generation.batch_size), desc="Generating", total=len(topics)//args.generation.batch_size):
+            responses = generator.generate(x=[all_prompts[qid] for qid in batch_qid], max_tokens=args.generation.max_length)
+            for qid, response in zip(batch_qid, responses):
+                output_rac[qid]['response'] = response
+
+        print(cleanup_vllm(generator) if check_if_ampere else "\n")
+
+        # output final report as file
+        os.makedirs("results", exist_ok=True)
+        with open(os.path.join("results", f"{args.exp}.jsonl"), 'w') as f:
+            for k, data in output_rac.items():
+                del data['prompt']
+                del data['context_list']
+                f.write(json.dumps(data) + '\n')
+
+    # Evaluation
+    if (args.generation is not None) and (args.online_eval is not None):
+        generator = LLM(
+            model=args.generation.model_name_or_path, 
+            top_p=1,
+            temperature=0 if check_if_ampere else 1e-10
+        )
+        from evaluation import rag_evaluate
+        output_rag_eval = rag_evaluate(
+            generator=generator,
+            corpus=corpus, 
+            qrels=qrels, 
+            judgements=judgements,
+            rag_data=output_rac,
+            questions=questions,
+            threshold=args.data.threshold,
+            tokenizer_name=args.generation.model_name_or_path,
+        )
+        print(output_rag_eval)
 
 if __name__ == "__main__":
     from tools import pretty_print_args
@@ -125,6 +176,8 @@ if __name__ == "__main__":
     config_parser.add_argument("--default_config", type=str, default=None)
     config_parser.add_argument("--debug", type=int, default=None)
     config_parser.add_argument("--num_gpus", type=int, default=1)
+    config_parser.add_argument("--online_eval", action='store_true', default=False)
+    config_parser.add_argument("--exp", type=str, default='testing')
     config_args, remaining_argv = config_parser.parse_known_args()
     
     yaml_config = load_yaml_config(config_args.default_config)

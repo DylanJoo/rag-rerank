@@ -1,3 +1,4 @@
+import re
 import os
 import glob
 from collections import defaultdict, OrderedDict
@@ -39,14 +40,38 @@ def load_diversity_qrels(path):
 
 def load_topics(path, debug=None):
     topics = {}
+    if path.endswith('tsv'):
+        with open(path, 'r') as f:
+            for i, line in enumerate(f):
+                qid, qtext = line.split('\t')
+                topics[str(qid.strip())] = qtext.strip()
+                
+                if (i+1) == debug:
+                    break
+    if path.endswith('jsonl'):
+        with open(path, 'r') as f:
+            for i, line in enumerate(f):
+                data = json.loads(line.strip())
+                topics[data['example_id']] = data['topic'].strip()
+                if (i+1) == debug:
+                    break
+    return topics
+
+def prepreocess(texts):
+    pattern = re.compile(r"^(\d+)*\.")
+    texts = re.sub(r"\<q\>|\<\/q\>", "\n", texts)
+    texts = re.sub(pattern, '\n', texts)
+    pattern = re.compile(r"^(\d+)*\.")
+    texts = re.sub(pattern, '', texts)
+    return texts     
+
+def load_questions(path):
+    questions = {}
     with open(path, 'r') as f:
         for i, line in enumerate(f):
-            qid, qtext = line.split('\t')
-            topics[str(qid.strip())] = qtext.strip()
-            
-            if (i+1) == debug:
-                break
-    return topics
+            data = json.loads(line.strip())
+            questions[data.pop('example_id')] = [prepreocess(q) for q in data['questions']]
+    return questions
 
 def load_corpus(path, allow_missing=False):
     if allow_missing:

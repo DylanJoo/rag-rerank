@@ -22,7 +22,7 @@ def rac_evaluate(
     threshold=0,     # answerability threshold (tau)
     rel_threshold=3, # on qrel's last column
     runs=None,
-    tokenizer_name='bert-base-uncased',
+    tokenizer_name='meta-llama/Llama-3.1-70B-Instruct',
     gamma=0.5, tag='experiment'
 ):
     tokenizer = AutoTokenizer.from_pretrained(tokenizer_name)
@@ -109,21 +109,17 @@ def rac_evaluate(
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Print output")
-    parser.add_argument("--generator_name", type=str, default=None)
-
-    # base
-    parser.add_argument("--dataset_dir", type=str, default=None)
-    parser.add_argument("--rel_subset", type=int, default=3)
-    parser.add_argument("--split", type=str, default='test')
-    parser.add_argument("--threshold", type=int, default=3)
-    parser.add_argument("--weighted_factor", type=float, default=1)
-    # context 
-    parser.add_argument("--passage_path", type=str, default=None)
-    parser.add_argument("--judgement_file", type=str, default=None)
-    # ranking
-    parser.add_argument("--run_file", type=str, default=None)
-    parser.add_argument("--topk", type=int, default=100)
-    parser.add_argument("--tag", type=str, default=None)
-    parser.add_argument("--report_file", type=str, default=None)
+    parser.add_argument("--threshold", type=float, default=0.5)
+    parser.add_argument("--index_dir", type=str, default='data/index')
     args = parser.parse_args()
 
+    rac_evaluate(
+        corpus, qrels, judgements, diversity_qrels,
+        rac_data,
+        n_questions,
+        threshold=args.threshold,
+        rel_threshold=args.rel_subset,
+        runs=runs,
+        tokenizer_name='bert-base-uncased',
+        gamma=0.5, tag='experiment'
+    )

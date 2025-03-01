@@ -84,7 +84,7 @@ def parse_rag_command(commands, yaml_config):
     gen_parser = commands.add_parser("generation")
     gen_config = yaml_config['generation']
     gen_parser.add_argument("--model_name_or_path", type=str, default=gen_config['model_name_or_path'])
-    gen_parser.add_argument("--batch_size", type=int, default=rr_config['batch_size'])
+    gen_parser.add_argument("--batch_size", type=int, default=gen_config['batch_size'])
     gen_parser.add_argument("--max_length", type=int, default=gen_config['max_length'])
     gen_parser.add_argument("--temperature", type=float, default=gen_config['temperature'])
     # gen_parser.add_argument("--think_activated", type=bool, action='store_true', default=gen_config['think_activated'])

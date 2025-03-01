@@ -6,7 +6,7 @@ def citation(documents):
     p = ""
     assert len(texts) == len(titles), 'inconsistent len of texts and titles.'
     for idx, (text, title) in enumerate(zip(texts, titles)):
-        p_doc = "[{ID}]:{T}{P}\n"
+        p_doc = "[{ID}] {T}{P}\n"
         p_doc = p_doc.replace("{ID}", str(idx+1))
         if title == "":
             p_doc = p_doc.replace("{T}", "")

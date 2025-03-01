@@ -1,1 +1,2 @@
-from .retrieval_augmentation import rac_evaluate
+from .prejudge.retrieval_augmentation_context import rac_evaluate
+from .llmjudge.retrieval_augmentation_generation import rag_evaluate
