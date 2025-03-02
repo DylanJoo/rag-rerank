@@ -48,11 +48,17 @@ def parse_rag_command(commands, yaml_config):
 
     rt_parser = commands.add_parser("retrieval")
     rt_config = yaml_config['retrieval']
-    rt_parser.add_argument("--model", type=str, default=rt_config['model'])
     rt_parser.add_argument("--k", type=int, default=rt_config['k'])
+    rt_parser.add_argument("--model_class", type=str, default=rt_config['model_class'])
+    # leanred dense/sparse retrieval
+    rt_parser.add_argument("--model_name_or_path", type=str, default=rt_config['model_name_or_path'])
+    rt_parser.add_argument("--max_length", type=int, default=rt_config['max_length'])
+    rt_parser.add_argument("--pooling", type=str, default=rt_config['pooling'])
+    rt_parser.add_argument("--l2_norm", default=rt_config['l2_norm'], action='store_true')
+    rt_parser.add_argument("--batch_size", type=int, default=rt_config['batch_size'])
+    # bm25 
     rt_parser.add_argument("--k1", type=float, default=rt_config['k1'])
     rt_parser.add_argument("--b", type=float, default=rt_config['b'])
-    rt_parser.add_argument("--batch_size", type=int, default=rt_config['batch_size'])
 
     rr_parser = commands.add_parser("reranking")
     rr_config = yaml_config['reranking']

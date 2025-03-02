@@ -111,7 +111,7 @@ def rag_evaluate(
     mean_num_tokens = np.mean(outputs['num_tokens'])
     num_coverage = len(outputs['coverage'])
 
-    print(outputs['coverage'])
+    # print(outputs['coverage'])
     output_eval = {
         'mean_coverage': mean_coverage,
         'mean_density': mean_density,
@@ -162,8 +162,6 @@ if __name__ == "__main__":
             data = json.loads(line)
             qid = data['qid']
             output_rac[qid] = data
-            if i == 10:
-                break
 
     # evaluation
     from evaluation import rag_evaluate

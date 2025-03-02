@@ -1,7 +1,6 @@
 import os
 import json
 import argparse
-from collections import defaultdict 
 from tqdm import tqdm 
 from retrieve.utils import load_topic, batch_iterator
 from pyserini.search.lucene import LuceneSearcher
@@ -17,16 +16,17 @@ def search(index, k1, b, topics, batch_size, k, writer=None):
     outputs = {}
 
     for (start, end) in tqdm(
-            batch_iterator(range(0, len(qids)), batch_size, True),
-            total=(len(qids)//batch_size)+1
+        batch_iterator(range(0, len(qids)), batch_size, True),
+        desc='Searching (bm25)', 
+        total=(len(qids)//batch_size)+1,
     ):
         qids_batch = qids[start: end]
         qtexts_batch = qtexts[start: end]
         hits = searcher.batch_search(
-                queries=qtexts_batch, 
-                qids=qids_batch, 
-                threads=32,
-                k=k,
+            queries=qtexts_batch, 
+            qids=qids_batch, 
+            threads=32,
+            k=k,
         )
 
         for key, value in hits.items():
@@ -64,7 +64,7 @@ if __name__ == '__main__':
         batch_size=args.batch_size, 
         k=args.k,
         output=output,
-        writer = open(args.output, 'w')
+        writer=open(args.output, 'w') if args.output is not None else None,
     )
 
     print('done')

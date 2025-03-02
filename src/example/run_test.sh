@@ -1,4 +1,3 @@
-
 # bm25 100 + Vanilla 10
 python3 crux-bm25-pointwise.py --default_config configs/crux/bm25_100-minilm_100.yaml \
     data \

@@ -12,6 +12,7 @@ def cleanup_vllm(llm):
 
     del llm.model.llm_engine.model_executor.driver_worker
     del llm.model
+    del llm
 
     gc.collect()
     torch.cuda.empty_cache()
