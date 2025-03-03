@@ -1,0 +1,56 @@
+data:
+  index_dir: "/home/dju/indexes/crux/contriever.crux.passages.faiss/"
+  corpus_dir: "/home/dju/datasets/crux/passages/"
+  topic_file: "/home/dju/datasets/crux/ranking_3/testb_topics.jsonl"
+  qrels_file: "/home/dju/datasets/crux/ranking_3/testb_qrels_pr.txt"
+  judgement_file: "/home/dju/datasets/crux/ranking_3/testb_oracle-passages_judgements.jsonl"
+  n_questions: 15
+  threshold: 3
+
+retrieval:
+  category: 'retrieval'
+  k: 100
+  model_class: "contriever"
+  model_name_or_path: "facebook/contriever-msmarco"
+  max_length: 512
+  pooling: "mean"
+  l2_norm: true
+  k1: 0
+  b: 0
+  batch_size: 32
+
+reranking:
+  category: 'reranking'
+  model_class: "monot5"
+  model_name_or_path: "castorini/monot5-3b-msmarco"
+  top_k: 100
+  batch_size: 32
+  max_length: 512
+
+listwise_reranking:
+  category: 'listwise_reranking'
+  model_name_or_path: null
+  max_k: 100
+  batch_size: 32
+  max_length: 4096
+  use_logits: False
+  use_alpha: False
+  num_passes: 1
+  prompt_mode: 'rank_GPT'
+  context_size: 4096
+  system_message: 'You are RankLLM, an intelligent assistant that can rank passages based on their relevancy to the query'
+  type: 'listwise'
+
+augmentation:
+  category: 'augmentation'
+  type: 'vanilla'
+  max_k: 10
+  batch_size: -1
+  max_length: 1024
+
+generation:
+  category: 'generation'
+  model_name_or_path: "meta-llama/Llama-3.1-8B-Instruct"
+  batch_size: 4
+  max_length: 300
+  temperature: 0.7

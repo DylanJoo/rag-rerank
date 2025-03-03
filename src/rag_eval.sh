@@ -1,3 +1,4 @@
+# This script is for direct  
 python3 -m evaluation.llmjudge.retrieval_augmentation_generation \
     --topic_file /home/dju/datasets/crux/ranking_3/testb_topics.jsonl \
     --corpus_dir /home/dju/datasets/crux/passages/ \

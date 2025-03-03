@@ -1,0 +1,195 @@
+import os
+import json
+import argparse
+from tqdm import tqdm
+from tools import (
+    load_corpus, load_topics, load_questions,
+    load_judgements, 
+    load_qrels, load_diversity_qrels
+)
+from tools import load_yaml_config, parse_args, parse_rag_command
+from tools import batch_iterator
+from generate.llm.utils import check_if_ampere, cleanup_vllm
+
+def main(args):
+
+    # Data 
+    topics = load_topics(args.data.topic_file, args.debug)
+    questions = load_questions(args.data.topic_file)
+    corpus = load_corpus(args.data.corpus_dir)
+    qrels = load_qrels(args.data.qrels_file)
+    diversity_qrels = load_diversity_qrels(args.data.qrels_file.replace('qrels', 'div_qrels'))
+    judgements = load_judgements(args.data.judgement_file) \
+            if args.data.judgement_file is not None else None
+
+    # Retrieval
+    from retrieve.dense import search
+    output_run = search(
+        index=args.data.index_dir,
+        topics=topics,
+        k=args.retrieval.k,
+        model_name_or_path=args.retrieval.model_name_or_path,
+        model_class=args.retrieval.model_class,
+        max_length=args.retrieval.max_length,
+        batch_size=args.retrieval.batch_size,
+    )
+
+    # Pointiwse reraning
+    if args.reranking is not None:
+        from augment.pointwise import rerank
+        output_run = rerank(
+            topics=topics,
+            corpus=corpus,
+            runs=output_run,
+            reranker_config={
+                "model_class": args.reranking.model_class,
+                "model_name_or_path": args.reranking.model_name_or_path,
+                "device": 'cuda',
+                "fp16": True
+            },
+            top_k=args.reranking.top_k,
+            batch_size=args.reranking.batch_size,
+            max_length=args.reranking.max_length,
+        )
+
+    # Second-stage reranking 
+    if args.listwise_reranking is not None:
+        # [TODO] See if we should separate thme 
+        if args.listwise_reranking.type == 'setwise':
+            from augment.setwise import rerank
+        elif args.listwise_reranking.type == 'listwise':
+            from augment.listwise import rerank
+            # from augment.listwise import mmr_rerank
+        elif args.listwise_reranking.type == 'mmr':
+            from augment.selection import rerank
+
+        output_run = rerank(
+            topics=topics,
+            corpus=corpus,
+            runs=output_run,
+            model_path=args.listwise_reranking.model_name_or_path,
+            top_k=args.listwise_reranking.max_k,
+            num_passes=args.listwise_reranking.num_passes,
+            prompt_mode='rank_GPT',  # maybe also this parameter
+            context_size=4096,       # add this parameter
+            use_logits=args.listwise_reranking.use_logits, 
+            num_gpus=args.num_gpus, # check if it can be adjusted dynamically
+            batch_size=args.listwise_reranking.batch_size,
+            use_alpha=args.listwise_reranking.use_alpha,
+            vllm_batched=True,
+            variable_passages=False,
+            window_size=20,
+            system_message=args.listwise_reranking.system_message,
+            lambda_param=1.0
+        )
+
+    # Context augmentation
+    from augment.base import vanilla
+    output_rac = vanilla(
+        topics=topics,
+        corpus=corpus,
+        runs=output_run,
+        questions=questions,
+        max_k=args.augmentation.max_k if args.augmentation else None
+    )
+
+    # Retrieval-augmented context evaluation
+    if judgements:
+        from evaluation import rac_evaluate
+        output_rac_eval = rac_evaluate(
+            corpus=corpus,
+            qrels=qrels, 
+            judgements=judgements,
+            diversity_qrels=diversity_qrels, 
+            rac_data=output_rac,
+            n_questions=args.data.n_questions,
+            threshold=args.data.threshold,
+            runs=output_run,
+            tokenizer_name=args.generation.model_name_or_path,
+        )
+        print(output_rac_eval)
+
+    # Generation
+    # [TODO] See if generation needs to pack into a module
+    if args.generation is not None:
+        PROMPT = \
+            "Write a passage for the given query. Always use the provided contexts to write the passage (some of the contexts might be irrelevant). " + \
+            "Cite at least one context in each sentence in the passage. When citing several search results, use [1][2][3]. " + \
+            "Write the passage within 300 words.\n\nQuery: {Q}\nContexts:\n{Ds}\nPassage:\n"
+        # PROMPT = \
+        # "Write one paragraph to answer the given query. Always use the provided contexts to write the paragraph (some of the contexts might be irrelevant). " + \
+        # "Cite at least one context in each sentence in the paragraph. When citing several search results, use [1][2][3]. " + \
+        # "Write the paragraph within 300 words.\n\nQuery: {Q}\nContexts:\n{Ds}\nParagraph:\n"
+
+        if check_if_ampere:
+            from generate.llm.vllm_back import LLM
+        else:
+            from generate.llm.hf_back import LLM
+        generator = LLM(
+            model=args.generation.model_name_or_path, 
+            temperature=args.generation.temperature,
+        )
+        all_prompts, all_qids = {}, []
+        for qid in topics:
+            q = output_rac[qid]['topic']
+            ds = output_rac[qid]['prompt']
+            all_qids.append(qid)
+            all_prompts[qid] = PROMPT.replace("{Q}", q).replace("{Ds}", ds)
+
+        for batch_qid in tqdm(batch_iterator(all_qids, size=args.generation.batch_size), desc="Generating", total=len(topics)//args.generation.batch_size):
+            responses = generator.generate(x=[all_prompts[qid] for qid in batch_qid], max_tokens=args.generation.max_length)
+            for qid, response in zip(batch_qid, responses):
+                output_rac[qid]['response'] = response
+
+        print(cleanup_vllm(generator) if check_if_ampere else "\n")
+
+        # output final report as file
+        os.makedirs("results", exist_ok=True)
+        with open(os.path.join("results", f"{args.exp}.jsonl"), 'w') as f:
+            for k, data in output_rac.items():
+                del data['prompt']
+                del data['context_list']
+                f.write(json.dumps(data) + '\n')
+
+    # Evaluation
+    if (args.generation is not None) and (args.online_eval is True):
+        generator = LLM(
+            model=args.generation.model_name_or_path, 
+            top_p=1,
+            temperature=0 if check_if_ampere else 1e-10
+        )
+        from evaluation import rag_evaluate
+        output_rag_eval = rag_evaluate(
+            generator=generator,
+            corpus=corpus, 
+            qrels=qrels, 
+            judgements=judgements,
+            rag_data=output_rac,
+            questions=questions,
+            threshold=args.data.threshold,
+            tokenizer_name=args.generation.model_name_or_path,
+        )
+        print(output_rac_eval)
+        print(output_rag_eval)
+
+if __name__ == "__main__":
+    from tools import pretty_print_args
+    config_parser = argparse.ArgumentParser(add_help=False)
+    config_parser.add_argument("--default_config", type=str, default=None)
+    config_parser.add_argument("--debug", type=int, default=None)
+    config_parser.add_argument("--num_gpus", type=int, default=1)
+    config_parser.add_argument("--online_eval", action='store_true', default=False)
+    config_parser.add_argument("--exp", type=str, default='testing')
+    config_args, remaining_argv = config_parser.parse_known_args()
+    
+    yaml_config = load_yaml_config(config_args.default_config)
+    config_parser.set_defaults(default_config=config_args.default_config)
+    
+    parser = argparse.ArgumentParser(description="Hierarchical Argument Parser", parents=[config_parser])
+    commands = parser.add_subparsers(title="Sub-commands")
+    commands = parse_rag_command(commands, yaml_config)
+
+    args = parse_args(parser, commands)
+    pretty_print_args(args)
+
+    main(args)

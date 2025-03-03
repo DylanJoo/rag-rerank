@@ -1,4 +1,5 @@
 #!/bin/sh
+# The following lines instruct Slurm 
 #SBATCH --job-name=splade
 #SBATCH --partition gpu
 #SBATCH --gres=gpu:nvidia_rtx_a6000:1

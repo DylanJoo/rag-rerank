@@ -1,6 +1,6 @@
 # BM25 100 + Vanilla 10
 python3 crux-bm25.py --default_config configs/crux/bm25_100-minilm_100.yaml \
-    --exp testb-bm25_100-vanilla_10 \
+    --exp testb-bm25_100-vanilla_10 --online_eval \
     data \
         --topic_file /home/dju/datasets/crux/ranking_3/testb_topics.jsonl \
         --qrels_file /home/dju/datasets/crux/ranking_3/testb_qrels_pr.txt  \
@@ -11,7 +11,7 @@ python3 crux-bm25.py --default_config configs/crux/bm25_100-minilm_100.yaml \
 
 # BM25 100 + Pointwise - minilm 100 + Vanilla 10
 python3 crux-bm25.py --default_config configs/crux/bm25_100-minilm_100.yaml \
-    --exp testb-bm25_100-minilm_100-vanilla_10 \
+    --exp testb-bm25_100-minilm_100-vanilla_10 --online_eval \
     data \
         --topic_file /home/dju/datasets/crux/ranking_3/testb_topics.jsonl \
         --qrels_file /home/dju/datasets/crux/ranking_3/testb_qrels_pr.txt  \
@@ -23,7 +23,7 @@ python3 crux-bm25.py --default_config configs/crux/bm25_100-minilm_100.yaml \
 
 # BM25 100 + Pointwise - monot5 100 + Vanilla 10
 python3 crux-bm25.py --default_config configs/crux/bm25_100-monot5_100.yaml \
-    --exp testb-bm25_100-monot5_100-vanilla_10 \
+    --exp testb-bm25_100-monot5_100-vanilla_10 --online_eval \
     data \
         --topic_file /home/dju/datasets/crux/ranking_3/testb_topics.jsonl \
         --qrels_file /home/dju/datasets/crux/ranking_3/testb_qrels_pr.txt  \
@@ -35,7 +35,7 @@ python3 crux-bm25.py --default_config configs/crux/bm25_100-monot5_100.yaml \
 
 # BM25 100 + Listwise - rankzephyr 100 (w20) + Vanilla 10
 python3 crux-bm25.py --default_config configs/crux/bm25_100-rankgpt_100.yaml \
-    --exp testb-bm25_100-rankzephyr_100-vanilla_10 \
+    --exp testb-bm25_100-rankzephyr_100-vanilla_10 --online_eval \
     data \
         --topic_file /home/dju/datasets/crux/ranking_3/testb_topics.jsonl \
         --qrels_file /home/dju/datasets/crux/ranking_3/testb_qrels_pr.txt  \
@@ -48,7 +48,7 @@ python3 crux-bm25.py --default_config configs/crux/bm25_100-rankgpt_100.yaml \
 
 # # BM25 100 + Listwise - rankfirst 100 (w20) + Vanilla 10
 python3 crux-bm25.py --default_config configs/crux/bm25_100-rankfirst_100.yaml \
-    --exp testb-bm25_100-rankfirst_100-vanilla_10 \
+    --exp testb-bm25_100-rankfirst_100-vanilla_10 --online_eval \
     data \
         --topic_file /home/dju/datasets/crux/ranking_3/testb_topics.jsonl \
         --qrels_file /home/dju/datasets/crux/ranking_3/testb_qrels_pr.txt  \
@@ -63,7 +63,7 @@ python3 crux-bm25.py --default_config configs/crux/bm25_100-rankfirst_100.yaml \
 
 # BM25 100 + Setwise - rankfirst 100 (w20) + Vanilla 10
 python3 crux-bm25.py --default_config configs/crux/bm25_100-setwise_100.yaml \
-    --exp testb-bm25_100-setwise_100-vanilla_10 \
+    --exp testb-bm25_100-setwise_100-vanilla_10 --online_eval \
     data \
         --topic_file /home/dju/datasets/crux/ranking_3/testb_topics.jsonl \
         --qrels_file /home/dju/datasets/crux/ranking_3/testb_qrels_pr.txt  \
@@ -78,7 +78,7 @@ python3 crux-bm25.py --default_config configs/crux/bm25_100-setwise_100.yaml \
 
 # BM25 100 + Pointwise - minilm 100 - mmr 10 + Vanilla 10
 python3 crux-bm25.py --default_config configs/crux/bm25_100-minilm_100-mmr_10.yaml \
-    --exp testb-bm25_100-minilm_100-mmr_10-vanilla_10 \
+    --exp testb-bm25_100-minilm_100-mmr_10-vanilla_10 --online_eval \
     data \
         --topic_file /home/dju/datasets/crux/ranking_3/testb_topics.jsonl \
         --qrels_file /home/dju/datasets/crux/ranking_3/testb_qrels_pr.txt  \
