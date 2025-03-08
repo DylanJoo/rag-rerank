@@ -52,7 +52,7 @@ def rerank(
 
     # Rerank 
     rerank_results = []
-    for i, qid in tqdm(enumerate(runs), total=len(runs), desc="Setwise Reranking"):
+    for i, qid in tqdm(enumerate(runs), total=len(runs), desc="2nd Reranking (setwise)"):
         rerank_result = reranker.rerank(*pairs[i])
         # ignore the doc field in the result 
         rerank_results.append(

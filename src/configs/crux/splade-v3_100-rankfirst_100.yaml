@@ -1,5 +1,5 @@
 data:
-  index_dir: "/home/dju/indexes/crux/bm25.crux.passages.lucene/"
+  index_dir: "/home/dju/indexes/crux/splade-v3.crux.passages.lucene/"
   corpus_dir: "/home/dju/datasets/crux/passages/"
   topic_file: "/home/dju/datasets/crux/ranking_3/testb_topics.jsonl"
   qrels_file: "/home/dju/datasets/crux/ranking_3/testb_qrels_pr.txt"
@@ -9,11 +9,15 @@ data:
 
 retrieval:
   category: 'retrieval'
-  model: "bm25"
   k: 100
-  k1: 0.9
-  b: 0.4
-  batch_size: 256
+  model_class: "splade"
+  model_name_or_path: "naver/splade-v3"
+  max_length: 512
+  pooling: "mean"
+  l2_norm: true
+  k1: 0
+  b: 0
+  batch_size: 32
 
 reranking:
   category: 'reranking'

@@ -108,6 +108,11 @@ def main(args):
         )
         print(output_rac_eval)
 
+        metrics = ['mean_coverage', 'mean_density', 'MAP', 'alpha_nDCG']
+        values = [str(output_rac_eval[m]) for m in metrics]
+        print(" ".join(['RAG-pipeline'] + metrics))
+        print(" ".join([args.exp] + values))
+
     # Generation
     # [TODO] See if generation needs to pack into a module
     if args.generation is not None:
@@ -115,10 +120,6 @@ def main(args):
             "Write a passage for the given query. Always use the provided contexts to write the passage (some of the contexts might be irrelevant). " + \
             "Cite at least one context in each sentence in the passage. When citing several search results, use [1][2][3]. " + \
             "Write the passage within 300 words.\n\nQuery: {Q}\nContexts:\n{Ds}\nPassage:\n"
-        # PROMPT = \
-        # "Write one paragraph to answer the given query. Always use the provided contexts to write the paragraph (some of the contexts might be irrelevant). " + \
-        # "Cite at least one context in each sentence in the paragraph. When citing several search results, use [1][2][3]. " + \
-        # "Write the paragraph within 300 words.\n\nQuery: {Q}\nContexts:\n{Ds}\nParagraph:\n"
 
         if check_if_ampere:
             from generate.llm.vllm_back import LLM
@@ -151,7 +152,7 @@ def main(args):
                 f.write(json.dumps(data) + '\n')
 
     # Evaluation
-    if (args.generation is not None) and (args.online_eval is not None):
+    if (args.generation is not None) and (args.online_eval is True):
         generator = LLM(
             model=args.generation.model_name_or_path, 
             top_p=1,
@@ -168,7 +169,14 @@ def main(args):
             threshold=args.data.threshold,
             tokenizer_name=args.generation.model_name_or_path,
         )
+        print(output_rac_eval)
         print(output_rag_eval)
+
+        # output final report as file
+        metrics = ['mean_coverage', 'mean_density', 'MAP', 'alpha_nDCG', 'final_coverage', 'final_density']
+        values =  [str(output_rac_eval[m]) for m in metrics[:-2]] + [str(output_rag_eval['mean_coverage']), str(output_rag_eval['mean_density'])]
+        print(" ".join(['Pipeline'] + metrics))
+        print(" ".join([args.exp] + values))
 
 if __name__ == "__main__":
     from tools import pretty_print_args

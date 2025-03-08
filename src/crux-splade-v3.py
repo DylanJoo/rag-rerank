@@ -23,7 +23,7 @@ def main(args):
             if args.data.judgement_file is not None else None
 
     # Retrieval
-    from retrieve.dense import search
+    from retrieve.sparse import search
     output_run = search(
         index=args.data.index_dir,
         topics=topics,
@@ -109,6 +109,11 @@ def main(args):
         )
         print(output_rac_eval)
 
+        metrics = ['mean_coverage', 'mean_density', 'MAP', 'alpha_nDCG']
+        values = [str(output_rac_eval[m]) for m in metrics]
+        print(" ".join(['RAG-pipeline'] + metrics))
+        print(" ".join([args.exp] + values))
+
     # Generation
     # [TODO] See if generation needs to pack into a module
     if args.generation is not None:
@@ -116,10 +121,6 @@ def main(args):
             "Write a passage for the given query. Always use the provided contexts to write the passage (some of the contexts might be irrelevant). " + \
             "Cite at least one context in each sentence in the passage. When citing several search results, use [1][2][3]. " + \
             "Write the passage within 300 words.\n\nQuery: {Q}\nContexts:\n{Ds}\nPassage:\n"
-        # PROMPT = \
-        # "Write one paragraph to answer the given query. Always use the provided contexts to write the paragraph (some of the contexts might be irrelevant). " + \
-        # "Cite at least one context in each sentence in the paragraph. When citing several search results, use [1][2][3]. " + \
-        # "Write the paragraph within 300 words.\n\nQuery: {Q}\nContexts:\n{Ds}\nParagraph:\n"
 
         if check_if_ampere:
             from generate.llm.vllm_back import LLM
@@ -171,6 +172,12 @@ def main(args):
         )
         print(output_rac_eval)
         print(output_rag_eval)
+
+        # output final report as file
+        metrics = ['mean_coverage', 'mean_density', 'MAP', 'alpha_nDCG', 'final_coverage', 'final_density']
+        values =  [str(output_rac_eval[m]) for m in metrics[:-2]] + [str(output_rag_eval['mean_coverage']), str(output_rag_eval['mean_density'])]
+        print(" ".join(['Pipeline'] + metrics))
+        print(" ".join([args.exp] + values))
 
 if __name__ == "__main__":
     from tools import pretty_print_args

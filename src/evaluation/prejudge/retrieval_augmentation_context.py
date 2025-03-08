@@ -36,7 +36,7 @@ def rac_evaluate(
                 f' Got {len(qrels)} and {len(rac_data)}.')
         qrels = overlapped
 
-    for qid in qrels:
+    for qid in tqdm(qrels, desc='RAC Evaluating', total=len(qrels)):
 
         # [oracle] 
         docids = [docid for docid, score in qrels[qid].items() if score >= rel_threshold ] 

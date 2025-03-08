@@ -91,7 +91,7 @@ def rag_evaluate(
         # [TODO] add the extract_citation function
         rag_text = remove_citations(rag_data[qid]['response']) 
         ratings = np.array(llm_judgement(generator, rag_text, questions[qid]))
-        print(ratings)
+        print('rating:', ratings)
 
         # [calculate] coverage
         coverage = sum(ratings[answerable] >= threshold) / sum(answerable)
@@ -176,4 +176,8 @@ if __name__ == "__main__":
         tokenizer_name=args.model_name_or_path,
         gamma=args.gamma
     )
-    print(output_rag_eval)
+
+    metrics = ['final_coverage', 'final_density']
+    values =  [str(output_rag_eval['mean_coverage']), str(output_rag_eval['mean_density'])]
+    print(" ".join(['Pipeline'] + metrics))
+    print(" ".join([args.output_jsonl] + values))

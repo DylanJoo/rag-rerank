@@ -73,11 +73,11 @@ def generate_vocab_vector(
 
     return [sort_dict(weight, quantization_factor, minimum) for i, weight in weights.items()]
 
-def batch_inference(args, dataset, shard=0):
+def batch_inference(args, dataset, n_file=0, shard=0):
     output_dir = os.path.dirname(args.collection_output)
     os.makedirs(output_dir, exist_ok=True)
 
-    with open(f'{args.collection_output}_{shard}', 'w') as fout:
+    with open(f'{args.collection_output}_{n_file}_{shard}', 'w') as fout:
         vectors = []
         data_iterator = batch_iterator(dataset, args.batch_size, False)
 
@@ -130,10 +130,10 @@ if __name__ == '__main__':
 
 
     i = 0
-    for file in files:
+    for n_file, file in enumerate(files):
 
-        # open one files
         with open(file, 'r') as f:
+
             collection = []
             for line in tqdm(f):
                 item = json.loads(line.strip())
@@ -147,7 +147,7 @@ if __name__ == '__main__':
                 if len(collection) >= 1000000:
                     dataset = Dataset.from_list(collection)
                     print(dataset)
-                    batch_inference(args, dataset, i)
+                    batch_inference(args, dataset, n_file, i)
 
                     i += 1
                     collection = []
@@ -155,4 +155,4 @@ if __name__ == '__main__':
         # finish the rest of collections
         if len(collection) > 0:
             dataset = Dataset.from_list(collection)
-            batch_inference(args, dataset, i)
+            batch_inference(args, dataset, n_file, i)

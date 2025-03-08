@@ -18,6 +18,6 @@ python3 -m src.retrieve.mlm_encode \
     --tokenizer_name naver/splade-v3 \
     --collection ${DATA_DIR}/crux/passages \
     --collection_output ${INDEX_DIR}/crux/splade-v3.crux.passages.lucene/encoded/vectors.jsonl \
-    --batch_size 128 \
+    --batch_size 256 \
     --max_length 512 \
     --quantization_factor 100
