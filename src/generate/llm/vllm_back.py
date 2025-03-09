@@ -8,14 +8,16 @@ class LLM:
         temperature=0.7, top_p=0.9, 
         dtype='half', gpu_memory_utilization=0.75, 
         num_gpus=1, 
-        think_activated=False
+        think_activated=False,
+        max_model_len=13712
     ):
         self.model = vllm.LLM(
             model, 
             dtype=dtype,
             enforce_eager=True,
             tensor_parallel_size=num_gpus,
-            gpu_memory_utilization=gpu_memory_utilization
+            gpu_memory_utilization=gpu_memory_utilization,
+            max_model_len=max_model_len
         )
         self.sampling_params = vllm.SamplingParams(
             temperature=temperature, 
@@ -36,7 +38,7 @@ class LLM:
                     outputs[i] = o.split('</think>')[-1]
         return outputs
 
-    def generate(self, x, max_tokens=1024, min_tokens=0, **kwargs):
+    def generate(self, x, **kwargs):
         self.sampling_params.max_tokens = kwargs.pop('max_tokens', 256)
         self.sampling_params.min_tokens = kwargs.pop('min_tokens', 32)
 

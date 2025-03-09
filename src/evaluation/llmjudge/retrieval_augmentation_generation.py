@@ -131,21 +131,27 @@ if __name__ == "__main__":
     parser.add_argument("--model_name_or_path", type=str, default=None)
     parser.add_argument("--threshold", type=float, default=3)
     parser.add_argument("--gamma", type=float, default=0.5)
+    parser.add_argument("--num_gpus", type=int, default=1)
     # rag output
-    parser.add_argument("--output_jsonl", type=str, default='testing.jsonl')
+    parser.add_argument("--result_jsonl", type=str, default='testing.jsonl')
     args = parser.parse_args()
 
 
     # model
     from generate.llm.utils import check_if_ampere
     if check_if_ampere:
-        from generate.llm.vllm_back import LLM
+        if args.num_gpus > 1:
+            from generate.llm.vllm_api import LLM
+        else:
+            from generate.llm.vllm_back import LLM
     else:
         from generate.llm.hf_back import LLM
     generator = LLM(
         model=args.model_name_or_path,
         top_p=1,
-        temperature=0 if check_if_ampere else 1e-10
+        temperature=0 if check_if_ampere else 1e-10,
+        num_gpus=args.num_gpus,
+        gpu_memory_utilization=0.9
     )
 
     # data
@@ -157,7 +163,7 @@ if __name__ == "__main__":
     judgements = load_judgements(args.judgement_file)
 
     output_rac = {}
-    with open(args.output_jsonl, 'r') as f:
+    with open(args.result_jsonl, 'r') as f:
         for i, line in enumerate(f):
             data = json.loads(line)
             qid = data['qid']
@@ -180,4 +186,9 @@ if __name__ == "__main__":
     metrics = ['final_coverage', 'final_density']
     values =  [str(output_rag_eval['mean_coverage']), str(output_rag_eval['mean_density'])]
     print(" ".join(['Pipeline'] + metrics))
-    print(" ".join([args.output_jsonl] + values))
+    print(" ".join([args.result_jsonl] + values))
+
+    # metrics = ['mean_coverage', 'mean_density', 'MAP', 'alpha_nDCG', 'final_coverage', 'final_density']
+    # values =  [str(output_rac_eval[m]) for m in metrics[:-2]] + [str(output_rag_eval['mean_coverage']), str(output_rag_eval['mean_density'])]
+    # print(" ".join(['Pipeline'] + metrics))
+    # print(" ".join([args.exp] + values))

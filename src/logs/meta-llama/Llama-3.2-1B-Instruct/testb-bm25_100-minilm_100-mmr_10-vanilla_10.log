@@ -1,0 +1,81 @@
+/home/dju/miniconda3/envs/rag/lib/python3.10/runpy.py:126: RuntimeWarning: 'evaluation.llmjudge.retrieval_augmentation_generation' found in sys.modules after import of package 'evaluation.llmjudge', but prior to execution of 'evaluation.llmjudge.retrieval_augmentation_generation'; this may result in unpredictable behaviour
+  warn(RuntimeWarning(msg))
+INFO 03-08 22:25:43 __init__.py:183] Automatically detected platform cuda.
+WARNING 03-08 22:25:43 cuda.py:32] You are using a deprecated `pynvml` package. Please install `nvidia-ml-py` instead, and make sure to uninstall `pynvml`. When both of them are installed, `pynvml` will take precedence and cause errors. See https://pypi.org/project/pynvml for more information.
+WARNING 03-08 22:25:45 config.py:2318] Casting torch.bfloat16 to torch.float16.
+INFO 03-08 22:25:51 config.py:520] This model supports multiple tasks: {'score', 'embed', 'classify', 'reward', 'generate'}. Defaulting to 'generate'.
+WARNING 03-08 22:25:51 arg_utils.py:1107] Chunked prefill is enabled by default for models with max_model_len > 32K. Currently, chunked prefill might not work with some features or models. If you encounter any issues, please disable chunked prefill by setting --enable-chunked-prefill=False.
+INFO 03-08 22:25:51 config.py:1483] Chunked prefill is enabled with max_num_batched_tokens=2048.
+WARNING 03-08 22:25:51 cuda.py:100] To see benefits of async output processing, enable CUDA graph. Since, enforce-eager is enabled, async output processor cannot be used
+WARNING 03-08 22:25:51 config.py:656] Async output processing is not supported on the current platform type cuda.
+INFO 03-08 22:25:51 llm_engine.py:232] Initializing an LLM engine (v0.7.0) with config: model='meta-llama/Llama-3.2-1B-Instruct', speculative_config=None, tokenizer='meta-llama/Llama-3.2-1B-Instruct', skip_tokenizer_init=False, tokenizer_mode=auto, revision=None, override_neuron_config=None, tokenizer_revision=None, trust_remote_code=False, dtype=torch.float16, max_seq_len=131072, download_dir=None, load_format=auto, tensor_parallel_size=1, pipeline_parallel_size=1, disable_custom_all_reduce=False, quantization=None, enforce_eager=True, kv_cache_dtype=auto,  device_config=cuda, decoding_config=DecodingConfig(guided_decoding_backend='xgrammar'), observability_config=ObservabilityConfig(otlp_traces_endpoint=None, collect_model_forward_time=False, collect_model_execute_time=False), seed=0, served_model_name=meta-llama/Llama-3.2-1B-Instruct, num_scheduler_steps=1, multi_step_stream_outputs=True, enable_prefix_caching=False, chunked_prefill_enabled=True, use_async_output_proc=False, disable_mm_preprocessor_cache=False, mm_processor_kwargs=None, pooler_config=None, compilation_config={"splitting_ops":[],"compile_sizes":[],"cudagraph_capture_sizes":[],"max_capture_size":0}, use_cached_outputs=False, 
+INFO 03-08 22:25:53 cuda.py:225] Using Flash Attention backend.
+INFO 03-08 22:25:53 model_runner.py:1110] Starting to load model meta-llama/Llama-3.2-1B-Instruct...
+INFO 03-08 22:25:54 weight_utils.py:251] Using model weights format ['*.safetensors']
+INFO 03-08 22:25:54 weight_utils.py:296] No model.safetensors.index.json found in remote.
+Loading safetensors checkpoint shards:   0% Completed | 0/1 [00:00<?, ?it/s]
+Loading safetensors checkpoint shards: 100% Completed | 1/1 [00:01<00:00,  1.62s/it]
+Loading safetensors checkpoint shards: 100% Completed | 1/1 [00:01<00:00,  1.63s/it]
+
+INFO 03-08 22:25:56 model_runner.py:1115] Loading model weights took 2.3185 GB
+INFO 03-08 22:25:57 worker.py:266] Memory profiling takes 0.58 seconds
+INFO 03-08 22:25:57 worker.py:266] the current vLLM instance can use total_gpu_memory (47.44GiB) x gpu_memory_utilization (0.75) = 35.58GiB
+INFO 03-08 22:25:57 worker.py:266] model weights take 2.32GiB; non_torch_memory takes 0.06GiB; PyTorch activation peak memory takes 1.18GiB; the rest of the memory reserved for KV Cache is 32.02GiB.
+INFO 03-08 22:25:57 executor_base.py:108] # CUDA blocks: 65581, # CPU blocks: 8192
+INFO 03-08 22:25:57 executor_base.py:113] Maximum concurrency for 131072 tokens per request: 8.01x
+INFO 03-08 22:25:59 llm_engine.py:429] init engine (profile, create kv cache, warmup model) took 3.02 seconds
+  0%|          | 0/3 [00:00<?, ?it/s] 33%|███▎      | 1/3 [00:00<00:00,  3.92it/s] 67%|██████▋   | 2/3 [00:02<00:01,  1.49s/it]100%|██████████| 3/3 [00:02<00:00,  1.15it/s]
+RAG Evaluating:   0%|          | 0/50 [00:00<?, ?it/s]RAG Evaluating:   2%|▏         | 1/50 [00:01<01:27,  1.79s/it]RAG Evaluating:   4%|▍         | 2/50 [00:04<01:41,  2.12s/it]RAG Evaluating:   6%|▌         | 3/50 [00:05<01:16,  1.62s/it]RAG Evaluating:   8%|▊         | 4/50 [00:07<01:25,  1.85s/it]RAG Evaluating:  10%|█         | 5/50 [00:08<01:07,  1.49s/it]RAG Evaluating:  12%|█▏        | 6/50 [00:10<01:17,  1.75s/it]RAG Evaluating:  14%|█▍        | 7/50 [00:11<01:10,  1.63s/it]RAG Evaluating:  16%|█▌        | 8/50 [00:14<01:18,  1.86s/it]RAG Evaluating:  18%|█▊        | 9/50 [00:15<01:07,  1.64s/it]RAG Evaluating:  20%|██        | 10/50 [00:17<01:13,  1.83s/it]RAG Evaluating:  22%|██▏       | 11/50 [00:19<01:15,  1.94s/it]RAG Evaluating:  24%|██▍       | 12/50 [00:20<00:59,  1.57s/it]RAG Evaluating:  26%|██▌       | 13/50 [00:21<00:52,  1.41s/it]RAG Evaluating:  28%|██▊       | 14/50 [00:23<00:59,  1.66s/it]RAG Evaluating:  30%|███       | 15/50 [00:26<01:04,  1.85s/it]RAG Evaluating:  32%|███▏      | 16/50 [00:28<01:08,  2.00s/it]RAG Evaluating:  34%|███▍      | 17/50 [00:30<01:09,  2.09s/it]RAG Evaluating:  36%|███▌      | 18/50 [00:31<00:58,  1.81s/it]RAG Evaluating:  38%|███▊      | 19/50 [00:32<00:45,  1.48s/it]RAG Evaluating:  40%|████      | 20/50 [00:33<00:40,  1.34s/it]RAG Evaluating:  42%|████▏     | 21/50 [00:35<00:46,  1.60s/it]RAG Evaluating:  44%|████▍     | 22/50 [00:36<00:38,  1.38s/it]RAG Evaluating:  46%|████▌     | 23/50 [00:39<00:44,  1.66s/it]RAG Evaluating:  48%|████▊     | 24/50 [00:41<00:48,  1.86s/it]RAG Evaluating:  50%|█████     | 25/50 [00:43<00:50,  2.02s/it]RAG Evaluating:  52%|█████▏    | 26/50 [00:45<00:49,  2.08s/it]RAG Evaluating:  54%|█████▍    | 27/50 [00:48<00:49,  2.17s/it]RAG Evaluating:  56%|█████▌    | 28/50 [00:51<00:51,  2.33s/it]RAG Evaluating:  58%|█████▊    | 29/50 [00:51<00:40,  1.91s/it]RAG Evaluating:  60%|██████    | 30/50 [00:54<00:41,  2.07s/it]RAG Evaluating:  62%|██████▏   | 31/50 [00:56<00:40,  2.14s/it]RAG Evaluating:  64%|██████▍   | 32/50 [00:59<00:39,  2.20s/it]RAG Evaluating:  66%|██████▌   | 33/50 [01:00<00:33,  1.97s/it]RAG Evaluating:  68%|██████▊   | 34/50 [01:01<00:27,  1.73s/it]RAG Evaluating:  70%|███████   | 35/50 [01:02<00:23,  1.54s/it]RAG Evaluating:  72%|███████▏  | 36/50 [01:04<00:20,  1.46s/it]RAG Evaluating:  74%|███████▍  | 37/50 [01:06<00:22,  1.74s/it]RAG Evaluating:  76%|███████▌  | 38/50 [01:08<00:22,  1.89s/it]RAG Evaluating:  78%|███████▊  | 39/50 [01:09<00:16,  1.55s/it]RAG Evaluating:  80%|████████  | 40/50 [01:10<00:12,  1.28s/it]RAG Evaluating:  82%|████████▏ | 41/50 [01:12<00:14,  1.59s/it]RAG Evaluating:  84%|████████▍ | 42/50 [01:13<00:11,  1.48s/it]RAG Evaluating:  86%|████████▌ | 43/50 [01:15<00:12,  1.73s/it]RAG Evaluating:  88%|████████▊ | 44/50 [01:18<00:11,  1.93s/it]RAG Evaluating:  90%|█████████ | 45/50 [01:19<00:08,  1.69s/it]RAG Evaluating:  92%|█████████▏| 46/50 [01:21<00:07,  1.88s/it]RAG Evaluating:  94%|█████████▍| 47/50 [01:24<00:06,  2.02s/it]RAG Evaluating:  96%|█████████▌| 48/50 [01:26<00:04,  2.11s/it]RAG Evaluating:  98%|█████████▊| 49/50 [01:27<00:01,  1.88s/it]RAG Evaluating: 100%|██████████| 50/50 [01:30<00:00,  2.01s/it]RAG Evaluating: 100%|██████████| 50/50 [01:30<00:00,  1.80s/it]
+rating: [1 5 4 5 4 1 5 1 5 5 5 4 1 1 5]
+rating: [4 4 5 5 4 4 4 4 5 4 4 4 4 4 5]
+rating: [4 2 2 2 4 4 2 3 4 4 2 4 4 2 2]
+rating: [4 5 4 4 5 5 5 5 4 1 4 5 4 1 5]
+rating: [4 4 4 4 4 4 4 4 4 4 4 4 4 4 4]
+rating: [4 4 4 5 4 5 4 4 4 4 4 2 4 4 4]
+rating: [5 1 5 5 1 1 1 5 5 5 5 3 5 5 5]
+rating: [4 3 4 4 4 4 4 4 4 4 4 4 4 4 4]
+rating: [4 2 2 4 4 4 4 2 2 2 2 2 2 2 2]
+rating: [5 5 5 5 4 5 4 4 5 5 4 5 5 4 5]
+rating: [1 1 1 1 1 1 1 1 1 2 1 1 1 5 1]
+rating: [4 2 4 4 4 2 3 3 4 4 4 4 3 2 4]
+rating: [4 4 4 4 4 4 4 3 4 4 4 4 4 4 4]
+rating: [4 4 5 5 4 4 4 4 4 4 4 5 4 4 5]
+rating: [1 4 4 4 4 4 4 4 4 4 2 4 4 4 2]
+rating: [5 5 1 5 5 5 5 5 5 5 5 1 1 5 5]
+rating: [5 4 5 5 5 5 5 0 5 4 5 5 5 5 5]
+rating: [5 5 4 4 2 4 4 4 4 4 4 4 4 4 2]
+rating: [5 5 5 5 4 0 5 4 5 4 5 5 5 4 5]
+rating: [5 5 5 5 5 5 4 5 5 5 5 5 5 5 5]
+rating: [1 2 5 5 4 5 1 4 5 5 1 4 1 5 4]
+rating: [4 4 5 4 5 4 4 5 4 4 4 4 4 5 5]
+rating: [5 4 5 5 5 4 4 5 4 4 5 5 5 5 5]
+rating: [4 1 4 4 4 4 4 3 4 5 4 4 4 4 5]
+rating: [5 5 5 5 5 2 4 5 5 4 5 4 5 5 4]
+rating: [4 4 4 4 4 1 5 4 4 4 4 4 1 1 4]
+rating: [5 5 5 5 5 4 5 5 5 5 5 4 5 5 4]
+rating: [5 5 5 5 5 5 5 5 5 5 5 5 5 5 5]
+rating: [2 2 2 1 1 1 2 2 2 2 2 1 2 1 2]
+rating: [5 5 5 5 5 5 5 5 5 5 5 5 5 5 5]
+rating: [4 4 4 5 5 3 4 4 4 4 5 4 5 4 4]
+rating: [4 4 4 4 4 4 4 4 4 4 4 4 4 4 4]
+rating: [4 4 2 4 2 4 4 4 4 4 4 4 4 4 4]
+rating: [4 4 4 3 4 3 2 4 3 4 3 3 4 2 4]
+rating: [4 5 4 4 4 4 4 5 4 4 4 4 4 4 4]
+rating: [5 4 4 4 5 4 5 5 5 4 4 5 5 4 5]
+rating: [3 3 4 3 3 4 4 3 4 4 4 3 3 3 3]
+rating: [4 4 4 5 5 4 4 4 4 5 4 4 4 4 5]
+rating: [4 4 4 4 2 4 2 4 4 2 4 4 4 4 4]
+rating: [5 4 4 4 4 4 5 4 5 4 4 4 4 4 4]
+rating: [5 5 5 5 5 5 5 5 5 5 5 5 5 5 5]
+rating: [4 4 4 5 4 4 4 5 4 4 4 4 4 4 4]
+rating: [3 2 3 3 3 3 4 3 2 2 4 3 3 3 3]
+rating: [5 5 5 5 4 5 5 5 5 5 5 4 5 5 5]
+rating: [5 5 4 4 4 4 4 4 5 4 4 5 4 5 4]
+rating: [5 5 5 5 5 1 5 5 5 5 5 5 5 5 5]
+rating: [5 4 4 5 5 5 5 5 4 5 4 5 5 5 4]
+rating: [1 1 1 1 1 4 4 4 1 5 4 1 4 1 1]
+rating: [4 4 4 2 4 4 4 4 4 4 4 4 4 4 4]
+rating: [4 2 2 4 4 4 4 4 4 4 3 4 4 4 4]
+Pipeline final_coverage final_density
+results/testb-bm25_100-minilm_100-mmr_10-vanilla_10.jsonl 0.8627838827838827 1.5101142145868172
+[rank0]:[W308 22:27:34.481360157 ProcessGroupNCCL.cpp:1250] Warning: WARNING: process group has NOT been destroyed before we destruct ProcessGroupNCCL. On normal program exit, the application should call destroy_process_group to ensure that any pending NCCL operations have finished in this process. In rare cases this process can exit before this point and block the progress of another member of the process group. This constraint has always been present,  but this warning has only been added since PyTorch 2.4 (function operator())
