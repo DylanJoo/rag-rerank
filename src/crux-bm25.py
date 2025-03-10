@@ -144,8 +144,8 @@ def main(args):
         print(cleanup_vllm(generator) if check_if_ampere else "\n")
 
         # output final report as file
-        os.makedirs("results", exist_ok=True)
-        with open(os.path.join("results", f"{args.exp}.jsonl"), 'w') as f:
+        os.makedirs(f"results/{args.generation.max_length}", exist_ok=True)
+        with open(os.path.join(f"results/{args.generation.max_length}", f"{args.exp}.jsonl"), 'w') as f:
             for k, data in output_rac.items():
                 del data['prompt']
                 del data['context_list']
@@ -173,10 +173,15 @@ def main(args):
         print(output_rag_eval)
 
         # output final report as file
-        metrics = ['mean_coverage', 'mean_density', 'MAP', 'alpha_nDCG', 'final_coverage', 'final_density']
-        values =  [str(output_rac_eval[m]) for m in metrics[:-2]] + [str(output_rag_eval['mean_coverage']), str(output_rag_eval['mean_density'])]
-        print(" ".join(['Pipeline'] + metrics))
-        print(" ".join([args.exp] + values))
+        metrics = ['mean_coverage', 'mean_density', 'MAP', 'alpha_nDCG']
+        values = [str(output_rac_eval[m]) for m in metrics]
+        print(" ".join(['RAC-eval'] + metrics))
+        print(" ".join(['#' + args.exp] + values))
+
+        metrics = ['mean_coverage', 'mean_density']
+        values =  [str(output_rag_eval['mean_coverage']), str(output_rag_eval['mean_density'])]
+        print(" ".join(['RAG-eval'] + metrics))
+        print(" ".join(['#' + args.exp] + values))
 
 if __name__ == "__main__":
     from tools import pretty_print_args
