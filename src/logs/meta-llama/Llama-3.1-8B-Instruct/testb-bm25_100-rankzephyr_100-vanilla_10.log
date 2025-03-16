@@ -1,0 +1,186 @@
+{
+    "data": {
+        "default_config": "configs/crux/bm25_100-rankgpt_100.yaml",
+        "debug": null,
+        "num_gpus": 1,
+        "online_eval": false,
+        "exp": "testing",
+        "index_dir": "/home/dju/indexes/crux/bm25.crux.passages.lucene/",
+        "corpus_dir": "/home/dju/datasets/crux/passages/",
+        "topic_file": "/home/dju/datasets/crux/ranking_3/testb_topics.jsonl",
+        "qrels_file": "/home/dju/datasets/crux/ranking_3/testb_qrels_pr.txt",
+        "judgement_file": "/home/dju/datasets/crux/ranking_3/testb_oracle-passages_judgements.jsonl",
+        "n_questions": 15,
+        "threshold": 3
+    },
+    "retrieval": {
+        "default_config": "configs/crux/bm25_100-rankgpt_100.yaml",
+        "debug": null,
+        "num_gpus": 1,
+        "online_eval": false,
+        "exp": "testing",
+        "k": 100,
+        "model_class": "bm25",
+        "model_name_or_path": null,
+        "max_length": 512,
+        "pooling": null,
+        "l2_norm": null,
+        "batch_size": 256,
+        "k1": 0.9,
+        "b": 0.4
+    },
+    "reranking": null,
+    "listwise_reranking": {
+        "default_config": "configs/crux/bm25_100-rankgpt_100.yaml",
+        "debug": null,
+        "num_gpus": 1,
+        "online_eval": false,
+        "exp": "testing",
+        "model_name_or_path": "castorini/rank_zephyr_7b_v1_full",
+        "max_k": 100,
+        "batch_size": 32,
+        "max_length": 4096,
+        "use_logits": false,
+        "use_alpha": false,
+        "num_passes": 1,
+        "system_message": "You are RankLLM, an intelligent assistant that can rank passages based on their relevancy to the query",
+        "type": "listwise"
+    },
+    "augmentation": {
+        "default_config": "configs/crux/bm25_100-rankgpt_100.yaml",
+        "debug": null,
+        "num_gpus": 1,
+        "online_eval": false,
+        "exp": "testing",
+        "type": "vanilla",
+        "max_k": 10,
+        "batch_size": -1,
+        "max_length": 1024
+    },
+    "generation": {
+        "default_config": "configs/crux/bm25_100-rankgpt_100.yaml",
+        "debug": null,
+        "num_gpus": 1,
+        "online_eval": false,
+        "exp": "testing",
+        "model_name_or_path": "meta-llama/Llama-3.1-8B-Instruct",
+        "batch_size": 4,
+        "max_length": 300,
+        "temperature": 0.7
+    },
+    "default_config": "configs/crux/bm25_100-rankgpt_100.yaml",
+    "debug": null,
+    "num_gpus": 1,
+    "online_eval": true,
+    "exp": "testb-bm25_100-rankzephyr_100-vanilla_10"
+}
+INFO 03-03 16:41:59 __init__.py:183] Automatically detected platform cuda.
+WARNING 03-03 16:41:59 cuda.py:32] You are using a deprecated `pynvml` package. Please install `nvidia-ml-py` instead, and make sure to uninstall `pynvml`. When both of them are installed, `pynvml` will take precedence and cause errors. See https://pypi.org/project/pynvml for more information.
+Loading castorini/rank_zephyr_7b_v1_full ...
+INFO 03-03 16:42:08 config.py:520] This model supports multiple tasks: {'classify', 'generate', 'reward', 'score', 'embed'}. Defaulting to 'generate'.
+INFO 03-03 16:42:08 llm_engine.py:232] Initializing an LLM engine (v0.7.0) with config: model='castorini/rank_zephyr_7b_v1_full', speculative_config=None, tokenizer='castorini/rank_zephyr_7b_v1_full', skip_tokenizer_init=False, tokenizer_mode=auto, revision=None, override_neuron_config=None, tokenizer_revision=None, trust_remote_code=False, dtype=torch.bfloat16, max_seq_len=32768, download_dir=None, load_format=auto, tensor_parallel_size=1, pipeline_parallel_size=1, disable_custom_all_reduce=False, quantization=None, enforce_eager=False, kv_cache_dtype=auto,  device_config=cuda, decoding_config=DecodingConfig(guided_decoding_backend='xgrammar'), observability_config=ObservabilityConfig(otlp_traces_endpoint=None, collect_model_forward_time=False, collect_model_execute_time=False), seed=0, served_model_name=castorini/rank_zephyr_7b_v1_full, num_scheduler_steps=1, multi_step_stream_outputs=True, enable_prefix_caching=False, chunked_prefill_enabled=False, use_async_output_proc=True, disable_mm_preprocessor_cache=False, mm_processor_kwargs=None, pooler_config=None, compilation_config={"splitting_ops":[],"compile_sizes":[],"cudagraph_capture_sizes":[256,248,240,232,224,216,208,200,192,184,176,168,160,152,144,136,128,120,112,104,96,88,80,72,64,56,48,40,32,24,16,8,4,2,1],"max_capture_size":256}, use_cached_outputs=False, 
+INFO 03-03 16:42:10 cuda.py:225] Using Flash Attention backend.
+INFO 03-03 16:42:11 model_runner.py:1110] Starting to load model castorini/rank_zephyr_7b_v1_full...
+INFO 03-03 16:42:11 weight_utils.py:251] Using model weights format ['*.safetensors']
+INFO 03-03 16:43:12 model_runner.py:1115] Loading model weights took 13.4967 GB
+INFO 03-03 16:43:17 worker.py:266] Memory profiling takes 5.09 seconds
+INFO 03-03 16:43:17 worker.py:266] the current vLLM instance can use total_gpu_memory (47.44GiB) x gpu_memory_utilization (0.90) = 42.69GiB
+INFO 03-03 16:43:17 worker.py:266] model weights take 13.50GiB; non_torch_memory takes 0.06GiB; PyTorch activation peak memory takes 3.38GiB; the rest of the memory reserved for KV Cache is 25.76GiB.
+INFO 03-03 16:43:17 executor_base.py:108] # CUDA blocks: 13186, # CPU blocks: 2048
+INFO 03-03 16:43:17 executor_base.py:113] Maximum concurrency for 32768 tokens per request: 6.44x
+INFO 03-03 16:43:21 model_runner.py:1430] Capturing cudagraphs for decoding. This may lead to unexpected consequences if the model is not static. To run the model in eager mode, set 'enforce_eager=True' or use '--enforce-eager' in the CLI. If out-of-memory error occurs during cudagraph capture, consider decreasing `gpu_memory_utilization` or switching to eager mode. You can also reduce the `max_num_seqs` as needed to decrease memory usage.
+INFO 03-03 16:43:36 model_runner.py:1558] Graph capturing finished in 15 secs, took 0.26 GiB
+INFO 03-03 16:43:36 llm_engine.py:429] init engine (profile, create kv cache, warmup model) took 24.70 seconds
+Completed loading castorini/rank_zephyr_7b_v1_full
+Reranking and returning 100 passages with castorini/rank_zephyr_7b_v1_full...
+Pass 1 of 1:
+{'mean_coverage': 0.6443956043956044, 'mean_density': 0.5687916999437168, 'mean_num_segments': 10.0, 'mean_num_tokens': 1216.12, 'num_coverage': 50, 'RPrec': (0.17492857142857146, 0.42358461392423663, 0.40945760896111283), 'MAP': 0.3728810775275806, 'alpha_nDCG': 0.564914982964326}
+RAG-pipeline mean_coverage mean_density MAP alpha_nDCG
+testb-bm25_100-rankzephyr_100-vanilla_10 0.6443956043956044 0.5687916999437168 0.3728810775275806 0.564914982964326
+WARNING 03-03 16:48:44 config.py:2318] Casting torch.bfloat16 to torch.float16.
+INFO 03-03 16:48:51 config.py:520] This model supports multiple tasks: {'classify', 'generate', 'reward', 'score', 'embed'}. Defaulting to 'generate'.
+WARNING 03-03 16:48:51 arg_utils.py:1107] Chunked prefill is enabled by default for models with max_model_len > 32K. Currently, chunked prefill might not work with some features or models. If you encounter any issues, please disable chunked prefill by setting --enable-chunked-prefill=False.
+INFO 03-03 16:48:51 config.py:1483] Chunked prefill is enabled with max_num_batched_tokens=2048.
+WARNING 03-03 16:48:51 cuda.py:100] To see benefits of async output processing, enable CUDA graph. Since, enforce-eager is enabled, async output processor cannot be used
+WARNING 03-03 16:48:51 config.py:656] Async output processing is not supported on the current platform type cuda.
+INFO 03-03 16:48:51 llm_engine.py:232] Initializing an LLM engine (v0.7.0) with config: model='meta-llama/Llama-3.1-8B-Instruct', speculative_config=None, tokenizer='meta-llama/Llama-3.1-8B-Instruct', skip_tokenizer_init=False, tokenizer_mode=auto, revision=None, override_neuron_config=None, tokenizer_revision=None, trust_remote_code=False, dtype=torch.float16, max_seq_len=131072, download_dir=None, load_format=auto, tensor_parallel_size=1, pipeline_parallel_size=1, disable_custom_all_reduce=False, quantization=None, enforce_eager=True, kv_cache_dtype=auto,  device_config=cuda, decoding_config=DecodingConfig(guided_decoding_backend='xgrammar'), observability_config=ObservabilityConfig(otlp_traces_endpoint=None, collect_model_forward_time=False, collect_model_execute_time=False), seed=0, served_model_name=meta-llama/Llama-3.1-8B-Instruct, num_scheduler_steps=1, multi_step_stream_outputs=True, enable_prefix_caching=False, chunked_prefill_enabled=True, use_async_output_proc=False, disable_mm_preprocessor_cache=False, mm_processor_kwargs=None, pooler_config=None, compilation_config={"splitting_ops":[],"compile_sizes":[],"cudagraph_capture_sizes":[],"max_capture_size":0}, use_cached_outputs=False, 
+INFO 03-03 16:48:51 cuda.py:225] Using Flash Attention backend.
+INFO 03-03 16:48:52 model_runner.py:1110] Starting to load model meta-llama/Llama-3.1-8B-Instruct...
+INFO 03-03 16:48:52 weight_utils.py:251] Using model weights format ['*.safetensors']
+INFO 03-03 16:49:03 model_runner.py:1115] Loading model weights took 14.9888 GB
+INFO 03-03 16:49:04 worker.py:266] Memory profiling takes 0.62 seconds
+INFO 03-03 16:49:04 worker.py:266] the current vLLM instance can use total_gpu_memory (47.44GiB) x gpu_memory_utilization (0.75) = 35.58GiB
+INFO 03-03 16:49:04 worker.py:266] model weights take 14.99GiB; non_torch_memory takes 0.01GiB; PyTorch activation peak memory takes 1.18GiB; the rest of the memory reserved for KV Cache is 19.40GiB.
+INFO 03-03 16:49:04 executor_base.py:108] # CUDA blocks: 9935, # CPU blocks: 2048
+INFO 03-03 16:49:04 executor_base.py:113] Maximum concurrency for 131072 tokens per request: 1.21x
+INFO 03-03 16:49:05 llm_engine.py:429] init engine (profile, create kv cache, warmup model) took 1.13 seconds
+vllm engine has been cleaned up
+WARNING 03-03 16:50:41 config.py:2318] Casting torch.bfloat16 to torch.float16.
+INFO 03-03 16:50:41 config.py:520] This model supports multiple tasks: {'classify', 'generate', 'reward', 'score', 'embed'}. Defaulting to 'generate'.
+WARNING 03-03 16:50:41 arg_utils.py:1107] Chunked prefill is enabled by default for models with max_model_len > 32K. Currently, chunked prefill might not work with some features or models. If you encounter any issues, please disable chunked prefill by setting --enable-chunked-prefill=False.
+INFO 03-03 16:50:41 config.py:1483] Chunked prefill is enabled with max_num_batched_tokens=2048.
+WARNING 03-03 16:50:41 cuda.py:100] To see benefits of async output processing, enable CUDA graph. Since, enforce-eager is enabled, async output processor cannot be used
+WARNING 03-03 16:50:41 config.py:656] Async output processing is not supported on the current platform type cuda.
+INFO 03-03 16:50:41 llm_engine.py:232] Initializing an LLM engine (v0.7.0) with config: model='meta-llama/Llama-3.1-8B-Instruct', speculative_config=None, tokenizer='meta-llama/Llama-3.1-8B-Instruct', skip_tokenizer_init=False, tokenizer_mode=auto, revision=None, override_neuron_config=None, tokenizer_revision=None, trust_remote_code=False, dtype=torch.float16, max_seq_len=131072, download_dir=None, load_format=auto, tensor_parallel_size=1, pipeline_parallel_size=1, disable_custom_all_reduce=False, quantization=None, enforce_eager=True, kv_cache_dtype=auto,  device_config=cuda, decoding_config=DecodingConfig(guided_decoding_backend='xgrammar'), observability_config=ObservabilityConfig(otlp_traces_endpoint=None, collect_model_forward_time=False, collect_model_execute_time=False), seed=0, served_model_name=meta-llama/Llama-3.1-8B-Instruct, num_scheduler_steps=1, multi_step_stream_outputs=True, enable_prefix_caching=False, chunked_prefill_enabled=True, use_async_output_proc=False, disable_mm_preprocessor_cache=False, mm_processor_kwargs=None, pooler_config=None, compilation_config={"splitting_ops":[],"compile_sizes":[],"cudagraph_capture_sizes":[],"max_capture_size":0}, use_cached_outputs=False, 
+INFO 03-03 16:50:42 model_runner.py:1110] Starting to load model meta-llama/Llama-3.1-8B-Instruct...
+INFO 03-03 16:50:42 weight_utils.py:251] Using model weights format ['*.safetensors']
+INFO 03-03 16:50:56 model_runner.py:1115] Loading model weights took 14.9576 GB
+INFO 03-03 16:50:56 worker.py:266] Memory profiling takes 0.49 seconds
+INFO 03-03 16:50:56 worker.py:266] the current vLLM instance can use total_gpu_memory (47.44GiB) x gpu_memory_utilization (0.75) = 35.58GiB
+INFO 03-03 16:50:56 worker.py:266] model weights take 14.96GiB; non_torch_memory takes 0.00GiB; PyTorch activation peak memory takes 1.18GiB; the rest of the memory reserved for KV Cache is 19.44GiB.
+INFO 03-03 16:50:57 executor_base.py:108] # CUDA blocks: 9954, # CPU blocks: 2048
+INFO 03-03 16:50:57 executor_base.py:113] Maximum concurrency for 131072 tokens per request: 1.22x
+INFO 03-03 16:50:57 llm_engine.py:429] init engine (profile, create kv cache, warmup model) took 1.01 seconds
+rating: [4 4 0 2 0 5 2 0 0 4 4 4 0 0 4]
+rating: [5 0 0 0 0 2 5 0 0 0 4 4 0 2 4]
+rating: [5 4 4 4 4 5 4 2 4 4 1 5 4 4 4]
+rating: [4 5 5 2 5 2 5 4 4 4 5 4 1 4 4]
+rating: [4 2 1 4 4 2 0 4 0 2 0 4 2 2 4]
+rating: [5 0 5 4 0 5 4 1 0 4 0 4 5 5 0]
+rating: [1 0 0 0 0 0 0 0 0 0 0 0 0 5 5]
+rating: [4 1 1 5 1 1 5 1 1 4 2 1 1 4 2]
+rating: [0 5 4 4 4 4 4 4 2 4 4 5 4 4 4]
+rating: [2 1 0 4 2 0 4 0 4 5 0 0 1 0 4]
+rating: [5 0 0 0 0 0 5 5 0 5 0 5 0 5 5]
+rating: [4 2 0 2 0 2 4 1 2 1 0 4 4 2 2]
+rating: [5 4 0 4 4 5 0 4 0 4 0 2 0 0 4]
+rating: [0 0 1 0 0 0 0 0 0 0 0 0 1 0 0]
+rating: [4 4 4 4 4 4 4 4 4 2 4 4 4 4 4]
+rating: [4 5 0 5 0 4 0 0 0 5 4 0 5 4 5]
+rating: [0 2 0 4 4 2 0 0 4 4 0 2 4 0 4]
+rating: [5 5 5 4 0 5 5 4 5 4 4 4 4 4 0]
+rating: [5 5 2 5 5 0 5 4 1 1 5 5 2 5 5]
+rating: [1 4 0 2 5 4 2 4 0 5 0 4 5 0 0]
+rating: [0 0 4 0 0 4 2 0 0 2 0 1 0 0 0]
+rating: [5 0 0 5 0 0 0 0 0 4 4 0 4 5 5]
+rating: [5 0 5 0 0 5 0 5 5 0 4 4 5 5 0]
+rating: [1 4 1 2 4 4 5 4 0 2 4 4 4 1 2]
+rating: [1 0 1 0 0 0 1 1 0 0 4 2 4 0 0]
+rating: [5 4 2 2 0 2 2 2 0 0 0 2 4 4 4]
+rating: [5 4 4 4 4 2 5 4 5 4 5 4 4 4 5]
+rating: [4 1 2 1 5 4 2 4 2 1 2 2 2 1 5]
+rating: [4 4 4 1 4 0 1 4 4 4 4 2 4 4 5]
+rating: [4 4 0 0 4 5 4 4 5 0 4 0 4 0 0]
+rating: [5 5 5 5 4 4 4 0 0 0 4 0 0 4 4]
+rating: [2 2 1 1 2 4 0 1 0 2 2 2 2 0 0]
+rating: [5 4 2 0 0 4 5 5 0 4 4 4 5 2 0]
+rating: [0 0 5 0 4 4 4 5 0 0 0 4 4 1 0]
+rating: [2 5 5 5 4 1 0 5 5 1 5 0 0 5 0]
+rating: [4 5 0 0 4 4 4 0 5 0 0 5 4 4 5]
+rating: [5 5 0 0 0 5 5 5 4 4 4 0 0 0 4]
+rating: [1 4 0 0 5 0 4 4 0 4 2 4 0 5 4]
+rating: [4 2 0 5 0 4 4 1 0 0 1 4 4 4 0]
+rating: [4 0 0 5 4 5 4 4 0 0 4 5 0 4 0]
+rating: [5 2 4 0 4 2 4 5 4 4 5 4 4 4 1]
+rating: [5 5 5 5 5 0 4 5 2 4 5 4 4 4 4]
+rating: [4 4 4 2 2 2 4 4 4 2 4 4 2 4 4]
+rating: [5 4 4 4 4 2 4 2 2 1 0 2 1 1 1]
+rating: [5 5 5 5 5 1 4 5 4 0 5 4 5 4 4]
+rating: [5 4 0 0 4 2 0 5 0 2 4 5 4 2 2]
+rating: [0 0 0 0 0 0 0 4 0 1 0 2 0 0 0]
+rating: [1 2 4 0 2 0 4 4 0 2 4 2 0 0 4]
+rating: [5 5 0 4 0 0 5 0 5 0 2 4 4 5 5]
+rating: [4 0 4 4 2 0 0 2 0 0 4 4 2 0 0]
+{'mean_coverage': 0.5311868131868132, 'mean_density': 1.1447746788482152, 'mean_num_tokens': 239.4, 'num_coverage': 50}
+Pipeline mean_coverage mean_density MAP alpha_nDCG final_coverage final_density
+testb-bm25_100-rankzephyr_100-vanilla_10 0.6443956043956044 0.5687916999437168 0.3728810775275806 0.564914982964326 0.5311868131868132 1.1447746788482152

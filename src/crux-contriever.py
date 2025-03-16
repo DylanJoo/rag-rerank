@@ -117,10 +117,13 @@ def main(args):
     # Generation
     # [TODO] See if generation needs to pack into a module
     if args.generation is not None:
+        token_word_limit = {512: "300", 1024: "800", 2048: "1000"}
+        word_limit = token_word_limit[args.generation.max_length]
+
         PROMPT = \
             "Write a passage for the given query. Always use the provided contexts to write the passage (some of the contexts might be irrelevant). " + \
             "Cite at least one context in each sentence in the passage. When citing several search results, use [1][2][3]. " + \
-            "Write the passage within 300 words.\n\nQuery: {Q}\nContexts:\n{Ds}\nPassage:\n"
+            "Write the passage within {WORD_LIMIT} words.\n\nQuery: {Q}\nContexts:\n{Ds}\nPassage:\n"
 
         if check_if_ampere:
             from generate.llm.vllm_back import LLM
@@ -135,7 +138,7 @@ def main(args):
             q = output_rac[qid]['topic']
             ds = output_rac[qid]['prompt']
             all_qids.append(qid)
-            all_prompts[qid] = PROMPT.replace("{Q}", q).replace("{Ds}", ds)
+            all_prompts[qid] = PROMPT.replace("{Q}", q).replace("{Ds}", ds).replace("{WORD_LIMIT}", word_limit)
 
         for batch_qid in tqdm(batch_iterator(all_qids, size=args.generation.batch_size), desc="Generating", total=len(topics)//args.generation.batch_size):
             responses = generator.generate(x=[all_prompts[qid] for qid in batch_qid], max_tokens=args.generation.max_length)
@@ -145,12 +148,17 @@ def main(args):
         print(cleanup_vllm(generator) if check_if_ampere else "\n")
 
         # output final report as file
-        os.makedirs("results", exist_ok=True)
-        with open(os.path.join("results", f"{args.exp}.jsonl"), 'w') as f:
+        os.makedirs(f"results/{args.generation.max_length}", exist_ok=True)
+        with open(os.path.join(f"results/{args.generation.max_length}", f"{args.exp}.jsonl"), 'w') as f:
             for k, data in output_rac.items():
                 del data['prompt']
                 del data['context_list']
                 f.write(json.dumps(data) + '\n')
+
+        metrics = ['mean_coverage', 'mean_density', 'MAP', 'alpha_nDCG']
+        values = [str(output_rac_eval[m]) for m in metrics]
+        print(" ".join(['RAC-eval'] + metrics))
+        print(" ".join(['##' + args.exp] + values))
 
     # Evaluation
     if (args.generation is not None) and (args.online_eval is True):
@@ -173,11 +181,15 @@ def main(args):
         print(output_rac_eval)
         print(output_rag_eval)
 
-        # output final report as file
-        metrics = ['mean_coverage', 'mean_density', 'MAP', 'alpha_nDCG', 'final_coverage', 'final_density']
-        values =  [str(output_rac_eval[m]) for m in metrics[:-2]] + [str(output_rag_eval['mean_coverage']), str(output_rag_eval['mean_density'])]
-        print(" ".join(['Pipeline'] + metrics))
-        print(" ".join([args.exp] + values))
+        metrics = ['mean_coverage', 'mean_density', 'MAP', 'alpha_nDCG']
+        values = [str(output_rac_eval[m]) for m in metrics]
+        print(" ".join(['RAC-eval'] + metrics))
+        print(" ".join(['##' + args.exp] + values))
+
+        metrics = ['mean_coverage', 'mean_density']
+        values =  [str(output_rag_eval['mean_coverage']), str(output_rag_eval['mean_density'])]
+        print(" ".join(['RAG-eval'] + metrics))
+        print(" ".join(['##' + args.exp] + values))
 
 if __name__ == "__main__":
     from tools import pretty_print_args

@@ -29,9 +29,9 @@ def vanilla(
         output = {
             "qid": qid, "topic": topic, "questions": list_questions,
             "type": f"vanilla_{max_k}",
+            "docids": [docid for docid in result][:max_k], 
             "context_list": raw_content, 
             "prompt": template_fn_mapping[template_type](documents),
-            "docids": [docid for docid in result][:max_k], 
             "response": None
         }
         outputs[qid] = output

@@ -57,6 +57,14 @@ def load_topics(path, debug=None):
                     break
     return topics
 
+def load_reports(path):
+    topics = {}
+    with open(path, 'r') as f:
+        for i, line in enumerate(f):
+            data = json.loads(line.strip())
+            topics[data['example_id']] = data['report'].strip()
+    return topics
+
 def prepreocess(texts):
     pattern = re.compile(r"^(\d+)*\.")
     texts = re.sub(r"\<q\>|\<\/q\>", "\n", texts)
