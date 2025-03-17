@@ -1,5 +1,5 @@
 #!/bin/sh
-#SBATCH --job-name=crux-eval
+#SBATCH --job-name=5hr.crux-eval
 #SBATCH --partition gpu
 #SBATCH --gres=gpu:nvidia_rtx_a6000:4
 #SBATCH --mem=128G
@@ -17,13 +17,13 @@ conda activate rag
 cd /home/dju/rag-rerank/src 
 
 judge_model=meta-llama/Llama-3.1-70B-Instruct
-max_length=512
+max_length=1024
 mkdir -p logs/$judgement_model
 
 ### BM25 as initial retrieval
 for result_file in results/$max_length/testb-bm25*; do
     file_name=${result_file##*/}
-    output_file=logs/$judge_model/${file_name/jsonl/log}
+    output_file=logs/$judge_model/$max_length/${file_name/jsonl/log}
     mkdir -p ${output_file%/*}
     echo "Evaluating: " $file_name
 
@@ -42,7 +42,7 @@ done
 ### Contriever as initial retrieval
 for result_file in results/$max_length/testb-contriever*; do
     file_name=${result_file##*/}
-    output_file=logs/$judge_model/${file_name/jsonl/log}
+    output_file=logs/$judge_model/$max_length/${file_name/jsonl/log}
     mkdir -p ${output_file%/*}
     echo "Evaluating: " $file_name
 
@@ -61,7 +61,7 @@ done
 ### SPLADE as initial retrieval
 for result_file in results/$max_length/testb-splade*; do
     file_name=${result_file##*/}
-    output_file=logs/$judge_model/${file_name/jsonl/log}
+    output_file=logs/$judge_model/$max_length/${file_name/jsonl/log}
     mkdir -p ${output_file%/*}
     echo "Evaluating: " $file_name
 
