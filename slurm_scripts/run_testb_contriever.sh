@@ -22,7 +22,6 @@ max_report_length=1024
 python3 crux-contriever.py --default_config configs/crux/contriever_100-minilm_100.yaml \
     --exp testb-contriever_100-vanilla_10 \
     data \
-        --topic_file /home/dju/datasets/crux/ranking_3/testb_topics.jsonl \
         --qrels_file /home/dju/datasets/crux/ranking_3/testb_qrels_pr.txt  \
         --judgement_file /home/dju/datasets/crux/ranking_3/testb_oracle-passages_judgements.jsonl \
     retrieval \
@@ -34,7 +33,6 @@ python3 crux-contriever.py --default_config configs/crux/contriever_100-minilm_1
 python3 crux-contriever.py --default_config configs/crux/contriever_100-minilm_100.yaml \
     --exp testb-contriever_100-minilm_100-vanilla_10 \
     data \
-        --topic_file /home/dju/datasets/crux/ranking_3/testb_topics.jsonl \
         --qrels_file /home/dju/datasets/crux/ranking_3/testb_qrels_pr.txt  \
         --judgement_file /home/dju/datasets/crux/ranking_3/testb_oracle-passages_judgements.jsonl \
     retrieval \
@@ -47,7 +45,6 @@ python3 crux-contriever.py --default_config configs/crux/contriever_100-minilm_1
 python3 crux-contriever.py --default_config configs/crux/contriever_100-monot5_100.yaml \
     --exp testb-contriever_100-monot5_100-vanilla_10 \
     data \
-        --topic_file /home/dju/datasets/crux/ranking_3/testb_topics.jsonl \
         --qrels_file /home/dju/datasets/crux/ranking_3/testb_qrels_pr.txt  \
         --judgement_file /home/dju/datasets/crux/ranking_3/testb_oracle-passages_judgements.jsonl \
     retrieval \
@@ -60,7 +57,6 @@ python3 crux-contriever.py --default_config configs/crux/contriever_100-monot5_1
 python3 crux-contriever.py --default_config configs/crux/contriever_100-rankgpt_100.yaml \
     --exp testb-contriever_100-rankzephyr_100-vanilla_10 \
     data \
-        --topic_file /home/dju/datasets/crux/ranking_3/testb_topics.jsonl \
         --qrels_file /home/dju/datasets/crux/ranking_3/testb_qrels_pr.txt  \
         --judgement_file /home/dju/datasets/crux/ranking_3/testb_oracle-passages_judgements.jsonl \
     retrieval \
@@ -74,7 +70,6 @@ python3 crux-contriever.py --default_config configs/crux/contriever_100-rankgpt_
 python3 crux-contriever.py --default_config configs/crux/contriever_100-rankfirst_100.yaml \
     --exp testb-contriever_100-rankfirst_100-vanilla_10 \
     data \
-        --topic_file /home/dju/datasets/crux/ranking_3/testb_topics.jsonl \
         --qrels_file /home/dju/datasets/crux/ranking_3/testb_qrels_pr.txt  \
         --judgement_file /home/dju/datasets/crux/ranking_3/testb_oracle-passages_judgements.jsonl \
     retrieval \
@@ -90,7 +85,6 @@ python3 crux-contriever.py --default_config configs/crux/contriever_100-rankfirs
 python3 crux-contriever.py --default_config configs/crux/contriever_100-setwise_100.yaml \
     --exp testb-contriever_100-setwise_100-vanilla_10 \
     data \
-        --topic_file /home/dju/datasets/crux/ranking_3/testb_topics.jsonl \
         --qrels_file /home/dju/datasets/crux/ranking_3/testb_qrels_pr.txt  \
         --judgement_file /home/dju/datasets/crux/ranking_3/testb_oracle-passages_judgements.jsonl \
     retrieval \
@@ -105,7 +99,6 @@ python3 crux-contriever.py --default_config configs/crux/contriever_100-setwise_
 python3 crux-contriever.py --default_config configs/crux/contriever_100-minilm_100-mmr_10.yaml \
     --exp testb-contriever_100-minilm_100-mmr_10-vanilla_10 \
     data \
-        --topic_file /home/dju/datasets/crux/ranking_3/testb_topics.jsonl \
         --qrels_file /home/dju/datasets/crux/ranking_3/testb_qrels_pr.txt  \
         --judgement_file /home/dju/datasets/crux/ranking_3/testb_oracle-passages_judgements.jsonl \
     retrieval \
