@@ -11,9 +11,9 @@ import numpy as np
 from tqdm import tqdm
 from glob import glob
 import ir_measures
-from ir_measures import RPrec, MAP, alpha_nDCG
+from ir_measures import RPrec, R, MAP, nDCG, alpha_nDCG
 from transformers import AutoTokenizer
-from tools import load_judgements
+from tools import load_judgements, sort_and_truncate
 
 def rac_evaluate(
     corpus, qrels, judgements, diversity_qrels,
@@ -30,6 +30,7 @@ def rac_evaluate(
     outputs = {'coverage': [], 'density': [], 'num_segs': [], 'num_tokens': []}
 
     overlapped = {k: v for k, v in qrels.items() if k in rac_data}
+    max_k = {}
 
     if len(overlapped) != len(qrels):
         logger.warning(' #Topics in qrels and rac_data are not consistent.' + \
@@ -51,6 +52,7 @@ def rac_evaluate(
         rac_type = rac_data[qid]['type']
         rac_text = " ".join(rac_data[qid]['context_list'])
         docids = rac_data[qid]['docids']
+        max_k[qid] = rac_type[1] # align to the max_k used in rac
 
         if 'oracle-report' in tag:
             docids = [f'{qid}:report']
@@ -96,11 +98,11 @@ def rac_evaluate(
 
     # results from ir_measures if have runs
     if runs is not None:
-        rank_results = ir_measures.calc_aggregate([RPrec(rel=3), RPrec(rel=2), RPrec, MAP], qrels, runs)
-        rprec = (rank_results[RPrec(rel=3)], rank_results[RPrec(rel=2)], rank_results[RPrec])
-        mmap = rank_results[MAP]
-        output_eval['RPrec'] = rprec
-        output_eval['MAP'] = mmap
+        runs = sort_and_truncate(runs, max_k) 
+        rank_results = ir_measures.calc_aggregate([R@100, MAP, nDCG], qrels, runs)
+        output_eval['Recall'] = rank_results[R@100] 
+        output_eval['MAP'] = rank_results[MAP]
+        output_eval['nDCG'] = rank_results[nDCG]
 
         rank_results = ir_measures.calc_aggregate([alpha_nDCG@20], diversity_qrels, runs)
         output_eval['alpha_nDCG'] = rank_results[alpha_nDCG@20]

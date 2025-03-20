@@ -126,7 +126,8 @@ def load_runs(path, topk=None, output_score=False): # support .trec file only
     for qid, docid_ranks in run_dict.items():
         sorted_docid_ranks = sorted(docid_ranks, key=lambda x: x[1], reverse=False) 
         if output_score:
-            sorted_run_dict[qid] = [(docid, rel_score) for docid, rel_rank, rel_score in sorted_docid_ranks]
+            # sorted_run_dict[qid] = [{docid, rel_score} for docid, rel_rank, rel_score in sorted_docid_ranks]
+            sorted_run_dict[qid] = {docid: rel_score for docid, rel_rank, rel_score in sorted_docid_ranks}
         else:
             sorted_run_dict[qid] = [docid for docid, _, _ in sorted_docid_ranks]
 
@@ -140,3 +141,12 @@ def load_judgements(path):
             example_id = data['example_id']
             judgements[example_id].update({data['pid']: data['rating']})
     return judgements
+
+def sort_and_truncate(run, max_k_dict=None):
+    truncated_run = {}
+    for qid, docid_scores in run.items():
+        topk = max_k_dict[qid]
+        sorted_docs = dict(sorted(docid_scores.items(), key=lambda x: x[1], reverse=True)[:topk])
+        truncated_run[qid] = sorted_docs
+    return truncated_run
+

@@ -2,11 +2,8 @@ import os
 import json
 import argparse
 from tqdm import tqdm
-from collections import defaultdict
 
-from tools import (
-    load_runs, load_corpus, load_topics, load_questions
-)
+from tools import load_runs, load_corpus, load_topics, load_questions
 from augment.template import template_fn_mapping
 
 def vanilla(
@@ -14,28 +11,25 @@ def vanilla(
     max_k,
     template_type='citation',
     writer=None,
-    qrels=defaultdict(lambda: {})
 ):
+
     qids = list(topics.keys())
     qids = [qid for qid in qids if qid in runs]
 
     outputs = {}
     for qid in tqdm(qids, total=len(qids)):
 
-        ### [NOTE] set the oracle retreival top-k
-        k = max(len(qrels[qid]), max_k)
-
         result = runs[qid]
         topic = topics[qid]
         list_questions = questions[qid]
-        documents = [corpus[docid] for docid in result][:k]
+        documents = [corpus[docid] for docid in result][:max_k]
         raw_content = [(d['title'] + " " + d['text']).strip() for d in documents]
 
         # arrange
         output = {
             "qid": qid, "topic": topic, "questions": list_questions,
-            "type": ("vanilla", k) if max_k > 0 else ("oracle", k),
-            "docids": [docid for docid in result][:k], 
+            "type": f"vanilla_{max_k}",
+            "docids": [docid for docid in result][:max_k], 
             "context_list": raw_content, 
             "prompt": template_fn_mapping[template_type](documents),
             "report": None,

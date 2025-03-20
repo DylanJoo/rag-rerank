@@ -16,8 +16,12 @@ conda activate rag
 # root
 cd src 
 
-max_report_length=1024
 # Start experiments
+max_report_length=512
+max_report_length=1024
+max_report_length=-1
+max_k=10
+
 # splade-v3 100 + Vanilla 10
 python3 crux-splade-v3.py --default_config configs/crux/splade-v3_100-minilm_100.yaml \
     --exp testb-splade-v3_100-vanilla_10 \
@@ -27,7 +31,8 @@ python3 crux-splade-v3.py --default_config configs/crux/splade-v3_100-minilm_100
     retrieval \
     generation \
         --max_length $max_report_length \
-    augmentation > logs/testb-splade-v3_100-vanilla_10.log 
+    augmentation \
+        --max_k $max_k > logs/testb-splade-v3_100-vanilla_${max_k}.log 
 
 # splade-v3 100 + Pointwise - minilm 100 + Vanilla 10
 python3 crux-splade-v3.py --default_config configs/crux/splade-v3_100-minilm_100.yaml \
@@ -39,7 +44,8 @@ python3 crux-splade-v3.py --default_config configs/crux/splade-v3_100-minilm_100
     reranking \
     generation \
         --max_length $max_report_length \
-    augmentation > logs/testb-splade-v3_100-minilm_100-vanilla_10.log 
+    augmentation \
+        --max_k $max_k > logs/testb-splade-v3_100-minilm_100-vanilla_${max_k}.log 
 
 # splade-v3 100 + Pointwise - monot5 100 + Vanilla 10
 python3 crux-splade-v3.py --default_config configs/crux/splade-v3_100-monot5_100.yaml \
@@ -51,7 +57,8 @@ python3 crux-splade-v3.py --default_config configs/crux/splade-v3_100-monot5_100
     reranking \
     generation \
         --max_length $max_report_length \
-    augmentation > logs/testb-splade-v3_100-monot5_100-vanilla_10.log 
+    augmentation \
+        --max_k $max_k > logs/testb-splade-v3_100-monot5_100-vanilla_${max_k}.log 
 
 # splade-v3 100 + Listwise - rankzephyr 100 (w20) + Vanilla 10
 python3 crux-splade-v3.py --default_config configs/crux/splade-v3_100-rankgpt_100.yaml \
@@ -64,7 +71,8 @@ python3 crux-splade-v3.py --default_config configs/crux/splade-v3_100-rankgpt_10
         --model_name_or_path castorini/rank_zephyr_7b_v1_full  \
     generation \
         --max_length $max_report_length \
-    augmentation > logs/testb-splade-v3_100-rankzephyr_100-vanilla_10.log 
+    augmentation \
+        --max_k $max_k > logs/testb-splade-v3_100-rankzephyr_100-vanilla_${max_k}.log 
 
 # splade-v3 100 + Listwise - rankfirst 100 (w20) + Vanilla 10
 python3 crux-splade-v3.py --default_config configs/crux/splade-v3_100-rankfirst_100.yaml \
@@ -79,7 +87,8 @@ python3 crux-splade-v3.py --default_config configs/crux/splade-v3_100-rankfirst_
         --use_alpha \
     generation \
         --max_length $max_report_length \
-    augmentation > logs/testb-splade-v3_100-rankfirst_100-vanilla_10.log 
+    augmentation \
+        --max_k $max_k > logs/testb-splade-v3_100-rankfirst_100-vanilla_${max_k}.log 
 
 # splade-v3 100 + Setwise - 100 (w20) + Vanilla 10
 python3 crux-splade-v3.py --default_config configs/crux/splade-v3_100-setwise_100.yaml \
@@ -93,7 +102,8 @@ python3 crux-splade-v3.py --default_config configs/crux/splade-v3_100-setwise_10
         --type setwise \
     generation \
         --max_length $max_report_length \
-    augmentation > logs/testb-splade-v3_100-setwise_100-vanilla_10.log 
+    augmentation \
+        --max_k $max_k > logs/testb-splade-v3_100-setwise_100-vanilla_${max_k}.log 
 
 # splade-v3 100 + Pointwise - minilm 100 - mmr 10 + Vanilla 10
 python3 crux-splade-v3.py --default_config configs/crux/splade-v3_100-minilm_100-mmr_10.yaml \
@@ -106,4 +116,5 @@ python3 crux-splade-v3.py --default_config configs/crux/splade-v3_100-minilm_100
     listwise_reranking \
     generation \
         --max_length $max_report_length \
-    augmentation > logs/testb-splade-v3_100-minilm_100-mmr_10-vanilla_10.log 
+    augmentation \
+        --max_k $max_k > logs/testb-splade-v3_100-minilm_100-mmr_10-vanilla_${max_k}.log 

@@ -23,66 +23,11 @@ def main(args):
             if args.data.judgement_file is not None else None
     reports = load_reports(args.data.topic_file)
 
-    # Retrieval
-    from retrieve.dense import search
-    output_run = search(
-        index=args.data.index_dir,
-        topics=topics,
-        k=args.retrieval.k,
-        model_name_or_path=args.retrieval.model_name_or_path,
-        model_class=args.retrieval.model_class,
-        max_length=args.retrieval.max_length,
-        batch_size=args.retrieval.batch_size,
-    )
-
-    # Pointiwse reraning
-    if args.reranking is not None:
-        from augment.pointwise import rerank
-        output_run = rerank(
-            topics=topics,
-            corpus=corpus,
-            runs=output_run,
-            reranker_config={
-                "model_class": args.reranking.model_class,
-                "model_name_or_path": args.reranking.model_name_or_path,
-                "device": 'cuda',
-                "fp16": True
-            },
-            top_k=args.reranking.top_k,
-            batch_size=args.reranking.batch_size,
-            max_length=args.reranking.max_length,
-        )
-
-    # Second-stage reranking 
-    if args.listwise_reranking is not None:
-        # [TODO] See if we should separate thme 
-        if args.listwise_reranking.type == 'setwise':
-            from augment.setwise import rerank
-        elif args.listwise_reranking.type == 'listwise':
-            from augment.listwise import rerank
-            # from augment.listwise import mmr_rerank
-        elif args.listwise_reranking.type == 'mmr':
-            from augment.selection import rerank
-
-        output_run = rerank(
-            topics=topics,
-            corpus=corpus,
-            runs=output_run,
-            model_path=args.listwise_reranking.model_name_or_path,
-            top_k=args.listwise_reranking.max_k,
-            num_passes=args.listwise_reranking.num_passes,
-            prompt_mode='rank_GPT',  # maybe also this parameter
-            context_size=4096,       # add this parameter
-            use_logits=args.listwise_reranking.use_logits, 
-            num_gpus=args.num_gpus, # check if it can be adjusted dynamically
-            batch_size=args.listwise_reranking.batch_size,
-            use_alpha=args.listwise_reranking.use_alpha,
-            vllm_batched=True,
-            variable_passages=False,
-            window_size=20,
-            system_message=args.listwise_reranking.system_message,
-            lambda_param=1.0
-        )
+    # [ignored] Retrieval
+    # [ignored] Pointiwse reraning
+    # [ignored] Second-stage reranking 
+    # [Oracle] retrieval-augmented context
+    output_run = load_qrels(args.data.qrels_file, threshold=3)
 
     # Context augmentation
     from augment.base import vanilla
@@ -91,7 +36,8 @@ def main(args):
         corpus=corpus,
         runs=output_run,
         questions=questions,
-        max_k=args.augmentation.max_k if args.augmentation else None
+        max_k=args.augmentation.max_k if args.augmentation else None,
+        qrels=load_qrels(args.data.qrels_file, threshold=3) 
     )
 
     # Retrieval-augmented context evaluation
@@ -166,7 +112,7 @@ def main(args):
                 del data['context_list']
                 f.write(json.dumps(data) + '\n')
 
-        metrics = ['mean_coverage', 'mean_density', 'Recall', 'MAP', 'nDCG', 'alpha_nDCG']
+        metrics = ['mean_coverage', 'mean_density', 'MAP', 'alpha_nDCG']
         values = [str(output_rac_eval[m]) for m in metrics]
         print(" ".join(['RAC-eval'] + metrics))
         print(" ".join(['##' + args.exp] + values))
@@ -192,7 +138,7 @@ def main(args):
         print(output_rac_eval)
         print(output_rag_eval)
 
-        metrics = ['mean_coverage', 'mean_density', 'Recall', 'MAP', 'nDCG', 'alpha_nDCG']
+        metrics = ['mean_coverage', 'mean_density', 'MAP', 'alpha_nDCG']
         values = [str(output_rac_eval[m]) for m in metrics]
         print(" ".join(['RAC-eval'] + metrics))
         print(" ".join(['##' + args.exp] + values))
