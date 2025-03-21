@@ -91,7 +91,8 @@ def main(args):
         corpus=corpus,
         runs=output_run,
         questions=questions,
-        max_k=args.augmentation.max_k if args.augmentation else None
+        max_k=args.augmentation.max_k if args.augmentation else None,
+        qrels=load_qrels(args.data.qrels_file, threshold=3) 
     )
 
     # Retrieval-augmented context evaluation

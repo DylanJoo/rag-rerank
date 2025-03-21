@@ -112,7 +112,7 @@ def main(args):
                 del data['context_list']
                 f.write(json.dumps(data) + '\n')
 
-        metrics = ['mean_coverage', 'mean_density', 'MAP', 'alpha_nDCG']
+        metrics = ['mean_coverage', 'mean_density', 'Recall', 'MAP', 'nDCG', 'alpha_nDCG']
         values = [str(output_rac_eval[m]) for m in metrics]
         print(" ".join(['RAC-eval'] + metrics))
         print(" ".join(['##' + args.exp] + values))
@@ -138,7 +138,7 @@ def main(args):
         print(output_rac_eval)
         print(output_rag_eval)
 
-        metrics = ['mean_coverage', 'mean_density', 'MAP', 'alpha_nDCG']
+        metrics = ['mean_coverage', 'mean_density', 'Recall', 'MAP', 'nDCG', 'alpha_nDCG']
         values = [str(output_rac_eval[m]) for m in metrics]
         print(" ".join(['RAC-eval'] + metrics))
         print(" ".join(['##' + args.exp] + values))
