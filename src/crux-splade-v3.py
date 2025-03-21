@@ -4,7 +4,7 @@ import argparse
 from tqdm import tqdm
 from tools import (
     load_corpus, load_topics, load_questions,
-    load_judgements, 
+    load_judgements, load_reports,
     load_qrels, load_diversity_qrels
 )
 from tools import load_yaml_config, parse_args, parse_rag_command
@@ -21,6 +21,7 @@ def main(args):
     diversity_qrels = load_diversity_qrels(args.data.qrels_file.replace('qrels', 'div_qrels'))
     judgements = load_judgements(args.data.judgement_file) \
             if args.data.judgement_file is not None else None
+    reports = load_reports(args.data.topic_file)
 
     # Retrieval
     from retrieve.sparse import search
@@ -109,7 +110,7 @@ def main(args):
         )
         print(output_rac_eval)
 
-        metrics = ['mean_coverage', 'mean_density', 'MAP', 'alpha_nDCG']
+        metrics = ['mean_coverage', 'mean_density', 'Recall', 'MAP', 'nDCG', 'alpha_nDCG']
         values = [str(output_rac_eval[m]) for m in metrics]
         print(" ".join(['RAG-pipeline'] + metrics))
         print(" ".join([args.exp] + values))
@@ -118,7 +119,6 @@ def main(args):
     # [TODO] See if generation needs to pack into a module
     if args.generation is not None:
         token_word_limit = {512: "300", 1024: "800", 2048: "1000"}
-        word_limit = token_word_limit[args.generation.max_length]
 
         PROMPT = \
             "Write a passage for the given query. Always use the provided contexts to write the passage (some of the contexts might be irrelevant). " + \
@@ -138,11 +138,22 @@ def main(args):
             q = output_rac[qid]['topic']
             ds = output_rac[qid]['prompt']
             all_qids.append(qid)
+
+            ### [NOTE] set the oracle length boundary
+            if args.generation.max_length == -1: 
+                max_length = ( (1+len(reports[qid].split(' ')) // 100) * 100)
+                word_limit = str(max_length)
+            else:
+                max_length = args.generation.max_length
+                word_limit = token_word_limit[max_length]
+
+            # print(len(reports[qid].split()), max_length, word_limit)
             all_prompts[qid] = PROMPT.replace("{Q}", q).replace("{Ds}", ds).replace("{WORD_LIMIT}", word_limit)
 
         for batch_qid in tqdm(batch_iterator(all_qids, size=args.generation.batch_size), desc="Generating", total=len(topics)//args.generation.batch_size):
-            responses = generator.generate(x=[all_prompts[qid] for qid in batch_qid], max_tokens=args.generation.max_length)
+            responses = generator.generate(x=[all_prompts[qid] for qid in batch_qid], max_tokens=max_length)
             for qid, response in zip(batch_qid, responses):
+                output_rac[qid]['report'] = reports[qid]
                 output_rac[qid]['response'] = response
 
         print(cleanup_vllm(generator) if check_if_ampere else "\n")
@@ -155,7 +166,7 @@ def main(args):
                 del data['context_list']
                 f.write(json.dumps(data) + '\n')
 
-        metrics = ['mean_coverage', 'mean_density', 'MAP', 'alpha_nDCG']
+        metrics = ['mean_coverage', 'mean_density', 'Recall', 'MAP', 'nDCG', 'alpha_nDCG']
         values = [str(output_rac_eval[m]) for m in metrics]
         print(" ".join(['RAC-eval'] + metrics))
         print(" ".join(['##' + args.exp] + values))
@@ -181,7 +192,7 @@ def main(args):
         print(output_rac_eval)
         print(output_rag_eval)
 
-        metrics = ['mean_coverage', 'mean_density', 'MAP', 'alpha_nDCG']
+        metrics = ['mean_coverage', 'mean_density', 'Recall', 'MAP', 'nDCG', 'alpha_nDCG']
         values = [str(output_rac_eval[m]) for m in metrics]
         print(" ".join(['RAC-eval'] + metrics))
         print(" ".join(['##' + args.exp] + values))

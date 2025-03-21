@@ -24,7 +24,7 @@ max_k=10
 
 # splade-v3 100 + Vanilla 10
 python3 crux-splade-v3.py --default_config configs/crux/splade-v3_100-minilm_100.yaml \
-    --exp testb-splade-v3_100-vanilla_10 \
+    --exp testb-splade-v3_100-vanilla_${max_k} \
     data \
         --qrels_file /home/dju/datasets/crux/ranking_3/testb_qrels_pr.txt  \
         --judgement_file /home/dju/datasets/crux/ranking_3/testb_oracle-passages_judgements.jsonl \
@@ -36,7 +36,7 @@ python3 crux-splade-v3.py --default_config configs/crux/splade-v3_100-minilm_100
 
 # splade-v3 100 + Pointwise - minilm 100 + Vanilla 10
 python3 crux-splade-v3.py --default_config configs/crux/splade-v3_100-minilm_100.yaml \
-    --exp testb-splade-v3_100-minilm_100-vanilla_10 \
+    --exp testb-splade-v3_100-minilm_100-vanilla_${max_k} \
     data \
         --qrels_file /home/dju/datasets/crux/ranking_3/testb_qrels_pr.txt  \
         --judgement_file /home/dju/datasets/crux/ranking_3/testb_oracle-passages_judgements.jsonl \
@@ -49,7 +49,7 @@ python3 crux-splade-v3.py --default_config configs/crux/splade-v3_100-minilm_100
 
 # splade-v3 100 + Pointwise - monot5 100 + Vanilla 10
 python3 crux-splade-v3.py --default_config configs/crux/splade-v3_100-monot5_100.yaml \
-    --exp testb-splade-v3_100-monot5_100-vanilla_10 \
+    --exp testb-splade-v3_100-monot5_100-vanilla_${max_k} \
     data \
         --qrels_file /home/dju/datasets/crux/ranking_3/testb_qrels_pr.txt  \
         --judgement_file /home/dju/datasets/crux/ranking_3/testb_oracle-passages_judgements.jsonl \
@@ -62,7 +62,7 @@ python3 crux-splade-v3.py --default_config configs/crux/splade-v3_100-monot5_100
 
 # splade-v3 100 + Listwise - rankzephyr 100 (w20) + Vanilla 10
 python3 crux-splade-v3.py --default_config configs/crux/splade-v3_100-rankgpt_100.yaml \
-    --exp testb-splade-v3_100-rankzephyr_100-vanilla_10 \
+    --exp testb-splade-v3_100-rankzephyr_100-vanilla_${max_k} \
     data \
         --qrels_file /home/dju/datasets/crux/ranking_3/testb_qrels_pr.txt  \
         --judgement_file /home/dju/datasets/crux/ranking_3/testb_oracle-passages_judgements.jsonl \
@@ -76,7 +76,7 @@ python3 crux-splade-v3.py --default_config configs/crux/splade-v3_100-rankgpt_10
 
 # splade-v3 100 + Listwise - rankfirst 100 (w20) + Vanilla 10
 python3 crux-splade-v3.py --default_config configs/crux/splade-v3_100-rankfirst_100.yaml \
-    --exp testb-splade-v3_100-rankfirst_100-vanilla_10 \
+    --exp testb-splade-v3_100-rankfirst_100-vanilla_${max_k} \
     data \
         --qrels_file /home/dju/datasets/crux/ranking_3/testb_qrels_pr.txt  \
         --judgement_file /home/dju/datasets/crux/ranking_3/testb_oracle-passages_judgements.jsonl \
@@ -92,7 +92,7 @@ python3 crux-splade-v3.py --default_config configs/crux/splade-v3_100-rankfirst_
 
 # splade-v3 100 + Setwise - 100 (w20) + Vanilla 10
 python3 crux-splade-v3.py --default_config configs/crux/splade-v3_100-setwise_100.yaml \
-    --exp testb-splade-v3_100-setwise_100-vanilla_10 \
+    --exp testb-splade-v3_100-setwise_100-vanilla_${max_k} \
     data \
         --qrels_file /home/dju/datasets/crux/ranking_3/testb_qrels_pr.txt  \
         --judgement_file /home/dju/datasets/crux/ranking_3/testb_oracle-passages_judgements.jsonl \
@@ -107,7 +107,7 @@ python3 crux-splade-v3.py --default_config configs/crux/splade-v3_100-setwise_10
 
 # splade-v3 100 + Pointwise - minilm 100 - mmr 10 + Vanilla 10
 python3 crux-splade-v3.py --default_config configs/crux/splade-v3_100-minilm_100-mmr_10.yaml \
-    --exp testb-splade-v3_100-minilm_100-mmr_10-vanilla_10 \
+    --exp testb-splade-v3_100-minilm_100-mmr_10-vanilla_${max_k} \
     data \
         --qrels_file /home/dju/datasets/crux/ranking_3/testb_qrels_pr.txt  \
         --judgement_file /home/dju/datasets/crux/ranking_3/testb_oracle-passages_judgements.jsonl \

@@ -40,7 +40,7 @@ def search(
 
     for (start, end) in tqdm(
         batch_iterator(range(0, len(qids)), batch_size, True),
-        desc='Searching (dense)',
+        desc='Searching (sparse)',
         total=(len(qids)//batch_size)+1,
     ):
         qids_batch = qids[start: end]
