@@ -143,7 +143,7 @@ def main(args):
         print(" ".join(['RAC-eval'] + metrics))
         print(" ".join(['##' + args.exp] + values))
 
-        metrics = ['mean_coverage', 'mean_density']
+        metrics = ['final_coverage', 'final_density']
         values =  [str(output_rag_eval['mean_coverage']), str(output_rag_eval['mean_density'])]
         print(" ".join(['RAG-eval'] + metrics))
         print(" ".join(['##' + args.exp] + values))

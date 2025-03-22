@@ -189,10 +189,5 @@ if __name__ == "__main__":
 
     metrics = ['final_coverage', 'final_density']
     values =  [str(output_rag_eval['mean_coverage']), str(output_rag_eval['mean_density'])]
-    print(" ".join(['Pipeline'] + metrics))
-    print(" ".join([args.result_jsonl] + values))
-
-    # metrics = ['mean_coverage', 'mean_density', 'MAP', 'alpha_nDCG', 'final_coverage', 'final_density']
-    # values =  [str(output_rac_eval[m]) for m in metrics[:-2]] + [str(output_rag_eval['mean_coverage']), str(output_rag_eval['mean_density'])]
-    # print(" ".join(['Pipeline'] + metrics))
-    # print(" ".join([args.exp] + values))
+    print(" ".join(['RAG-eval'] + metrics))
+    print(" ".join(['##' + args.result_jsonl] + values))

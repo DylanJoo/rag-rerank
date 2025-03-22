@@ -20,7 +20,7 @@ cd src
 max_report_length=512
 max_report_length=1024
 max_report_length=-1
-max_k=10
+max_k=-1
 
 # contriever 100 + Vanilla 10
 python3 crux-contriever.py --default_config configs/crux/contriever_100-minilm_100.yaml \

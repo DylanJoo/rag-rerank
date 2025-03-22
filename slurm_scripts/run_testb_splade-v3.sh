@@ -20,7 +20,7 @@ cd src
 max_report_length=512
 max_report_length=1024
 max_report_length=-1
-max_k=10
+max_k=-1
 
 # splade-v3 100 + Vanilla 10
 python3 crux-splade-v3.py --default_config configs/crux/splade-v3_100-minilm_100.yaml \

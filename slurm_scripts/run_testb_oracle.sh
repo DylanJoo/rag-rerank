@@ -19,7 +19,7 @@ cd src
 # Oracle retrieval + generation
 for max_report_length in -1 512 1024; do
 python3 crux-oracle.py --default_config configs/crux/oracle_k.yaml \
-    --exp testb-oralce_k \
+    --exp testb-oracle_k \
     data \
         --qrels_file /home/dju/datasets/crux/ranking_3/testb_qrels_pr.txt  \
         --judgement_file /home/dju/datasets/crux/ranking_3/testb_oracle-passages_judgements.jsonl \

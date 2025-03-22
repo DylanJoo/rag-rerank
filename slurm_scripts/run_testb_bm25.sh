@@ -20,7 +20,7 @@ cd src
 max_report_length=512
 max_report_length=1024
 max_report_length=-1
-max_k=10 # 20 30 -1 
+max_k=-1 # 20 30 -1 
 
 # BM25 100 + Vanilla 10
 python3 crux-bm25.py --default_config configs/crux/bm25_100-minilm_100.yaml \

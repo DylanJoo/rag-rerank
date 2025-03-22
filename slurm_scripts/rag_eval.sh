@@ -17,8 +17,27 @@ conda activate rag
 cd /home/dju/rag-rerank/src 
 
 judge_model=meta-llama/Llama-3.1-70B-Instruct
-max_length=1024
+max_length=-1
 mkdir -p logs/$judgement_model
+
+### Oracle retrieval
+for result_file in results/$max_length/testb-oracle_k*; do
+    file_name=${result_file##*/}
+    output_file=logs/$judge_model/$max_length/${file_name/jsonl/log}
+    mkdir -p ${output_file%/*}
+    echo "Evaluating: " $file_name
+
+    python3 -m evaluation.llmjudge.retrieval_augmentation_generation \
+        --topic_file /home/dju/datasets/crux/ranking_3/testb_topics.jsonl \
+        --corpus_dir /home/dju/datasets/crux/passages/ \
+        --qrels_file /home/dju/datasets/crux/ranking_3/testb_qrels_pr.txt \
+        --judgement_file /home/dju/datasets/crux/ranking_3/testb_oracle-passages_judgements.jsonl \
+        --model_name_or_path $judge_model \
+        --threshold 3 \
+        --gamma 0.5  \
+        --num_gpus 4 \
+        --result_jsonl $result_file > $output_file
+done
 
 ### BM25 as initial retrieval
 for result_file in results/$max_length/testb-bm25*; do
