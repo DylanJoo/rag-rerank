@@ -59,6 +59,7 @@ def parse_rag_command(commands, yaml_config):
     # bm25 
     rt_parser.add_argument("--k1", type=float, default=rt_config['k1'])
     rt_parser.add_argument("--b", type=float, default=rt_config['b'])
+    rt_parser.add_argument("--seed", type=int, default=0)
 
     rr_parser = commands.add_parser("reranking")
     rr_config = yaml_config['reranking']

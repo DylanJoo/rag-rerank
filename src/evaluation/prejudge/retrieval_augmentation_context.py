@@ -13,7 +13,7 @@ from glob import glob
 import ir_measures
 from ir_measures import RPrec, R, MAP, nDCG, alpha_nDCG
 from transformers import AutoTokenizer
-from tools import load_judgements, sort_and_truncate
+from tools import load_judgements, sort_and_truncate, binarize
 
 def rac_evaluate(
     corpus, qrels, judgements, diversity_qrels,
@@ -22,10 +22,11 @@ def rac_evaluate(
     threshold=0,     # answerability threshold (tau)
     rel_threshold=3, # on qrel's last column
     runs=None,
-    tokenizer_name='meta-llama/Llama-3.1-70B-Instruct',
-    gamma=0.5, tag='experiment'
+    tokenizer_name=None,
+    gamma=0.5, tag='experiment',
+    aggregation='max'
 ):
-    tokenizer = AutoTokenizer.from_pretrained(tokenizer_name)
+    tokenizer = AutoTokenizer.from_pretrained(tokenizer_name or 'meta-llama/Llama-3.1-70B-Instruct')
 
     outputs = {'coverage': [], 'density': [], 'num_segs': [], 'num_tokens': []}
 
@@ -66,7 +67,12 @@ def rac_evaluate(
                 ratings.append(judgement)
 
         # print(ratings)
-        ratings = np.array(ratings).max(0)
+        if aggregation == 'max':
+            ratings = np.array(ratings).max(0)
+        elif aggregation == 'mean':
+            ratings = np.array(ratings).mean(0)
+        elif aggregation == 'mean_over_count':
+            ratings = np.array(ratings).sum(0) / (np.array(ratings) != 0).sum(0)
 
         # [calculate] coverage
         coverage = sum(ratings[answerable] >= threshold) / sum(answerable)
@@ -98,6 +104,13 @@ def rac_evaluate(
 
     # results from ir_measures if have runs
     if runs is not None:
+        qrels = binarize(qrels) 
+
+        rank_results = ir_measures.calc_aggregate([R@100, MAP@100, nDCG@100], qrels, runs)
+        output_eval['Recall@100'] = rank_results[R@100] 
+        output_eval['MAP@100'] = rank_results[MAP@100]
+        output_eval['nDCG@100'] = rank_results[nDCG@100]
+
         runs = sort_and_truncate(runs, max_k) 
         rank_results = ir_measures.calc_aggregate([R@100, MAP, nDCG], qrels, runs)
         output_eval['Recall'] = rank_results[R@100] 

@@ -17,10 +17,11 @@ conda activate rag
 cd src 
 
 # Start experiments
-max_report_length=512
-max_report_length=1024
+# max_report_length=512
+# max_report_length=1024
 max_report_length=-1
-max_k=-1 # 20 30 -1 
+max_k=-1
+ADD_GENERATION=true
 
 # BM25 100 + Vanilla 10
 python3 crux-bm25.py --default_config configs/crux/bm25_100-minilm_100.yaml \
@@ -29,10 +30,9 @@ python3 crux-bm25.py --default_config configs/crux/bm25_100-minilm_100.yaml \
         --qrels_file /home/dju/datasets/crux/ranking_3/testb_qrels_pr.txt  \
         --judgement_file /home/dju/datasets/crux/ranking_3/testb_oracle-passages_judgements.jsonl \
     retrieval \
-    generation \
-        --max_length $max_report_length \
-    augmentation  \
-        --max_k $max_k > logs/testb-bm25_100-vanilla_${max_k}.log 
+    ${ADD_GENERATION:+generation --max_length ${max_report_length}} \
+    augmentation \
+        --max_k $max_k > logs/testb-bm25_100-vanilla_${max_k}.log
 
 # BM25 100 + Pointwise - minilm 100 + Vanilla 10
 python3 crux-bm25.py --default_config configs/crux/bm25_100-minilm_100.yaml \
@@ -42,8 +42,7 @@ python3 crux-bm25.py --default_config configs/crux/bm25_100-minilm_100.yaml \
         --judgement_file /home/dju/datasets/crux/ranking_3/testb_oracle-passages_judgements.jsonl \
     retrieval \
     reranking \
-    generation \
-        --max_length $max_report_length \
+    ${ADD_GENERATION:+generation --max_length ${max_report_length}} \
     augmentation \
         --max_k $max_k > logs/testb-bm25_100-minilm_100-vanilla_${max_k}.log 
 
@@ -55,10 +54,9 @@ python3 crux-bm25.py --default_config configs/crux/bm25_100-monot5_100.yaml \
         --judgement_file /home/dju/datasets/crux/ranking_3/testb_oracle-passages_judgements.jsonl \
     retrieval \
     reranking \
-    generation \
-        --max_length $max_report_length \
+    ${ADD_GENERATION:+generation --max_length ${max_report_length}} \
     augmentation \
-        --max_k $max_k > logs/testb-bm25_100-monot5_100-vanilla_${max_k}.log 
+        --max_k $max_k > logs/testb-bm25_100-monot5_100-vanilla_${max_k}.log
 
 # BM25 100 + Listwise - rankzephyr 100 (w20) + Vanilla 10
 python3 crux-bm25.py --default_config configs/crux/bm25_100-rankgpt_100.yaml \
@@ -69,8 +67,7 @@ python3 crux-bm25.py --default_config configs/crux/bm25_100-rankgpt_100.yaml \
     retrieval \
     listwise_reranking \
         --model_name_or_path castorini/rank_zephyr_7b_v1_full  \
-    generation \
-        --max_length $max_report_length \
+    ${ADD_GENERATION:+generation --max_length ${max_report_length}} \
     augmentation \
         --max_k $max_k > logs/testb-bm25_100-rankzephyr_100-vanilla_${max_k}.log 
 
@@ -85,10 +82,9 @@ python3 crux-bm25.py --default_config configs/crux/bm25_100-rankfirst_100.yaml \
         --model_name_or_path castorini/first_mistral \
         --use_logits \
         --use_alpha \
-    generation \
-        --max_length $max_report_length \
+    ${ADD_GENERATION:+generation --max_length ${max_report_length}} \
     augmentation \
-        --max_k $max_k > logs/testb-bm25_100-rankfirst_100-vanilla_${max_k}.log 
+        --max_k $max_k > logs/testb-bm25_100-rankfirst_100-vanilla_${max_k}.log
 
 # BM25 100 + Setwise - rankfirst 100 (w20) + Vanilla 10
 python3 crux-bm25.py --default_config configs/crux/bm25_100-setwise_100.yaml \
@@ -100,21 +96,19 @@ python3 crux-bm25.py --default_config configs/crux/bm25_100-setwise_100.yaml \
     listwise_reranking \
         --model_name_or_path google/flan-t5-xl \
         --type setwise \
-    generation \
-        --max_length $max_report_length \
+    ${ADD_GENERATION:+generation --max_length ${max_report_length}} \
     augmentation \
-        --max_k $max_k > logs/testb-bm25_100-setwise_100-vanilla_${max_k}.log 
+        --max_k $max_k > logs/testb-bm25_100-setwise_100-vanilla_${max_k}.log
 
 # BM25 100 + Pointwise - minilm 100 - mmr 10 + Vanilla 10
-python3 crux-bm25.py --default_config configs/crux/bm25_100-minilm_100-mmr_10.yaml \
-    --exp testb-bm25_100-minilm_100-mmr_10-vanilla_${max_k} \
-    data \
-        --qrels_file /home/dju/datasets/crux/ranking_3/testb_qrels_pr.txt  \
-        --judgement_file /home/dju/datasets/crux/ranking_3/testb_oracle-passages_judgements.jsonl \
-    retrieval \
-    reranking \
-    listwise_reranking \
-    generation \
-        --max_length $max_report_length \
-    augmentation \
-        --max_k $max_k > logs/testb-bm25_100-minilm_100-mmr_10-vanilla_${max_k}.log 
+# python3 crux-bm25.py --default_config configs/crux/bm25_100-minilm_100-mmr_10.yaml \
+#     --exp testb-bm25_100-minilm_100-mmr_10-vanilla_${max_k} \
+#     data \
+#         --qrels_file /home/dju/datasets/crux/ranking_3/testb_qrels_pr.txt  \
+#         --judgement_file /home/dju/datasets/crux/ranking_3/testb_oracle-passages_judgements.jsonl \
+#     retrieval \
+#     reranking \
+#     listwise_reranking \
+#     ${ADD_GENERATION:+generation --max_length ${max_report_length}} \
+#     augmentation \
+#         --max_k $max_k > logs/testb-bm25_100-minilm_100-mmr_10-vanilla_${max_k}.log

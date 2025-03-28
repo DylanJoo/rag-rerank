@@ -59,7 +59,7 @@ def main(args):
         metrics = ['mean_coverage', 'mean_density', 'Recall', 'MAP', 'nDCG', 'alpha_nDCG']
         values = [str(output_rac_eval[m]) for m in metrics]
         print(" ".join(['RAG-pipeline'] + metrics))
-        print(" ".join([args.exp] + values))
+        print(" ".join(['##' + args.exp] + values))
 
     # Generation
     # [TODO] See if generation needs to pack into a module

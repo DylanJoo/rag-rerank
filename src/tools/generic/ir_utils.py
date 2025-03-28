@@ -5,6 +5,7 @@ from collections import defaultdict, OrderedDict
 import json
 from tqdm import tqdm
 import ir_measures
+import pandas as pd
 
 def load_searcher(path, dense=False):
     if dense:
@@ -24,7 +25,7 @@ def batch_iterator(iterable, size=1, return_index=False):
         else:
             yield iterable[ndx:min(ndx + size, l)]
 
-def load_qrels(path, threshold=0):
+def load_qrels(path, threshold=1):
     data = defaultdict(dict)
     with open(path) as f:
         for line in f:
@@ -34,9 +35,9 @@ def load_qrels(path, threshold=0):
     return data
 
 def load_diversity_qrels(path):
-    # qrels = pd.read_csv(path, sep='\s+', names=['query_id', 'iteration', 'doc_id', 'relevance'])
-    # return qrels
-    return ir_measures.read_trec_qrels(path)
+    qrels = pd.read_csv(path, sep='\s+', names=['query_id', 'iteration', 'doc_id', 'relevance'])
+    return qrels
+    # return ir_measures.read_trec_qrels(path)
 
 def load_topics(path, debug=None):
     topics = {}
@@ -149,4 +150,11 @@ def sort_and_truncate(run, max_k_dict=None):
         sorted_docs = dict(sorted(docid_scores.items(), key=lambda x: x[1], reverse=True)[:topk])
         truncated_run[qid] = sorted_docs
     return truncated_run
+
+def binarize(qrels):
+    binarized_qrels = {}
+    for qid, docid_scores in qrels.items():
+        docid_scores = {docid: 1 for docid, score in docid_scores.items()}
+        binarized_qrels[qid] = docid_scores
+    return binarized_qrels
 
