@@ -105,16 +105,16 @@ def main(args):
         token_word_limit = {512: "300", 1024: "600", 2048: "1000"}
 
         # old citation generation
-        # PROMPT = \
-        #     "Write a passage for the given query. Always use the provided contexts to write the passage (some of the contexts might be irrelevant). " + \
-        #     "Cite at least one context in each sentence in the passage. When citing several search results, use [1][2][3]. " + \
-        #     "Write the passage within {WORD_LIMIT} words.\n\nQuery: {Q}\nContexts:\n{Ds}\nPassage:\n"
-        # citation generation
         PROMPT = \
-            "Write a response to the user request using only the provided contexts. " + \
-            "Do not include any information that is not supported by the contexts. " + \
-            "The entire response must be enclosed within <r> and </r> tags. " +\
-            "Limit the response to {WORD_LIMIT} words.\n\nRequest: {Q}\nContexts:\n{Ds}\nResponse:\n<r>"
+            "Write a passage for the given query. Always use the provided contexts to write the passage (some of the contexts might be irrelevant). " + \
+            "Cite at least one context in each sentence in the passage. When citing several search results, use [1][2][3]. " + \
+            "Write the passage within {WORD_LIMIT} words.\n\nQuery: {Q}\nContexts:\n{Ds}\nPassage:\n"
+
+        # PROMPT = \
+        #     "Write a response to the user request using only the provided contexts. " + \
+        #     "Do not include any information that is not supported by the contexts. " + \
+        #     "The entire response must be enclosed within <r> and </r> tags. " +\
+        #     "Limit the response to {WORD_LIMIT} words.\n\nRequest: {Q}\nContexts:\n{Ds}\nResponse:\n<r>"
 
         if check_if_ampere:
             from generate.llm.vllm_back import LLM

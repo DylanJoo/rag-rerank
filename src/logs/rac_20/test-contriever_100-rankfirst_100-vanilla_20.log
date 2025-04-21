@@ -1,0 +1,117 @@
+{
+    "data": {
+        "default_config": "configs/crux/contriever_100-rankfirst_100.yaml",
+        "debug": null,
+        "num_gpus": 1,
+        "online_eval": false,
+        "exp": "testing",
+        "index_dir": "/home/dju/indexes/crux/contriever.crux.passages.faiss/",
+        "corpus_dir": "/home/dju/datasets/crux/passages/",
+        "topic_file": "/home/dju/datasets/crux/ranking_5/test_topics.jsonl",
+        "qrels_file": "/home/dju/datasets/crux/ranking_3/test_qrels_pr.txt",
+        "judgement_file": "/home/dju/datasets/crux/ranking_3/test_oracle-passages_judgements.jsonl",
+        "n_questions": 10,
+        "threshold": 3
+    },
+    "retrieval": {
+        "default_config": "configs/crux/contriever_100-rankfirst_100.yaml",
+        "debug": null,
+        "num_gpus": 1,
+        "online_eval": false,
+        "exp": "testing",
+        "k": 100,
+        "model_class": "contriever",
+        "model_name_or_path": "facebook/contriever-msmarco",
+        "max_length": 512,
+        "pooling": "mean",
+        "l2_norm": true,
+        "batch_size": 32,
+        "k1": 0,
+        "b": 0,
+        "seed": 0
+    },
+    "reranking": null,
+    "listwise_reranking": {
+        "default_config": "configs/crux/contriever_100-rankfirst_100.yaml",
+        "debug": null,
+        "num_gpus": 1,
+        "online_eval": false,
+        "exp": "testing",
+        "model_name_or_path": "castorini/first_mistral",
+        "max_k": 100,
+        "batch_size": 4,
+        "max_length": 4096,
+        "use_logits": true,
+        "use_alpha": true,
+        "num_passes": 1,
+        "system_message": null,
+        "type": "listwise"
+    },
+    "augmentation": {
+        "default_config": "configs/crux/contriever_100-rankfirst_100.yaml",
+        "debug": null,
+        "num_gpus": 1,
+        "online_eval": false,
+        "exp": "testing",
+        "type": "vanilla",
+        "max_k": 20,
+        "batch_size": -1,
+        "max_length": 1024
+    },
+    "generation": {
+        "default_config": "configs/crux/contriever_100-rankfirst_100.yaml",
+        "debug": null,
+        "num_gpus": 1,
+        "online_eval": false,
+        "exp": "testing",
+        "model_name_or_path": "meta-llama/Llama-3.1-8B-Instruct",
+        "batch_size": 4,
+        "max_length": -1,
+        "temperature": 0.7
+    },
+    "default_config": "configs/crux/contriever_100-rankfirst_100.yaml",
+    "debug": null,
+    "num_gpus": 1,
+    "online_eval": false,
+    "exp": "test-contriever_100-rankfirst_100-vanilla_20"
+}
+Loading castorini/first_mistral ...
+INFO 04-21 02:32:17 __init__.py:207] Automatically detected platform cuda.
+INFO 04-21 02:32:26 config.py:549] This model supports multiple tasks: {'embed', 'score', 'reward', 'classify', 'generate'}. Defaulting to 'generate'.
+INFO 04-21 02:32:26 llm_engine.py:234] Initializing a V0 LLM engine (v0.7.3) with config: model='castorini/first_mistral', speculative_config=None, tokenizer='castorini/first_mistral', skip_tokenizer_init=False, tokenizer_mode=auto, revision=None, override_neuron_config=None, tokenizer_revision=None, trust_remote_code=False, dtype=torch.bfloat16, max_seq_len=32768, download_dir=None, load_format=auto, tensor_parallel_size=1, pipeline_parallel_size=1, disable_custom_all_reduce=False, quantization=None, enforce_eager=False, kv_cache_dtype=auto,  device_config=cuda, decoding_config=DecodingConfig(guided_decoding_backend='xgrammar'), observability_config=ObservabilityConfig(otlp_traces_endpoint=None, collect_model_forward_time=False, collect_model_execute_time=False), seed=0, served_model_name=castorini/first_mistral, num_scheduler_steps=1, multi_step_stream_outputs=True, enable_prefix_caching=False, chunked_prefill_enabled=False, use_async_output_proc=True, disable_mm_preprocessor_cache=False, mm_processor_kwargs=None, pooler_config=None, compilation_config={"splitting_ops":[],"compile_sizes":[],"cudagraph_capture_sizes":[256,248,240,232,224,216,208,200,192,184,176,168,160,152,144,136,128,120,112,104,96,88,80,72,64,56,48,40,32,24,16,8,4,2,1],"max_capture_size":256}, use_cached_outputs=False, 
+INFO 04-21 02:32:27 cuda.py:229] Using Flash Attention backend.
+INFO 04-21 02:32:28 model_runner.py:1110] Starting to load model castorini/first_mistral...
+INFO 04-21 02:32:28 weight_utils.py:254] Using model weights format ['*.safetensors']
+INFO 04-21 02:33:20 model_runner.py:1115] Loading model weights took 13.5093 GB
+INFO 04-21 02:33:24 worker.py:267] Memory profiling takes 4.42 seconds
+INFO 04-21 02:33:24 worker.py:267] the current vLLM instance can use total_gpu_memory (47.44GiB) x gpu_memory_utilization (0.90) = 42.69GiB
+INFO 04-21 02:33:24 worker.py:267] model weights take 13.51GiB; non_torch_memory takes 0.01GiB; PyTorch activation peak memory takes 3.38GiB; the rest of the memory reserved for KV Cache is 25.80GiB.
+INFO 04-21 02:33:25 executor_base.py:111] # cuda blocks: 13211, # CPU blocks: 2048
+INFO 04-21 02:33:25 executor_base.py:116] Maximum concurrency for 32768 tokens per request: 6.45x
+INFO 04-21 02:33:29 model_runner.py:1434] Capturing cudagraphs for decoding. This may lead to unexpected consequences if the model is not static. To run the model in eager mode, set 'enforce_eager=True' or use '--enforce-eager' in the CLI. If out-of-memory error occurs during cudagraph capture, consider decreasing `gpu_memory_utilization` or switching to eager mode. You can also reduce the `max_num_seqs` as needed to decrease memory usage.
+INFO 04-21 02:33:46 model_runner.py:1562] Graph capturing finished in 18 secs, took 0.26 GiB
+INFO 04-21 02:33:46 llm_engine.py:436] init engine (profile, create kv cache, warmup model) took 26.72 seconds
+Completed loading castorini/first_mistral
+Reranking and returning 100 passages with castorini/first_mistral...
+Pass 1 of 1:
+{'mean_coverage': 0.7779920634920634, 'mean_density': 0.32519852350531375, 'mean_num_segments': 20.0, 'mean_num_tokens': 2318.84, 'num_coverage': 100, 'Recall@100': 0.6425673789173787, 'MAP@100': 0.45206473612268366, 'nDCG@100': 0.6061048531892298, 'Recall': 0.5277271876271875, 'MAP': 0.421052417913616, 'nDCG': 0.5503234731978496, 'alpha_nDCG': 0.6156391600535637}
+RAC-eval mean_coverage mean_density Recall MAP nDCG alpha_nDCG
+##test-contriever_100-rankfirst_100-vanilla_20 0.7779920634920634 0.32519852350531375 0.5277271876271875 0.421052417913616 0.5503234731978496 0.6156391600535637
+WARNING 04-21 02:39:47 config.py:2448] Casting torch.bfloat16 to torch.float16.
+INFO 04-21 02:39:56 config.py:549] This model supports multiple tasks: {'embed', 'score', 'reward', 'classify', 'generate'}. Defaulting to 'generate'.
+WARNING 04-21 02:39:56 cuda.py:95] To see benefits of async output processing, enable CUDA graph. Since, enforce-eager is enabled, async output processor cannot be used
+WARNING 04-21 02:39:56 config.py:685] Async output processing is not supported on the current platform type cuda.
+INFO 04-21 02:39:56 llm_engine.py:234] Initializing a V0 LLM engine (v0.7.3) with config: model='meta-llama/Llama-3.1-8B-Instruct', speculative_config=None, tokenizer='meta-llama/Llama-3.1-8B-Instruct', skip_tokenizer_init=False, tokenizer_mode=auto, revision=None, override_neuron_config=None, tokenizer_revision=None, trust_remote_code=False, dtype=torch.float16, max_seq_len=13712, download_dir=None, load_format=auto, tensor_parallel_size=1, pipeline_parallel_size=1, disable_custom_all_reduce=False, quantization=None, enforce_eager=True, kv_cache_dtype=auto,  device_config=cuda, decoding_config=DecodingConfig(guided_decoding_backend='xgrammar'), observability_config=ObservabilityConfig(otlp_traces_endpoint=None, collect_model_forward_time=False, collect_model_execute_time=False), seed=0, served_model_name=meta-llama/Llama-3.1-8B-Instruct, num_scheduler_steps=1, multi_step_stream_outputs=True, enable_prefix_caching=False, chunked_prefill_enabled=False, use_async_output_proc=False, disable_mm_preprocessor_cache=False, mm_processor_kwargs=None, pooler_config=None, compilation_config={"splitting_ops":[],"compile_sizes":[],"cudagraph_capture_sizes":[],"max_capture_size":0}, use_cached_outputs=False, 
+INFO 04-21 02:39:56 cuda.py:229] Using Flash Attention backend.
+INFO 04-21 02:39:57 model_runner.py:1110] Starting to load model meta-llama/Llama-3.1-8B-Instruct...
+INFO 04-21 02:39:57 weight_utils.py:254] Using model weights format ['*.safetensors']
+INFO 04-21 02:40:11 model_runner.py:1115] Loading model weights took 14.9888 GB
+INFO 04-21 02:40:13 worker.py:267] Memory profiling takes 2.06 seconds
+INFO 04-21 02:40:13 worker.py:267] the current vLLM instance can use total_gpu_memory (47.44GiB) x gpu_memory_utilization (0.75) = 35.58GiB
+INFO 04-21 02:40:13 worker.py:267] model weights take 14.99GiB; non_torch_memory takes 0.01GiB; PyTorch activation peak memory takes 1.42GiB; the rest of the memory reserved for KV Cache is 19.17GiB.
+INFO 04-21 02:40:13 executor_base.py:111] # cuda blocks: 9814, # CPU blocks: 2048
+INFO 04-21 02:40:13 executor_base.py:116] Maximum concurrency for 13712 tokens per request: 11.45x
+INFO 04-21 02:40:13 llm_engine.py:436] init engine (profile, create kv cache, warmup model) took 2.67 seconds
+vllm engine has been cleaned up
+RAC-eval mean_coverage mean_density Recall MAP nDCG alpha_nDCG
+##test-contriever_100-rankfirst_100-vanilla_20 0.7779920634920634 0.32519852350531375 0.5277271876271875 0.421052417913616 0.5503234731978496 0.6156391600535637

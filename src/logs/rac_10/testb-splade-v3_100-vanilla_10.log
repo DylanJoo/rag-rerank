@@ -27,7 +27,8 @@
         "l2_norm": true,
         "batch_size": 32,
         "k1": 0,
-        "b": 0
+        "b": 0,
+        "seed": 0
     },
     "reranking": null,
     "listwise_reranking": null,
@@ -59,25 +60,25 @@
     "online_eval": false,
     "exp": "testb-splade-v3_100-vanilla_10"
 }
-{'mean_coverage': 0.6501245421245422, 'mean_density': 0.573385668785797, 'mean_num_segments': 10.0, 'mean_num_tokens': 1213.46, 'num_coverage': 50, 'Recall': 0.20059307786634836, 'MAP': 0.18228895151056515, 'nDCG': 0.3147269489423491, 'alpha_nDCG': 0.5116500989038832}
-RAG-pipeline mean_coverage mean_density Recall MAP nDCG alpha_nDCG
-testb-splade-v3_100-vanilla_10 0.6501245421245422 0.573385668785797 0.20059307786634836 0.18228895151056515 0.3147269489423491 0.5116500989038832
-INFO 03-21 08:45:02 __init__.py:207] Automatically detected platform cuda.
-WARNING 03-21 08:45:03 config.py:2448] Casting torch.bfloat16 to torch.float16.
-INFO 03-21 08:45:14 config.py:549] This model supports multiple tasks: {'reward', 'embed', 'score', 'generate', 'classify'}. Defaulting to 'generate'.
-WARNING 03-21 08:45:14 cuda.py:95] To see benefits of async output processing, enable CUDA graph. Since, enforce-eager is enabled, async output processor cannot be used
-WARNING 03-21 08:45:14 config.py:685] Async output processing is not supported on the current platform type cuda.
-INFO 03-21 08:45:14 llm_engine.py:234] Initializing a V0 LLM engine (v0.7.3) with config: model='meta-llama/Llama-3.1-8B-Instruct', speculative_config=None, tokenizer='meta-llama/Llama-3.1-8B-Instruct', skip_tokenizer_init=False, tokenizer_mode=auto, revision=None, override_neuron_config=None, tokenizer_revision=None, trust_remote_code=False, dtype=torch.float16, max_seq_len=13712, download_dir=None, load_format=auto, tensor_parallel_size=1, pipeline_parallel_size=1, disable_custom_all_reduce=False, quantization=None, enforce_eager=True, kv_cache_dtype=auto,  device_config=cuda, decoding_config=DecodingConfig(guided_decoding_backend='xgrammar'), observability_config=ObservabilityConfig(otlp_traces_endpoint=None, collect_model_forward_time=False, collect_model_execute_time=False), seed=0, served_model_name=meta-llama/Llama-3.1-8B-Instruct, num_scheduler_steps=1, multi_step_stream_outputs=True, enable_prefix_caching=False, chunked_prefill_enabled=False, use_async_output_proc=False, disable_mm_preprocessor_cache=False, mm_processor_kwargs=None, pooler_config=None, compilation_config={"splitting_ops":[],"compile_sizes":[],"cudagraph_capture_sizes":[],"max_capture_size":0}, use_cached_outputs=False, 
-INFO 03-21 08:45:16 cuda.py:229] Using Flash Attention backend.
-INFO 03-21 08:45:17 model_runner.py:1110] Starting to load model meta-llama/Llama-3.1-8B-Instruct...
-INFO 03-21 08:45:18 weight_utils.py:254] Using model weights format ['*.safetensors']
-INFO 03-21 08:46:24 model_runner.py:1115] Loading model weights took 14.9888 GB
-INFO 03-21 08:46:27 worker.py:267] Memory profiling takes 2.63 seconds
-INFO 03-21 08:46:27 worker.py:267] the current vLLM instance can use total_gpu_memory (47.44GiB) x gpu_memory_utilization (0.75) = 35.58GiB
-INFO 03-21 08:46:27 worker.py:267] model weights take 14.99GiB; non_torch_memory takes 0.01GiB; PyTorch activation peak memory takes 1.42GiB; the rest of the memory reserved for KV Cache is 19.17GiB.
-INFO 03-21 08:46:27 executor_base.py:111] # cuda blocks: 9814, # CPU blocks: 2048
-INFO 03-21 08:46:27 executor_base.py:116] Maximum concurrency for 13712 tokens per request: 11.45x
-INFO 03-21 08:46:29 llm_engine.py:436] init engine (profile, create kv cache, warmup model) took 5.17 seconds
+{'mean_coverage': 0.6501245421245422, 'mean_density': 0.573385668785797, 'mean_num_segments': 10.0, 'mean_num_tokens': 1213.46, 'num_coverage': 50, 'Recall@100': 0.6404105978991919, 'MAP@100': 0.46069254130172077, 'nDCG@100': 0.6492414354863295, 'Recall': 0.20059307786634836, 'MAP': 0.18228895151056515, 'nDCG': 0.32514967505359793, 'alpha_nDCG': 0.5116500989038832}
+RAC-eval mean_coverage mean_density Recall MAP nDCG alpha_nDCG
+##testb-splade-v3_100-vanilla_10 0.6501245421245422 0.573385668785797 0.20059307786634836 0.18228895151056515 0.32514967505359793 0.5116500989038832
+INFO 04-13 06:51:50 __init__.py:207] Automatically detected platform cuda.
+WARNING 04-13 06:51:51 config.py:2448] Casting torch.bfloat16 to torch.float16.
+INFO 04-13 06:51:57 config.py:549] This model supports multiple tasks: {'embed', 'reward', 'score', 'generate', 'classify'}. Defaulting to 'generate'.
+WARNING 04-13 06:51:57 cuda.py:95] To see benefits of async output processing, enable CUDA graph. Since, enforce-eager is enabled, async output processor cannot be used
+WARNING 04-13 06:51:57 config.py:685] Async output processing is not supported on the current platform type cuda.
+INFO 04-13 06:51:57 llm_engine.py:234] Initializing a V0 LLM engine (v0.7.3) with config: model='meta-llama/Llama-3.1-8B-Instruct', speculative_config=None, tokenizer='meta-llama/Llama-3.1-8B-Instruct', skip_tokenizer_init=False, tokenizer_mode=auto, revision=None, override_neuron_config=None, tokenizer_revision=None, trust_remote_code=False, dtype=torch.float16, max_seq_len=13712, download_dir=None, load_format=auto, tensor_parallel_size=1, pipeline_parallel_size=1, disable_custom_all_reduce=False, quantization=None, enforce_eager=True, kv_cache_dtype=auto,  device_config=cuda, decoding_config=DecodingConfig(guided_decoding_backend='xgrammar'), observability_config=ObservabilityConfig(otlp_traces_endpoint=None, collect_model_forward_time=False, collect_model_execute_time=False), seed=0, served_model_name=meta-llama/Llama-3.1-8B-Instruct, num_scheduler_steps=1, multi_step_stream_outputs=True, enable_prefix_caching=False, chunked_prefill_enabled=False, use_async_output_proc=False, disable_mm_preprocessor_cache=False, mm_processor_kwargs=None, pooler_config=None, compilation_config={"splitting_ops":[],"compile_sizes":[],"cudagraph_capture_sizes":[],"max_capture_size":0}, use_cached_outputs=False, 
+INFO 04-13 06:51:59 cuda.py:229] Using Flash Attention backend.
+INFO 04-13 06:51:59 model_runner.py:1110] Starting to load model meta-llama/Llama-3.1-8B-Instruct...
+INFO 04-13 06:51:59 weight_utils.py:254] Using model weights format ['*.safetensors']
+INFO 04-13 06:52:08 model_runner.py:1115] Loading model weights took 14.9888 GB
+INFO 04-13 06:52:10 worker.py:267] Memory profiling takes 2.02 seconds
+INFO 04-13 06:52:10 worker.py:267] the current vLLM instance can use total_gpu_memory (47.44GiB) x gpu_memory_utilization (0.75) = 35.58GiB
+INFO 04-13 06:52:10 worker.py:267] model weights take 14.99GiB; non_torch_memory takes 0.01GiB; PyTorch activation peak memory takes 1.42GiB; the rest of the memory reserved for KV Cache is 19.17GiB.
+INFO 04-13 06:52:11 executor_base.py:111] # cuda blocks: 9814, # CPU blocks: 2048
+INFO 04-13 06:52:11 executor_base.py:116] Maximum concurrency for 13712 tokens per request: 11.45x
+INFO 04-13 06:52:13 llm_engine.py:436] init engine (profile, create kv cache, warmup model) took 4.58 seconds
 vllm engine has been cleaned up
 RAC-eval mean_coverage mean_density Recall MAP nDCG alpha_nDCG
-##testb-splade-v3_100-vanilla_10 0.6501245421245422 0.573385668785797 0.20059307786634836 0.18228895151056515 0.3147269489423491 0.5116500989038832
+##testb-splade-v3_100-vanilla_10 0.6501245421245422 0.573385668785797 0.20059307786634836 0.18228895151056515 0.32514967505359793 0.5116500989038832

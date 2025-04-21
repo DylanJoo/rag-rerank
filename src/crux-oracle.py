@@ -9,6 +9,7 @@ from tools import (
 )
 from tools import load_yaml_config, parse_args, parse_rag_command
 from tools import batch_iterator
+from tools import postprocess
 from generate.llm.utils import check_if_ampere, cleanup_vllm
 
 def main(args):
@@ -29,6 +30,19 @@ def main(args):
     # [Oracle] retrieval-augmented context
     output_run = load_qrels(args.data.qrels_file, threshold=3)
 
+    ## filter the topics/qrels/diversity_qrels
+    if 'testb' not in args.data.topic_file: # meaning test
+        import random
+        random.seed(10)
+        all_qids = list(topics.keys())
+        random.shuffle(all_qids)
+        selected_qid = all_qids[:100]
+
+        topics = {k: v for k, v in topics.items() if k in selected_qid}
+        qrels = {k: v for k, v in qrels.items() if k in selected_qid}
+        diversity_qrels = diversity_qrels[diversity_qrels['query_id'].isin(selected_qid)]
+        output_run = {k: v for k, v in output_run.items() if k in selected_qid}
+
     # Context augmentation
     from augment.base import vanilla
     output_rac = vanilla(
@@ -45,27 +59,28 @@ def main(args):
         from evaluation import rac_evaluate
         output_rac_eval = rac_evaluate(
             corpus=corpus,
-            qrels=qrels, 
+            qrels=qrels,
             judgements=judgements,
             diversity_qrels=diversity_qrels, 
             rac_data=output_rac,
             n_questions=args.data.n_questions,
             threshold=args.data.threshold,
             runs=output_run,
-            tokenizer_name=args.generation.model_name_or_path,
+            tokenizer_name=args.generation.model_name_or_path if args.generation is not None else None
         )
         print(output_rac_eval)
 
         metrics = ['mean_coverage', 'mean_density', 'Recall', 'MAP', 'nDCG', 'alpha_nDCG']
         values = [str(output_rac_eval[m]) for m in metrics]
-        print(" ".join(['RAG-pipeline'] + metrics))
-        print(" ".join(['##' + args.exp] + values))
+        print(" ".join(['RAC-eval'] + metrics))
+        print(" ".join(["##" + args.exp] + values))
 
     # Generation
     # [TODO] See if generation needs to pack into a module
     if args.generation is not None:
-        token_word_limit = {512: "300", 1024: "800", 2048: "1000"}
+        token_word_limit = {512: "300", 1024: "600", 2048: "1000"}
 
+        # old citation generation
         PROMPT = \
             "Write a passage for the given query. Always use the provided contexts to write the passage (some of the contexts might be irrelevant). " + \
             "Cite at least one context in each sentence in the passage. When citing several search results, use [1][2][3]. " + \
@@ -87,8 +102,9 @@ def main(args):
 
             ### [NOTE] set the oracle length boundary
             if args.generation.max_length == -1: 
-                max_length = ( (1+len(reports[qid].split(' ')) // 100) * 100)
-                word_limit = str(max_length)
+                oracle_word_limit = ( (1+len(reports[qid].split(' ')) // 100) * 100)
+                max_length = int(oracle_word_limit * 1.5)
+                word_limit = str(oracle_word_limit)
             else:
                 max_length = args.generation.max_length
                 word_limit = token_word_limit[max_length]
@@ -100,13 +116,13 @@ def main(args):
             responses = generator.generate(x=[all_prompts[qid] for qid in batch_qid], max_tokens=max_length)
             for qid, response in zip(batch_qid, responses):
                 output_rac[qid]['report'] = reports[qid]
-                output_rac[qid]['response'] = response
+                output_rac[qid]['response'] = postprocess(response, 'r')
 
         print(cleanup_vllm(generator) if check_if_ampere else "\n")
 
         # output final report as file
-        os.makedirs(f"results/{args.generation.max_length}", exist_ok=True)
-        with open(os.path.join(f"results/{args.generation.max_length}", f"{args.exp}.jsonl"), 'w') as f:
+        os.makedirs(f"results/oracle/", exist_ok=True)
+        with open(os.path.join(f"results/oracle", f"{args.exp}.jsonl"), 'w') as f:
             for k, data in output_rac.items():
                 del data['prompt']
                 del data['context_list']
@@ -143,7 +159,7 @@ def main(args):
         print(" ".join(['RAC-eval'] + metrics))
         print(" ".join(['##' + args.exp] + values))
 
-        metrics = ['final_coverage', 'final_density']
+        metrics = ['mean_coverage', 'mean_density']
         values =  [str(output_rag_eval['mean_coverage']), str(output_rag_eval['mean_density'])]
         print(" ".join(['RAG-eval'] + metrics))
         print(" ".join(['##' + args.exp] + values))

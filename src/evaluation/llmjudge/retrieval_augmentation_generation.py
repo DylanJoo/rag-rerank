@@ -30,7 +30,7 @@ guideline = \
     "- 0: The context is not relevant or complete at all."
 
 def prompt_rating_gen(INST="", Q="", C="", PREFIX="Rating: "):
-    p = "Instruction: {INST}\n\nGuideline:\n{G}\n\nQuestion: {Q}\n\nContext: {C}\n\n{PREFIX}" 
+    p = "Instruction: {INST}\nGuideline:\n{G}\n\nQuestion: {Q}\nContext: {C}\n\n{PREFIX}" 
     p = p.replace("{INST}", INST)
     p = p.replace("{G}", guideline)
     p = p.replace("{Q}", Q)
@@ -45,7 +45,7 @@ def llm_judgement(llm, response, questions):
             INST=instruction,
             Q=question,
             C=response,
-            PREFIX="rating: "
+            PREFIX="Rating: "
         ) for question in questions
     ]
 
@@ -67,7 +67,8 @@ def rag_evaluate(
     threshold=0,     # answerability threshold (tau)
     rel_threshold=3, # on qrel's last column
     tokenizer_name='meta-llama/Llama-3.1-8B-Instruct',
-    gamma=0.5
+    gamma=0.5,
+    used_field='response'
 ):
     tokenizer = AutoTokenizer.from_pretrained(tokenizer_name)
 
@@ -93,7 +94,7 @@ def rag_evaluate(
 
         # [retrieval-augmented generation]
         # [TODO] add the extract_citation function
-        rag_text = remove_citations(rag_data[qid]['response']) 
+        rag_text = remove_citations(rag_data[qid][used_field]) 
         ratings = np.array(llm_judgement(generator, rag_text, questions[qid]))
         print('rating:', ratings)
 
@@ -138,6 +139,8 @@ if __name__ == "__main__":
     parser.add_argument("--num_gpus", type=int, default=1)
     # rag output
     parser.add_argument("--result_jsonl", type=str, default='testing.jsonl')
+    # controls
+    parser.add_argument("--used_field", type=str, default='response')
     args = parser.parse_args()
 
 
@@ -184,7 +187,8 @@ if __name__ == "__main__":
         questions=questions,
         threshold=args.threshold,
         tokenizer_name=args.model_name_or_path,
-        gamma=args.gamma
+        gamma=args.gamma,
+        used_field=args.used_field
     )
 
     metrics = ['final_coverage', 'final_density']

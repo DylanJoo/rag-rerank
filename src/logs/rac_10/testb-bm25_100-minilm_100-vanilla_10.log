@@ -27,7 +27,8 @@
         "l2_norm": null,
         "batch_size": 256,
         "k1": 0.9,
-        "b": 0.4
+        "b": 0.4,
+        "seed": 0
     },
     "reranking": {
         "default_config": "configs/crux/bm25_100-minilm_100.yaml",
@@ -53,10 +54,42 @@
         "batch_size": -1,
         "max_length": 1024
     },
-    "generation": null,
+    "generation": {
+        "default_config": "configs/crux/bm25_100-minilm_100.yaml",
+        "debug": null,
+        "num_gpus": 1,
+        "online_eval": false,
+        "exp": "testing",
+        "model_name_or_path": "meta-llama/Llama-3.1-8B-Instruct",
+        "batch_size": 4,
+        "max_length": -1,
+        "temperature": 0.7
+    },
     "default_config": "configs/crux/bm25_100-minilm_100.yaml",
     "debug": null,
     "num_gpus": 1,
     "online_eval": false,
     "exp": "testb-bm25_100-minilm_100-vanilla_10"
 }
+{'mean_coverage': 0.6027875457875458, 'mean_density': 0.5474434619999, 'mean_num_segments': 10.0, 'mean_num_tokens': 1202.24, 'num_coverage': 50, 'Recall@100': 0.43975477272014074, 'MAP@100': 0.34363493821904867, 'nDCG@100': 0.5057821289197811, 'Recall': 0.1906495746416653, 'MAP': 0.171415160533022, 'nDCG': 0.3100849444345981, 'alpha_nDCG': 0.4815695923009083}
+RAC-eval mean_coverage mean_density Recall MAP nDCG alpha_nDCG
+##testb-bm25_100-minilm_100-vanilla_10 0.6027875457875458 0.5474434619999 0.1906495746416653 0.171415160533022 0.3100849444345981 0.4815695923009083
+INFO 04-13 06:55:54 __init__.py:207] Automatically detected platform cuda.
+WARNING 04-13 06:55:55 config.py:2448] Casting torch.bfloat16 to torch.float16.
+INFO 04-13 06:56:01 config.py:549] This model supports multiple tasks: {'reward', 'classify', 'score', 'generate', 'embed'}. Defaulting to 'generate'.
+WARNING 04-13 06:56:01 cuda.py:95] To see benefits of async output processing, enable CUDA graph. Since, enforce-eager is enabled, async output processor cannot be used
+WARNING 04-13 06:56:01 config.py:685] Async output processing is not supported on the current platform type cuda.
+INFO 04-13 06:56:01 llm_engine.py:234] Initializing a V0 LLM engine (v0.7.3) with config: model='meta-llama/Llama-3.1-8B-Instruct', speculative_config=None, tokenizer='meta-llama/Llama-3.1-8B-Instruct', skip_tokenizer_init=False, tokenizer_mode=auto, revision=None, override_neuron_config=None, tokenizer_revision=None, trust_remote_code=False, dtype=torch.float16, max_seq_len=13712, download_dir=None, load_format=auto, tensor_parallel_size=1, pipeline_parallel_size=1, disable_custom_all_reduce=False, quantization=None, enforce_eager=True, kv_cache_dtype=auto,  device_config=cuda, decoding_config=DecodingConfig(guided_decoding_backend='xgrammar'), observability_config=ObservabilityConfig(otlp_traces_endpoint=None, collect_model_forward_time=False, collect_model_execute_time=False), seed=0, served_model_name=meta-llama/Llama-3.1-8B-Instruct, num_scheduler_steps=1, multi_step_stream_outputs=True, enable_prefix_caching=False, chunked_prefill_enabled=False, use_async_output_proc=False, disable_mm_preprocessor_cache=False, mm_processor_kwargs=None, pooler_config=None, compilation_config={"splitting_ops":[],"compile_sizes":[],"cudagraph_capture_sizes":[],"max_capture_size":0}, use_cached_outputs=False, 
+INFO 04-13 06:56:03 cuda.py:229] Using Flash Attention backend.
+INFO 04-13 06:56:03 model_runner.py:1110] Starting to load model meta-llama/Llama-3.1-8B-Instruct...
+INFO 04-13 06:56:03 weight_utils.py:254] Using model weights format ['*.safetensors']
+INFO 04-13 06:56:12 model_runner.py:1115] Loading model weights took 14.9888 GB
+INFO 04-13 06:56:14 worker.py:267] Memory profiling takes 1.96 seconds
+INFO 04-13 06:56:14 worker.py:267] the current vLLM instance can use total_gpu_memory (47.44GiB) x gpu_memory_utilization (0.75) = 35.58GiB
+INFO 04-13 06:56:14 worker.py:267] model weights take 14.99GiB; non_torch_memory takes 0.00GiB; PyTorch activation peak memory takes 1.42GiB; the rest of the memory reserved for KV Cache is 19.17GiB.
+INFO 04-13 06:56:15 executor_base.py:111] # cuda blocks: 9817, # CPU blocks: 2048
+INFO 04-13 06:56:15 executor_base.py:116] Maximum concurrency for 13712 tokens per request: 11.46x
+INFO 04-13 06:56:17 llm_engine.py:436] init engine (profile, create kv cache, warmup model) took 4.55 seconds
+vllm engine has been cleaned up
+RAC-eval mean_coverage mean_density Recall MAP nDCG alpha_nDCG
+##testb-bm25_100-minilm_100-vanilla_10 0.6027875457875458 0.5474434619999 0.1906495746416653 0.171415160533022 0.3100849444345981 0.4815695923009083

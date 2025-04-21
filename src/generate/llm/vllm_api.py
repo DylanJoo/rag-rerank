@@ -22,37 +22,6 @@ def cleanup():
     gc.collect()
     torch.cuda.empty_cache()
 
-# async def iterate_over_output_for_one_prompt(output_iterator: AsyncStream) -> str:
-#     last_text = ""
-#     prompt = "???"
-#
-#     async for output in output_iterator:
-#         prompt = output.prompt
-#         last_text = output.outputs[0].text
-#
-#     return last_text
-#
-# async def generate(
-#     engine: AsyncLLMEngine, 
-#     request_ids: list[str], 
-#     prompts: list[str], 
-#     sampling_params: SamplingParams, 
-#     **kwargs
-# ) -> list[str]:
-#
-#     output_iterators = [
-#         await engine.add_request(request_ids[i], prompt, sampling_params)\
-#                 for i, prompt in enumerate(prompts)
-#     ]
-#     outputs = await asyncio.gather(*[iterate_over_output_for_one_prompt(output_iterator)
-#                                      for output_iterator in output_iterators])
-#     return list(outputs)
-#
-# async def serve(engine, sampling_params, prompts):
-#     request_ids = [str(i) for i in range(len(prompts))]
-#     outputs = await generate(engine, request_ids, prompts, sampling_params)
-#     return outputs
-
 class LLM:
 
     def __init__(self, 
@@ -60,7 +29,7 @@ class LLM:
         temperature=0.7, top_p=0.9, 
         dtype='half', gpu_memory_utilization=0.75, 
         num_gpus=1, 
-        enforce_eager=False,
+        enforce_eager=True,
         think_activated=False,
     ):
         args = AsyncEngineArgs(
@@ -107,9 +76,11 @@ class LLM:
         
         return list(outputs)
     
-    def generate(self, prompts, **kwargs):
+    def generate(self, prompts=None, x=None, **kwargs):
         """Generate completions for the provided prompts"""
         # If prompts is a single string, convert to list
+        prompts = (prompts or x)
+
         if isinstance(prompts, str):
             prompts = [prompts]
         

@@ -24,6 +24,18 @@ def main(args):
             if args.data.judgement_file is not None else None
     reports = load_reports(args.data.topic_file)
 
+    ## filter the topics/qrels/diversity_qrels
+    if 'testb' not in args.data.topic_file: # meaning test
+        import random
+        random.seed(10)
+        all_qids = list(topics.keys())
+        random.shuffle(all_qids)
+        selected_qid = all_qids[:100]
+
+        topics = {k: v for k, v in topics.items() if k in selected_qid}
+        qrels = {k: v for k, v in qrels.items() if k in selected_qid}
+        diversity_qrels = diversity_qrels[diversity_qrels['query_id'].isin(selected_qid)]
+
     # Retrieval
     from retrieve.bm25 import search
     output_run = search(
@@ -113,7 +125,7 @@ def main(args):
 
         metrics = ['mean_coverage', 'mean_density', 'Recall', 'MAP', 'nDCG', 'alpha_nDCG']
         values = [str(output_rac_eval[m]) for m in metrics]
-        print(" ".join(['RAG-pipeline'] + metrics))
+        print(" ".join(['RAC-eval'] + metrics))
         print(" ".join(["##" + args.exp] + values))
 
     # Generation
@@ -122,16 +134,10 @@ def main(args):
         token_word_limit = {512: "300", 1024: "600", 2048: "1000"}
 
         # old citation generation
-        # PROMPT = \
-        #     "Write a passage for the given query. Always use the provided contexts to write the passage (some of the contexts might be irrelevant). " + \
-        #     "Cite at least one context in each sentence in the passage. When citing several search results, use [1][2][3]. " + \
-        #     "Write the passage within {WORD_LIMIT} words.\n\nQuery: {Q}\nContexts:\n{Ds}\nPassage:\n"
-        # citation generation
         PROMPT = \
-            "Write a response to the user request using only the provided contexts. " + \
-            "Do not include any information that is not supported by the contexts. " + \
-            "The entire response must be enclosed within <r> and </r> tags. " +\
-            "Limit the response to {WORD_LIMIT} words.\n\nRequest: {Q}\nContexts:\n{Ds}\nResponse:\n<r>"
+            "Write a passage for the given query. Always use the provided contexts to write the passage (some of the contexts might be irrelevant). " + \
+            "Cite at least one context in each sentence in the passage. When citing several search results, use [1][2][3]. " + \
+            "Write the passage within {WORD_LIMIT} words.\n\nQuery: {Q}\nContexts:\n{Ds}\nPassage:\n"
 
         if check_if_ampere:
             from generate.llm.vllm_back import LLM

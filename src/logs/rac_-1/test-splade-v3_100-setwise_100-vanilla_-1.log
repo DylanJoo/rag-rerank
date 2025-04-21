@@ -1,0 +1,99 @@
+{
+    "data": {
+        "default_config": "configs/crux/splade-v3_100-setwise_100.yaml",
+        "debug": null,
+        "num_gpus": 1,
+        "online_eval": false,
+        "exp": "testing",
+        "index_dir": "/home/dju/indexes/crux/splade-v3.crux.passages.lucene/",
+        "corpus_dir": "/home/dju/datasets/crux/passages/",
+        "topic_file": "/home/dju/datasets/crux/ranking_5/test_topics.jsonl",
+        "qrels_file": "/home/dju/datasets/crux/ranking_3/test_qrels_pr.txt",
+        "judgement_file": "/home/dju/datasets/crux/ranking_3/test_oracle-passages_judgements.jsonl",
+        "n_questions": 10,
+        "threshold": 3
+    },
+    "retrieval": {
+        "default_config": "configs/crux/splade-v3_100-setwise_100.yaml",
+        "debug": null,
+        "num_gpus": 1,
+        "online_eval": false,
+        "exp": "testing",
+        "k": 100,
+        "model_class": "splade",
+        "model_name_or_path": "naver/splade-v3",
+        "max_length": 512,
+        "pooling": "mean",
+        "l2_norm": true,
+        "batch_size": 32,
+        "k1": 0,
+        "b": 0,
+        "seed": 0
+    },
+    "reranking": null,
+    "listwise_reranking": {
+        "default_config": "configs/crux/splade-v3_100-setwise_100.yaml",
+        "debug": null,
+        "num_gpus": 1,
+        "online_eval": false,
+        "exp": "testing",
+        "model_name_or_path": "google/flan-t5-xl",
+        "max_k": 100,
+        "batch_size": 32,
+        "max_length": 4096,
+        "use_logits": false,
+        "use_alpha": false,
+        "num_passes": 1,
+        "system_message": "na",
+        "type": "setwise"
+    },
+    "augmentation": {
+        "default_config": "configs/crux/splade-v3_100-setwise_100.yaml",
+        "debug": null,
+        "num_gpus": 1,
+        "online_eval": false,
+        "exp": "testing",
+        "type": "vanilla",
+        "max_k": -1,
+        "batch_size": -1,
+        "max_length": 1024
+    },
+    "generation": {
+        "default_config": "configs/crux/splade-v3_100-setwise_100.yaml",
+        "debug": null,
+        "num_gpus": 1,
+        "online_eval": false,
+        "exp": "testing",
+        "model_name_or_path": "meta-llama/Llama-3.1-8B-Instruct",
+        "batch_size": 4,
+        "max_length": 1024,
+        "temperature": 0.7
+    },
+    "default_config": "configs/crux/splade-v3_100-setwise_100.yaml",
+    "debug": null,
+    "num_gpus": 1,
+    "online_eval": false,
+    "exp": "test-splade-v3_100-setwise_100-vanilla_-1"
+}
+{'mean_coverage': 0.5197976190476191, 'mean_density': 0.6542831309139331, 'mean_num_segments': 2.91, 'mean_num_tokens': 342.93, 'num_coverage': 100, 'Recall@100': 0.6286717745217745, 'MAP@100': 0.41377238804899485, 'nDCG@100': 0.5911000700528665, 'Recall': 0.1875276556776556, 'MAP': 0.17879617419617413, 'nDCG': 0.2999062650388384, 'alpha_nDCG': 0.4687346500818564}
+RAC-eval mean_coverage mean_density Recall MAP nDCG alpha_nDCG
+##test-splade-v3_100-setwise_100-vanilla_-1 0.5197976190476191 0.6542831309139331 0.1875276556776556 0.17879617419617413 0.2999062650388384 0.4687346500818564
+INFO 04-21 02:25:41 __init__.py:207] Automatically detected platform cuda.
+WARNING 04-21 02:25:41 config.py:2448] Casting torch.bfloat16 to torch.float16.
+INFO 04-21 02:25:50 config.py:549] This model supports multiple tasks: {'score', 'classify', 'generate', 'reward', 'embed'}. Defaulting to 'generate'.
+WARNING 04-21 02:25:50 cuda.py:95] To see benefits of async output processing, enable CUDA graph. Since, enforce-eager is enabled, async output processor cannot be used
+WARNING 04-21 02:25:50 config.py:685] Async output processing is not supported on the current platform type cuda.
+INFO 04-21 02:25:50 llm_engine.py:234] Initializing a V0 LLM engine (v0.7.3) with config: model='meta-llama/Llama-3.1-8B-Instruct', speculative_config=None, tokenizer='meta-llama/Llama-3.1-8B-Instruct', skip_tokenizer_init=False, tokenizer_mode=auto, revision=None, override_neuron_config=None, tokenizer_revision=None, trust_remote_code=False, dtype=torch.float16, max_seq_len=13712, download_dir=None, load_format=auto, tensor_parallel_size=1, pipeline_parallel_size=1, disable_custom_all_reduce=False, quantization=None, enforce_eager=True, kv_cache_dtype=auto,  device_config=cuda, decoding_config=DecodingConfig(guided_decoding_backend='xgrammar'), observability_config=ObservabilityConfig(otlp_traces_endpoint=None, collect_model_forward_time=False, collect_model_execute_time=False), seed=0, served_model_name=meta-llama/Llama-3.1-8B-Instruct, num_scheduler_steps=1, multi_step_stream_outputs=True, enable_prefix_caching=False, chunked_prefill_enabled=False, use_async_output_proc=False, disable_mm_preprocessor_cache=False, mm_processor_kwargs=None, pooler_config=None, compilation_config={"splitting_ops":[],"compile_sizes":[],"cudagraph_capture_sizes":[],"max_capture_size":0}, use_cached_outputs=False, 
+INFO 04-21 02:25:51 cuda.py:229] Using Flash Attention backend.
+INFO 04-21 02:25:52 model_runner.py:1110] Starting to load model meta-llama/Llama-3.1-8B-Instruct...
+INFO 04-21 02:25:52 weight_utils.py:254] Using model weights format ['*.safetensors']
+INFO 04-21 02:26:00 model_runner.py:1115] Loading model weights took 14.9888 GB
+INFO 04-21 02:26:02 worker.py:267] Memory profiling takes 1.94 seconds
+INFO 04-21 02:26:02 worker.py:267] the current vLLM instance can use total_gpu_memory (47.44GiB) x gpu_memory_utilization (0.75) = 35.58GiB
+INFO 04-21 02:26:02 worker.py:267] model weights take 14.99GiB; non_torch_memory takes 0.00GiB; PyTorch activation peak memory takes 1.42GiB; the rest of the memory reserved for KV Cache is 19.17GiB.
+INFO 04-21 02:26:03 executor_base.py:111] # cuda blocks: 9817, # CPU blocks: 2048
+INFO 04-21 02:26:03 executor_base.py:116] Maximum concurrency for 13712 tokens per request: 11.46x
+INFO 04-21 02:26:06 llm_engine.py:436] init engine (profile, create kv cache, warmup model) took 5.82 seconds
+vllm engine has been cleaned up
+RAC-eval mean_coverage mean_density Recall MAP nDCG alpha_nDCG
+##test-splade-v3_100-setwise_100-vanilla_-1 0.5197976190476191 0.6542831309139331 0.1875276556776556 0.17879617419617413 0.2999062650388384 0.4687346500818564
