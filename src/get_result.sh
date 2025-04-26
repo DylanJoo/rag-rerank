@@ -4,23 +4,23 @@ K=-1
 # K=10
 # K=20
 
-N=1024
-# N=-1
+# N=1024
+N=-1
 
 # checking result time
 echo 'rac evaluation time'
-ls -al results/${N}/${data}-*vanilla_${K}* | cut -f6,7,8,9 -d ' '
+ls -l results/${N}/${data}-*vanilla_${K}* | cut -f6,7,8,9 -d ' '
 
 # checking rag time
-# echo 'rag evaluation time'
-# # ls -al logs/meta-llama/Llama-3.1-70B-Instruct/${N}/${data}-*vanilla_${K}* | cut -f6,7,8,9 -d ' '
-# ls -al logs/meta-llama/Llama-3.1-70B-Instruct/rag_${N}/${data}-*vanilla_${K}* | cut -f6,7,8,9 -d ' '
+echo 'rag evaluation time'
+# ls -l logs/meta-llama/Llama-3.1-70B-Instruct/${N}/${data}-*vanilla_${K}* | cut -f6,7,8,9 -d ' '
+ls -l logs/meta-llama/Llama-3.1-70B-Instruct/rag_${N}/${data}-*vanilla_${K}* | cut -f6,7,8,9 -d ' '
 
 # get RAC results
 echo 'rac evaluation result'
 tail logs/rac_${K}/${data}-*vanilla_${K}* | grep '##'
 
 # checking rag time
-# echo 'rag evaluation result'
-# # tail logs/meta-llama/Llama-3.1-70B-Instruct/${N}/${data}-*vanilla_${K}* | grep '##'
-# tail logs/meta-llama/Llama-3.1-70B-Instruct/rag_${N}/${data}-*vanilla_${K}* | grep '##'
+echo 'rag evaluation result'
+# tail logs/meta-llama/Llama-3.1-70B-Instruct/${N}/${data}-*vanilla_${K}* | grep '##'
+tail logs/meta-llama/Llama-3.1-70B-Instruct/rag_${N}/${data}-*vanilla_${K}* | grep '##'
