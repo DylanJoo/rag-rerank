@@ -1,11 +1,19 @@
 import json
 import random
+import numpy as np
 
 # randomly selected among 50
 random.seed(327)
 random_qids = [f'duc04-testb-{i}' for i in random.sample(range(50), 10)]
 
-def export_query_file(file, writer):
+from tools import load_judgements, load_qrels
+
+def export_query_file(file, writer, threshold=3):
+
+    judgements = load_judgements(f"/home/dju/datasets/crux/ranking_{threshold}/testb_oracle-passages_judgements.jsonl")
+    qrels = load_qrels(f"/home/dju/datasets/crux/ranking_{threshold}/testb_qrels_pr.txt")
+    rel_threshold = 3
+
     with open(file, 'r') as f:
         for line in f:
             data = json.loads(line)
@@ -13,6 +21,14 @@ def export_query_file(file, writer):
             if qid in random_qids:
                 data['k'] = data['type'][1]
                 data['type'] = data['type'][0]
+
+                # check only the answerable
+                docids = [docid for docid, score in qrels[qid].items() if score >= rel_threshold ] 
+                judgement_oracle = np.array([judgements[qid][docid] for docid in docids]).max(0)
+                answerable = (judgement_oracle >= threshold) 
+
+                data['questions'] = [q if ans_flag else None for q, ans_flag in zip(data['questions'], answerable)]
+
                 writer.write(json.dumps(data) + "\n")
     writer.close()
 
