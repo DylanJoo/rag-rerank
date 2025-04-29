@@ -19,15 +19,17 @@ cd src
 data=test
 
 # Oracle retrieval + generation
-for max_report_length in -1; do
+for max_report_length in -1 1024; do
 
 # relevance=3
 python3 crux-oracle.py --default_config configs/crux/oracle_k.yaml \
     --exp ${data}-oracle_k-1:3_n${max_report_length} \
     data \
+        --topic_file /home/dju/datasets/crux/ranking_5/${data}_topics.jsonl \
         --qrels_file /home/dju/datasets/crux/ranking_3/${data}_qrels_pr.txt  \
         --judgement_file /home/dju/datasets/crux/ranking_3/${data}_oracle-passages_judgements.jsonl \
         --threshold 3 \
+        --n_questions 10 \
     retrieval \
     generation \
         --max_length $max_report_length \
@@ -38,9 +40,11 @@ python3 crux-oracle.py --default_config configs/crux/oracle_k.yaml \
 python3 crux-oracle.py --default_config configs/crux/oracle_k.yaml \
     --exp ${data}-oracle_k-1:2_n${max_report_length} \
     data \
+        --topic_file /home/dju/datasets/crux/ranking_5/${data}_topics.jsonl \
         --qrels_file /home/dju/datasets/crux/ranking_3/${data}_qrels_pr.txt  \
         --judgement_file /home/dju/datasets/crux/ranking_3/${data}_oracle-passages_judgements.jsonl \
         --threshold 2 \
+        --n_questions 10 \
     retrieval \
     generation \
         --max_length $max_report_length \

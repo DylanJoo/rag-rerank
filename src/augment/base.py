@@ -17,7 +17,9 @@ def vanilla(
     qrels=defaultdict(lambda: {})
 ):
     qids = list(topics.keys())
+    print(qids)
     qids = [qid for qid in qids if qid in runs]
+    print(qids)
 
     outputs = {}
     for qid in tqdm(qids, total=len(qids)):
