@@ -32,7 +32,7 @@ for result_file in results/$max_length/${data}-bm25*${prefix}*; do
     echo "Evaluating: " $file_name
 
     python3 -m evaluation.llmjudge.retrieval_augmentation_generation \
-        --topic_file /home/dju/datasets/crux/ranking_3/${data}_topics.jsonl \
+        --topic_file /home/dju/datasets/crux/ranking_5/${data}_topics.jsonl \
         --corpus_dir /home/dju/datasets/crux/passages/ \
         --qrels_file /home/dju/datasets/crux/ranking_3/${data}_qrels_pr.txt \
         --judgement_file /home/dju/datasets/crux/ranking_3/${data}_oracle-passages_judgements.jsonl \
@@ -51,7 +51,7 @@ for result_file in results/$max_length/${data}-contriever*${prefix}*; do
     echo "Evaluating: " $file_name
 
     python3 -m evaluation.llmjudge.retrieval_augmentation_generation \
-        --topic_file /home/dju/datasets/crux/ranking_3/${data}_topics.jsonl \
+        --topic_file /home/dju/datasets/crux/ranking_5/${data}_topics.jsonl \
         --corpus_dir /home/dju/datasets/crux/passages/ \
         --qrels_file /home/dju/datasets/crux/ranking_3/${data}_qrels_pr.txt \
         --judgement_file /home/dju/datasets/crux/ranking_3/${data}_oracle-passages_judgements.jsonl \
@@ -70,7 +70,7 @@ for result_file in results/$max_length/${data}-splade*${prefix}*; do
     echo "Evaluating: " $file_name
 
     python3 -m evaluation.llmjudge.retrieval_augmentation_generation \
-        --topic_file /home/dju/datasets/crux/ranking_3/${data}_topics.jsonl \
+        --topic_file /home/dju/datasets/crux/ranking_5/${data}_topics.jsonl \
         --corpus_dir /home/dju/datasets/crux/passages/ \
         --qrels_file /home/dju/datasets/crux/ranking_3/${data}_qrels_pr.txt \
         --judgement_file /home/dju/datasets/crux/ranking_3/${data}_oracle-passages_judgements.jsonl \

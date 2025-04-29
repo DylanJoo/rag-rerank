@@ -74,6 +74,7 @@ def rag_evaluate(
 
     outputs = {'coverage': [], 'density': [], 'num_segs': [], 'num_tokens': []}
 
+    # filtered qrels by (1) rag_data and also (2) 
     overlapped = {k: v for k, v in qrels.items() if k in rag_data}
 
     if len(overlapped) != len(qrels):

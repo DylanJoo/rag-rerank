@@ -15,38 +15,42 @@ conda activate rag
 
 # root
 cd /home/dju/rag-rerank/src 
+data=test
 
 judge_model=meta-llama/Llama-3.1-70B-Instruct
+max_length=-1
 mkdir -p logs/$judgement_model
 
 # Oracle summary
-# result_file=results/$max_length/testb-oracle_k.jsonl
-# file_name=${result_file##*/}
-# output_file=logs/$judge_model/rag_$max_length/testb-oracle-report.log
-# mkdir -p ${output_file%/*}
-#
-# echo "Evaluating the oracle report summary" $file_name
-# python3 -m evaluation.llmjudge.retrieval_augmentation_generation \
-#     --topic_file /home/dju/datasets/crux/ranking_3/testb_topics.jsonl \
-#     --corpus_dir /home/dju/datasets/crux/passages/ \
-#     --qrels_file /home/dju/datasets/crux/ranking_3/testb_qrels_pr.txt \
-#     --judgement_file /home/dju/datasets/crux/ranking_3/testb_oracle-passages_judgements.jsonl \
-#     --model_name_or_path $judge_model \
-#     --threshold 3 \
-#     --gamma 0.5  \
-#     --num_gpus 4 \
-#     --used_field report \
-#     --result_jsonl $result_file > $output_file
+result_file=results/$max_length/${data}-oracle_k.jsonl
+file_name=${result_file##*/}
+output_file=logs/$judge_model/oracle/${data}-oracle-report.log
+mkdir -p ${output_file%/*}
 
-for result_file in results/oracle/testb-oracle*;do
+echo "Evaluating oracle sumamry: " $file_name
+python3 -m evaluation.llmjudge.retrieval_augmentation_generation \
+    --topic_file /home/dju/datasets/crux/ranking_5/${data}_topics.jsonl \
+    --corpus_dir /home/dju/datasets/crux/passages/ \
+    --qrels_file /home/dju/datasets/crux/ranking_3/${data}_qrels_pr.txt \
+    --judgement_file /home/dju/datasets/crux/ranking_3/${data}_oracle-passages_judgements.jsonl \
+    --model_name_or_path $judge_model \
+    --threshold 3 \
+    --gamma 0.5  \
+    --num_gpus 4 \
+    --used_field report \
+    --result_jsonl $result_file > $output_file
+
+# Oracel retrieval
+for result_file in results/oracle/${data}-oracle*n${max_length}*;do
     file_name=${result_file##*/}
     output_file=logs/$judge_model/oracle/${file_name}
-    echo "Evaluating: " $file_name
+    echo "Evaluating oracle rag report: " $file_name
+
     python3 -m evaluation.llmjudge.retrieval_augmentation_generation \
-        --topic_file /home/dju/datasets/crux/ranking_3/testb_topics.jsonl \
+        --topic_file /home/dju/datasets/crux/ranking_5/${data}_topics.jsonl \
         --corpus_dir /home/dju/datasets/crux/passages/ \
-        --qrels_file /home/dju/datasets/crux/ranking_3/testb_qrels_pr.txt \
-        --judgement_file /home/dju/datasets/crux/ranking_3/testb_oracle-passages_judgements.jsonl \
+        --qrels_file /home/dju/datasets/crux/ranking_3/${data}_qrels_pr.txt \
+        --judgement_file /home/dju/datasets/crux/ranking_3/${data}_oracle-passages_judgements.jsonl \
         --model_name_or_path $judge_model \
         --threshold 3 \
         --gamma 0.5  \
