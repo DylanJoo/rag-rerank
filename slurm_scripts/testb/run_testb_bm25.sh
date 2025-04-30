@@ -15,7 +15,7 @@ conda activate rag
 
 # root
 cd src 
-threshold=3
+threshold=5
 
 # Start experiments
 ADD_GENERATION=true
