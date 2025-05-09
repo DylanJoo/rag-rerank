@@ -18,7 +18,7 @@ cd src
 threshold=5
 
 # Start experiments
-ADD_GENERATION=true
+ADD_GENERATION=false
 
 for max_report_length in -1; do
 for max_k in -1; do
@@ -29,6 +29,7 @@ python3 crux-contriever.py --default_config configs/crux/contriever_100-minilm_1
     data \
         --qrels_file /home/dju/datasets/crux/ranking_${threshold}/testb_qrels_pr.txt  \
         --judgement_file /home/dju/datasets/crux/ranking_${threshold}/testb_oracle-passages_judgements.jsonl \
+        --threshold ${threshold} \
     retrieval \
     ${ADD_GENERATION:+generation --max_length ${max_report_length}} \
     augmentation \
@@ -40,6 +41,7 @@ python3 crux-contriever.py --default_config configs/crux/contriever_100-minilm_1
     data \
         --qrels_file /home/dju/datasets/crux/ranking_${threshold}/testb_qrels_pr.txt  \
         --judgement_file /home/dju/datasets/crux/ranking_${threshold}/testb_oracle-passages_judgements.jsonl \
+        --threshold ${threshold} \
     retrieval \
     reranking \
     ${ADD_GENERATION:+generation --max_length ${max_report_length}} \
@@ -52,6 +54,7 @@ python3 crux-contriever.py --default_config configs/crux/contriever_100-monot5_1
     data \
         --qrels_file /home/dju/datasets/crux/ranking_${threshold}/testb_qrels_pr.txt  \
         --judgement_file /home/dju/datasets/crux/ranking_${threshold}/testb_oracle-passages_judgements.jsonl \
+        --threshold ${threshold} \
     retrieval \
     reranking \
     ${ADD_GENERATION:+generation --max_length ${max_report_length}} \
@@ -64,6 +67,7 @@ python3 crux-contriever.py --default_config configs/crux/contriever_100-rankgpt_
     data \
         --qrels_file /home/dju/datasets/crux/ranking_${threshold}/testb_qrels_pr.txt  \
         --judgement_file /home/dju/datasets/crux/ranking_${threshold}/testb_oracle-passages_judgements.jsonl \
+        --threshold ${threshold} \
     retrieval \
     listwise_reranking \
         --model_name_or_path castorini/rank_zephyr_7b_v1_full  \
@@ -77,6 +81,7 @@ python3 crux-contriever.py --default_config configs/crux/contriever_100-rankfirs
     data \
         --qrels_file /home/dju/datasets/crux/ranking_${threshold}/testb_qrels_pr.txt  \
         --judgement_file /home/dju/datasets/crux/ranking_${threshold}/testb_oracle-passages_judgements.jsonl \
+        --threshold ${threshold} \
     retrieval \
     listwise_reranking \
         --model_name_or_path castorini/first_mistral \
@@ -92,6 +97,7 @@ python3 crux-contriever.py --default_config configs/crux/contriever_100-setwise_
     data \
         --qrels_file /home/dju/datasets/crux/ranking_${threshold}/testb_qrels_pr.txt  \
         --judgement_file /home/dju/datasets/crux/ranking_${threshold}/testb_oracle-passages_judgements.jsonl \
+        --threshold ${threshold} \
     retrieval \
     listwise_reranking \
         --model_name_or_path google/flan-t5-xl \
@@ -106,6 +112,7 @@ python3 crux-contriever.py --default_config configs/crux/contriever_100-minilm_1
     data \
         --qrels_file /home/dju/datasets/crux/ranking_${threshold}/testb_qrels_pr.txt  \
         --judgement_file /home/dju/datasets/crux/ranking_${threshold}/testb_oracle-passages_judgements.jsonl \
+        --threshold ${threshold} \
     retrieval \
     reranking \
     listwise_reranking \
