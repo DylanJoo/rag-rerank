@@ -29,6 +29,11 @@ def export_query_file(file, writer, threshold=3):
 
                 data['questions'] = [q if ans_flag else None for q, ans_flag in zip(data['questions'], answerable)]
 
+                if 'bm25' in file:
+                    data['qid'] = f'bm25_{qid}'
+                if 'rankfirst' in file:
+                    data['qid'] = f'dr_rankfirst_{qid}'
+
                 writer.write(json.dumps(data) + "\n")
     writer.close()
 
@@ -65,15 +70,17 @@ export_run_file(result_file, writer, prefix='_oracle')
 
 ## 2. bm25 report
 result_file = 'results/-1/testb-bm25_100-vanilla_-1.jsonl'
-writer = open('results/human_eval/bm25.jsonl', 'w')
+writer = open('results/human_eval/oracle.jsonl', 'a')
+# writer = open('results/human_eval/bm25.jsonl', 'w')
 export_query_file(result_file, writer)
 
 writer = open('results/human_eval/bm25.run', 'w')
 export_run_file(result_file, writer, prefix='_bm25')
 
 ## 3. contriever+rankfirst report
-result_file = 'results/-1/testb-bm25_100-rankfirst_100-vanilla_-1.jsonl'
-writer = open('results/human_eval/dr_rankfirst.jsonl', 'w')
+result_file = 'results/-1/testb-contriever_100-rankfirst_100-vanilla_-1.jsonl'
+writer = open('results/human_eval/oracle.jsonl', 'a')
+# writer = open('results/human_eval/dr_rankfirst.jsonl', 'w')
 export_query_file(result_file, writer)
 
 writer = open('results/human_eval/dr_rankfirst.run', 'w')

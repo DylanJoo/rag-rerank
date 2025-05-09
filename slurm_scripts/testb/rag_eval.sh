@@ -17,65 +17,64 @@ conda activate rag
 cd /home/dju/rag-rerank/src 
 
 judge_model=meta-llama/Llama-3.1-70B-Instruct
+threshold=5
 mkdir -p logs/$judgement_model
 
-data=test
-
 for max_length in -1;do
-for prefix in vanilla_20;do
+for prefix in thres;do
 
 ## BM25 as initial retrieval
-for result_file in results/$max_length/${data}-bm25*${prefix}*; do
+for result_file in results/${max_length}/testb-bm25*${prefix}*; do
     file_name=${result_file##*/}
-    output_file=logs/$judge_model/rag_$max_length/${file_name/jsonl/log}
+    output_file=logs/$judge_model/rag_${max_length}_thres_${threshold}/${file_name/jsonl/log}
     mkdir -p ${output_file%/*}
     echo "Evaluating: " $file_name
 
     python3 -m evaluation.llmjudge.retrieval_augmentation_generation \
-        --topic_file /home/dju/datasets/crux/ranking_5/${data}_topics.jsonl \
+        --topic_file /home/dju/datasets/crux/ranking_3/testb_topics.jsonl \
         --corpus_dir /home/dju/datasets/crux/passages/ \
-        --qrels_file /home/dju/datasets/crux/ranking_3/${data}_qrels_pr.txt \
-        --judgement_file /home/dju/datasets/crux/ranking_3/${data}_oracle-passages_judgements.jsonl \
+        --qrels_file /home/dju/datasets/crux/ranking_3/testb_qrels_pr.txt \
+        --judgement_file /home/dju/datasets/crux/ranking_3/testb_oracle-passages_judgements.jsonl \
         --model_name_or_path $judge_model \
-        --threshold 3 \
+        --threshold ${threshold} \
         --gamma 0.5  \
         --num_gpus 4 \
         --result_jsonl $result_file > $output_file
 done
 
 ### Contriever as initial retrieval
-for result_file in results/$max_length/${data}-contriever*${prefix}*; do
+for result_file in results/${max_length}/testb-contriever*${prefix}*; do
     file_name=${result_file##*/}
-    output_file=logs/$judge_model/rag_$max_length/${file_name/jsonl/log}
+    output_file=logs/$judge_model/rag_${max_length}_thres_${threshold}/${file_name/jsonl/log}
     mkdir -p ${output_file%/*}
     echo "Evaluating: " $file_name
 
     python3 -m evaluation.llmjudge.retrieval_augmentation_generation \
-        --topic_file /home/dju/datasets/crux/ranking_5/${data}_topics.jsonl \
+        --topic_file /home/dju/datasets/crux/ranking_3/testb_topics.jsonl \
         --corpus_dir /home/dju/datasets/crux/passages/ \
-        --qrels_file /home/dju/datasets/crux/ranking_3/${data}_qrels_pr.txt \
-        --judgement_file /home/dju/datasets/crux/ranking_3/${data}_oracle-passages_judgements.jsonl \
+        --qrels_file /home/dju/datasets/crux/ranking_3/testb_qrels_pr.txt \
+        --judgement_file /home/dju/datasets/crux/ranking_3/testb_oracle-passages_judgements.jsonl \
         --model_name_or_path $judge_model \
-        --threshold 3 \
+        --threshold ${threshold} \
         --gamma 0.5  \
         --num_gpus 4 \
         --result_jsonl $result_file > $output_file
 done
 
 ### SPLADE as initial retrieval
-for result_file in results/$max_length/${data}-splade*${prefix}*; do
+for result_file in results/${max_length}/testb-splade*${prefix}*; do
     file_name=${result_file##*/}
-    output_file=logs/$judge_model/rag_$max_length/${file_name/jsonl/log}
+    output_file=logs/$judge_model/rag_${max_length}_thres_${threshold}/${file_name/jsonl/log}
     mkdir -p ${output_file%/*}
     echo "Evaluating: " $file_name
 
     python3 -m evaluation.llmjudge.retrieval_augmentation_generation \
-        --topic_file /home/dju/datasets/crux/ranking_5/${data}_topics.jsonl \
+        --topic_file /home/dju/datasets/crux/ranking_3/testb_topics.jsonl \
         --corpus_dir /home/dju/datasets/crux/passages/ \
-        --qrels_file /home/dju/datasets/crux/ranking_3/${data}_qrels_pr.txt \
-        --judgement_file /home/dju/datasets/crux/ranking_3/${data}_oracle-passages_judgements.jsonl \
+        --qrels_file /home/dju/datasets/crux/ranking_3/testb_qrels_pr.txt \
+        --judgement_file /home/dju/datasets/crux/ranking_3/testb_oracle-passages_judgements.jsonl \
         --model_name_or_path $judge_model \
-        --threshold 3 \
+        --threshold ${threshold} \
         --gamma 0.5  \
         --num_gpus 4 \
         --result_jsonl $result_file > $output_file

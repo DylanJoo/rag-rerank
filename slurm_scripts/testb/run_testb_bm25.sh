@@ -18,7 +18,7 @@ cd src
 threshold=5
 
 # Start experiments
-ADD_GENERATION=true
+ADD_GENERATION=false
 
 for max_report_length in -1; do
 for max_k in -1; do
@@ -60,7 +60,7 @@ python3 crux-bm25.py --default_config configs/crux/bm25_100-monot5_100.yaml \
 
 # BM25 100 + Listwise - rankzephyr 100 (w20) + Vanilla 10
 python3 crux-bm25.py --default_config configs/crux/bm25_100-rankgpt_100.yaml \
-    --exp testb-bm25_100-rankzephyr_100-vanilla_${max_k}_${thres} \
+    --exp testb-bm25_100-rankzephyr_100-vanilla_${max_k}_${threshold} \
     data \
         --qrels_file /home/dju/datasets/crux/ranking_${threshold}/testb_qrels_pr.txt  \
         --judgement_file /home/dju/datasets/crux/ranking_${threshold}/testb_oracle-passages_judgements.jsonl \
