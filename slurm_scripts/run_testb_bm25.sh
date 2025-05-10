@@ -17,7 +17,7 @@ conda activate rag
 cd src 
 
 # Start experiments
-ADD_GENERATION=true
+ADD_GENERATION=false
 
 for max_report_length in -1; do
 for max_k in -1; do

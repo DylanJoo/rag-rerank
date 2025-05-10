@@ -6,7 +6,7 @@ K=-1
 
 N=-1
 # N=1024
-thres=_thres_5
+# thres=_thres_5
 
 # checking result time
 echo 'rac evaluation time'

@@ -18,10 +18,10 @@ cd src
 data=test
 
 # Start experiments
-ADD_GENERATION=true
+ADD_GENERATION=false
 
-for max_report_length in 1024 -1; do
-for max_k in -1 10 20; do
+for max_report_length in -1; do
+for max_k in -1; do
 
 # contriever 100 + Vanilla 10
 python3 crux-contriever.py --default_config configs/crux/contriever_100-minilm_100.yaml \
