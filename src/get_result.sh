@@ -1,4 +1,4 @@
-data=testb
+data=test
 
 K=-1
 # K=10

@@ -18,7 +18,7 @@ cd src
 data=test
 
 # Start experiments
-ADD_GENERATION=false
+ADD_GENERATION=true
 
 for max_report_length in -1; do
 for max_k in -1; do
