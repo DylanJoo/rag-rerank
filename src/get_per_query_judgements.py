@@ -33,10 +33,10 @@ def collect_results(file_path, threshold=3):
 oracle_file = "/home/dju/rag-rerank/src/logs/meta-llama/Llama-3.1-70B-Instruct/testb-oracle_k.log"
 bm25_file = "/home/dju/rag-rerank/src/logs/meta-llama/Llama-3.1-70B-Instruct/rag_-1/testb-bm25_100-vanilla_-1.log"
 dr_rankfirst_file = "/home/dju/rag-rerank/src/logs/meta-llama/Llama-3.1-70B-Instruct/rag_-1/testb-contriever_100-rankfirst_100-vanilla_-1.log"
-oracle = collect_results(oracle_file)
-bm25 = collect_results(bm25_file)
-dr_rankfirst = collect_results(dr_rankfirst_file)
-print("oracle: ", oracle)
-print("bm25: ", bm25)
-print("dr_rankfirst: ", dr_rankfirst)
+oracle = collect_results(oracle_file, 3)
+bm25 = collect_results(bm25_file, 3)
+dr_rankfirst = collect_results(dr_rankfirst_file, 3)
+print("oracle: ", oracle, np.mean(oracle))
+print("bm25: ", bm25, np.mean(bm25))
+print("dr_rankfirst: ", dr_rankfirst, np.mean(dr_rankfirst))
 

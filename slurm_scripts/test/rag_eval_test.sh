@@ -22,7 +22,7 @@ mkdir -p logs/$judgement_model
 data=test
 
 for max_length in -1;do
-for prefix in vanilla_-1;do
+for prefix in vanilla_10 vanilla_20;do
 
 ## BM25 as initial retrieval
 for result_file in results/$max_length/${data}-bm25*${prefix}*; do

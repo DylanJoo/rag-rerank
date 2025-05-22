@@ -21,7 +21,7 @@ data=test
 ADD_GENERATION=true
 
 for max_report_length in -1; do
-for max_k in -1; do
+for max_k in 10 20; do
 
 # BM25 100 + Vanilla 10
 python3 crux-bm25.py --default_config configs/crux/bm25_100-minilm_100.yaml \

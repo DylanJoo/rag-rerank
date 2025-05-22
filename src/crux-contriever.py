@@ -26,15 +26,12 @@ def main(args):
 
     ## filter the topics/qrels/diversity_qrels
     if 'testb' not in args.data.topic_file: # meaning test
-        import random
-        random.seed(10)
-        all_qids = list(topics.keys())
-        random.shuffle(all_qids)
-        selected_qid = all_qids[:100]
+        from tools import get_random_test_qids
+        random_qids = get_random_test_qids()
 
-        topics = {k: v for k, v in topics.items() if k in selected_qid}
-        qrels = {k: v for k, v in qrels.items() if k in selected_qid}
-        diversity_qrels = diversity_qrels[diversity_qrels['query_id'].isin(selected_qid)]
+        topics = {k: v for k, v in topics.items() if k in random_qids}
+        qrels = {k: v for k, v in qrels.items() if k in random_qids}
+        diversity_qrels = diversity_qrels[diversity_qrels['query_id'].isin(random_qids)]
 
     # Retrieval
     from retrieve.dense import search

@@ -97,7 +97,7 @@ def rag_evaluate(
         # [TODO] add the extract_citation function
         rag_text = remove_citations(rag_data[qid][used_field]) 
         ratings = np.array(llm_judgement(generator, rag_text, questions[qid]))
-        print('rating:', ratings)
+        print(f'{qid}#rating:', ratings)
 
         # [calculate] coverage
         coverage = sum(ratings[answerable] >= threshold) / sum(answerable)

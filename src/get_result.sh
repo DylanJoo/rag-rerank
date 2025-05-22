@@ -1,8 +1,8 @@
-data=test
+data=testb
 
 K=-1
-# K=10
-# K=20
+K=10
+K=20
 
 N=-1
 # N=1024
